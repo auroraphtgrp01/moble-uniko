@@ -1,20 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:uniko/screens/Home.dart';
+import 'package:uniko/screens/login.dart';
+import 'package:uniko/config/theme.config.dart';
+import 'providers/theme_provider.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          theme: ThemeData(
+            brightness: themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
+            scaffoldBackgroundColor: AppTheme.background,
+            // other theme configurations
+          ),
+          home: const HomePage(),
+        );
+      },
     );
   }
 }
