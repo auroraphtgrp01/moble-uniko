@@ -37,6 +37,15 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+
+    signingConfigs {
+        release {
+            storeFile file("upload-keystore.jks")
+            storePassword "mtuan4869"
+            keyAlias "upload"
+            keyPassword "mtuan4869"
+        }
+    }
 }
 
 flutter {

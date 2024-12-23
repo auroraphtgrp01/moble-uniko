@@ -20,7 +20,7 @@ class ProfilePage extends StatelessWidget {
               const SliverPadding(
                 padding: EdgeInsets.only(top: 20),
               ),
-              SliverToBoxAdapter(
+            SliverToBoxAdapter(
                 child: Column(
                   children: [
                     _buildProfileHeader(),
