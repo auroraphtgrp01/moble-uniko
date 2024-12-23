@@ -1,11 +1,79 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../config/theme.config.dart';
 import '../providers/theme_provider.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final LocalAuthentication _localAuth = LocalAuthentication();
+  bool _isBiometricEnabled = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricSettings();
+  }
+
+  Future<void> _loadBiometricSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isBiometricEnabled = prefs.getBool('biometric_enabled') ?? false;
+    });
+  }
+
+  Future<void> _toggleBiometric() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      if (!_isBiometricEnabled) {
+        // Kiểm tra thiết bị có hỗ trợ vân tay
+        final List<BiometricType> availableBiometrics = 
+            await _localAuth.getAvailableBiometrics();
+
+        if (availableBiometrics.isEmpty) {
+          if (!mounted) return;
+          _showError('Thiết bị không hỗ trợ đăng nhập vân tay');
+          return;
+        }
+
+        // Xác thực vân tay
+        final didAuthenticate = await _localAuth.authenticate(
+          localizedReason: 'Xác thực vân tay để bật tính năng',
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            biometricOnly: true,
+          ),
+        );
+
+        if (didAuthenticate) {
+          await prefs.setBool('biometric_enabled', true);
+          if (!mounted) return;
+          setState(() => _isBiometricEnabled = true);
+        }
+      } else {
+        await prefs.setBool('biometric_enabled', false);
+        setState(() => _isBiometricEnabled = false);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showError('Không thể xác thực vân tay: ${e.toString()}');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +160,19 @@ class ProfilePage extends StatelessWidget {
                           trailing: Switch(
                             value: themeProvider.isDarkMode,
                             onChanged: (_) => themeProvider.toggleTheme(),
+                            activeColor: AppTheme.primary,
+                          ),
+                        ),
+                        _buildMenuItem(
+                          icon: Icons.fingerprint,
+                          iconColor: const Color(0xFF34C759),
+                          title: 'Đăng nhập vân tay',
+                          subtitle: _isBiometricEnabled ? 'Đang bật' : 'Đang tắt',
+                          showArrow: false,
+                          onTap: _toggleBiometric,
+                          trailing: Switch(
+                            value: _isBiometricEnabled,
+                            onChanged: (_) => _toggleBiometric(),
                             activeColor: AppTheme.primary,
                           ),
                         ),

@@ -1,39 +1,51 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = 'https://apiv1.minhtuandng.id.vn/api';
+  static final LocalAuthentication _localAuth = LocalAuthentication();
+
+  // Kiểm tra xem có bật xác thực vân tay không
+  static Future<bool> isBiometricEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('biometric_enabled') ?? false;
+  }
+
+  // Xác thực bằng vân tay
+  static Future<bool> authenticateWithBiometrics() async {
+    try {
+      final isEnabled = await isBiometricEnabled();
+      if (!isEnabled) return false;
+
+      final List<BiometricType> availableBiometrics =
+          await _localAuth.getAvailableBiometrics();
+
+      if (availableBiometrics.isEmpty) return false;
+
+      return await _localAuth.authenticate(
+        localizedReason: 'Xác thực vân tay để đăng nhập',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      return false;
+    }
+  }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      );
-
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 201) {
-        return {
-          'success': true,
-          'data': data['data'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['details']?[0] ?? 'Đăng nhập thất bại',
-        };
-      }
+      // TODO: Thêm API login thực tế
+      await Future.delayed(const Duration(seconds: 1)); // Mock API call
+      return {
+        'success': true,
+        'message': 'Đăng nhập thành công'
+      };
     } catch (e) {
       return {
         'success': false,
-        'message': 'Có lỗi xảy ra, vui lòng thử lại sau',
+        'message': e.toString()
       };
     }
   }
-} 
+}

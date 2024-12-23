@@ -16,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController =
       TextEditingController(text: 'minhtuanledng@gmail.com');
   final TextEditingController _passwordController =
-      TextEditingController(text: '1234');
+      TextEditingController(text: '123');
   bool _obscurePassword = true;
   bool _isLoading = false;
   final _authService = AuthService();
@@ -74,10 +74,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           );
-
+          
           await Future.delayed(const Duration(milliseconds: 500));
           if (!mounted) return;
-
+          
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -115,6 +115,42 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    final isAuthenticated = await AuthService.authenticateWithBiometrics();
+    if (isAuthenticated && mounted) {
+      // Hiển thị toast thành công
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Đăng nhập thành công'),
+          backgroundColor: Colors.green[400],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      
+      // Delay ngắn để hiện toast
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      
+      // Chuyển đến màn hình Home
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomePage(),
+        ),
+        (route) => false,
+      );
     }
   }
 
@@ -354,35 +390,37 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                             ),
                           ),
-                          const SizedBox(width: 12), // Khoảng cách giữa 2 nút
+                          const SizedBox(width: 12),
                           // Fingerprint button
-                          Expanded(
-                            flex: 1, // Chiếm 1/6 không gian
-                            child: Container(
-                              height: 56, // Cùng chiều cao với nút đăng nhập
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // TODO: Implement fingerprint login
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme
-                                      .primary, // Cùng màu với nút đăng nhập
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
+                          FutureBuilder<bool>(
+                            future: AuthService.isBiometricEnabled(),
+                            builder: (context, snapshot) {
+                              if (snapshot.data == true) {
+                                return Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    height: 56,
+                                    child: ElevatedButton(
+                                      onPressed: _handleBiometricLogin,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.primary,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        elevation: isDarkMode ? 4 : 0,
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                      child: Icon(
+                                        Icons.fingerprint_rounded,
+                                        size: 28,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
-                                  elevation: isDarkMode
-                                      ? 4
-                                      : 0, // Cùng elevation với nút đăng nhập
-                                  padding: EdgeInsets.zero,
-                                ),
-                                child: Icon(
-                                  Icons.fingerprint_rounded,
-                                  size: 28,
-                                  color: Colors
-                                      .white, // Icon màu trắng như text của nút đăng nhập
-                                ),
-                              ),
-                            ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
                           ),
                         ],
                       ),
