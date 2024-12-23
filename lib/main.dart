@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uniko/screens/Home.dart';
 import 'package:uniko/screens/login.dart';
 import 'package:uniko/config/theme.config.dart';
 import 'providers/theme_provider.dart';
@@ -29,7 +28,7 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: AppTheme.background,
             // other theme configurations
           ),
-          home: const HomePage(),
+          home: const LoginPage(),
         );
       },
     );

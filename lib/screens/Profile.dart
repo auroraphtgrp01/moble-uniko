@@ -18,7 +18,7 @@ class ProfilePage extends StatelessWidget {
           body: CustomScrollView(
             slivers: [
               const SliverPadding(
-                padding: EdgeInsets.only(top: 20),
+                padding: EdgeInsets.only(top: 48),
               ),
             SliverToBoxAdapter(
                 child: Column(

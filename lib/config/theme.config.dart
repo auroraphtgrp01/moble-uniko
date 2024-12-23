@@ -4,8 +4,8 @@ class AppTheme {
   static bool isDarkMode = false;
 
   // Colors for both modes
-  static const Color primaryLight = Color(0xFFDF1B49);
-  static const Color primaryDark = Color(0xFFFF3B6A);
+  static const Color primaryLight = Color(0xFFD61A3C);
+  static const Color primaryDark = Color(0xFFE82B4B);
   
   // Dark theme colors
   static const Color surfaceDark = Color(0xFF0E0E11);
@@ -45,4 +45,26 @@ class AppTheme {
   static void toggleTheme() {
     isDarkMode = !isDarkMode;
   }
+
+  static ThemeData lightTheme = ThemeData(
+    fontFamily: 'Poppins',
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(fontWeight: FontWeight.w600),
+      bodyMedium: TextStyle(fontWeight: FontWeight.w600),
+      labelLarge: TextStyle(fontWeight: FontWeight.w600),
+      // ... các text style khác
+    ),
+    // ... các cấu hình theme khác
+  );
+
+  static ThemeData darkTheme = ThemeData(
+    fontFamily: 'Poppins',
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(fontWeight: FontWeight.w600),
+      bodyMedium: TextStyle(fontWeight: FontWeight.w600),
+      labelLarge: TextStyle(fontWeight: FontWeight.w600),
+      // ... các text style khác
+    ),
+    // ... các cấu hình theme khác
+  );
 }
