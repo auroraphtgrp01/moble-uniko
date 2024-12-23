@@ -17,6 +17,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _isBiometricEnabled = false;
+  bool _isProfileExpanded = false;
   
   @override
   void initState() {
@@ -129,13 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     _buildSection(
                       title: 'Cài đặt tài khoản',
                       items: [
-                        _buildMenuItem(
-                          icon: Icons.person_outline_rounded,
-                          iconColor: const Color(0xFF5856D6),
-                          title: 'Thông tin cá nhân',
-                          subtitle: 'Cập nhật thông tin của bạn',
-                          onTap: () {},
-                        ),
+                        _buildProfileAccordion(),
                         _buildMenuItem(
                           icon: Icons.security_outlined,
                           iconColor: const Color(0xFF34C759),
@@ -238,6 +233,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
+                      Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Developed by Minh Tuan Le',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -303,8 +308,10 @@ class _ProfilePageState extends State<ProfilePage> {
         color: AppTheme.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.borderColor,
-          width: 1,
+          color: AppTheme.isDarkMode 
+              ? Colors.white.withOpacity(0.05)  // Tối hơn cho dark mode
+              : AppTheme.borderColor,
+          width: 0.5,  // Mỏng hơn
         ),
       ),
       child: Column(
@@ -344,8 +351,10 @@ class _ProfilePageState extends State<ProfilePage> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: AppTheme.divider,
-              width: 1,
+              color: AppTheme.isDarkMode 
+                  ? Colors.white.withOpacity(0.05)  // Tối hơn cho dark mode
+                  : AppTheme.divider,
+              width: 0.5,  // Mỏng hơn
             ),
           ),
         ),
@@ -483,6 +492,92 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileAccordion() {
+    return Column(
+      children: [
+        _buildMenuItem(
+          icon: Icons.person_outline_rounded,
+          iconColor: const Color(0xFF5856D6),
+          title: 'Thông tin cá nhân',
+          subtitle: 'Cập nhật thông tin của bạn',
+          showArrow: true,
+          trailing: AnimatedRotation(
+            turns: _isProfileExpanded ? 0.25 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: Icon(
+              Icons.chevron_right,
+              color: AppTheme.textSecondary.withOpacity(0.6),
+              size: 20,
+            ),
+          ),
+          onTap: () => setState(() => _isProfileExpanded = !_isProfileExpanded),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(height: 0),
+          secondChild: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.isDarkMode 
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.grey.withOpacity(0.05),
+              border: Border(
+                top: BorderSide(
+                  color: AppTheme.isDarkMode 
+                      ? Colors.white.withOpacity(0.05)
+                      : AppTheme.divider,
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: Column(
+              children: [
+                _buildProfileField('Họ và tên', 'Minh Tuan Le'),
+                _buildProfileField('Email', 'minhtuanledng@gmail.com'),
+                _buildProfileField('Số điện thoại', '0123456789'),
+                _buildProfileField('Ngày sinh', '01/01/2000'),
+              ],
+            ),
+          ),
+          crossFadeState: _isProfileExpanded 
+              ? CrossFadeState.showSecond 
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
