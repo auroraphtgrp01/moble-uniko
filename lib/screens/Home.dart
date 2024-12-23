@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'Overview.dart';
+import 'Profile.dart';
 import '../widgets/Dock.dart';
-import 'profile.dart';
-import '../providers/theme_provider.dart';
-import '../config/theme.config.dart';
-import 'package:provider/provider.dart';
+import 'Transactions.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,32 +14,22 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const Center(child: Text('Tổng quan')),
-    const Center(child: Text('Sổ giao dịch')),
-    const Center(child: Text('Ghi chép giao dịch')),
-    const Center(child: Text('Trợ lý ảo')),
+  final List<Widget> _pages = [
+    const OverviewPage(),
+    const TransactionsPage(),
+    const Placeholder(),
+    const Placeholder(),
     const ProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, _) {
-        return Scaffold(
-          backgroundColor: AppTheme.background,
-          extendBody: true,
-          body: _screens[_currentIndex],
-          bottomNavigationBar: CustomBottomNav(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-          ),
-        );
-      },
+    return Scaffold(
+      body: _pages[_currentIndex],
+      bottomNavigationBar: CustomBottomNav(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+      ),
     );
   }
 }
