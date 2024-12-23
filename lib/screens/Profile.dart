@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:uniko/screens/Login.dart';
 import '../config/theme.config.dart';
 import '../providers/theme_provider.dart';
 import 'package:local_auth/local_auth.dart';
@@ -152,15 +153,17 @@ class _ProfilePageState extends State<ProfilePage> {
                         _buildMenuItem(
                           icon: Icons.dark_mode_outlined,
                           title: 'Chế độ tối',
-                          subtitle: themeProvider.isDarkMode
-                              ? 'Đang bật'
-                              : 'Đang tắt',
+                          subtitle: themeProvider.isDarkMode ? 'Đang bật' : 'Đang tắt',
                           showArrow: false,
                           onTap: () => themeProvider.toggleTheme(),
-                          trailing: Switch(
-                            value: themeProvider.isDarkMode,
-                            onChanged: (_) => themeProvider.toggleTheme(),
-                            activeColor: AppTheme.primary,
+                          trailing: Transform.scale(
+                            scale: 0.8,
+                            child: CupertinoSwitch(
+                              value: themeProvider.isDarkMode,
+                              onChanged: (_) => themeProvider.toggleTheme(),
+                              activeColor: AppTheme.primary,
+                              trackColor: AppTheme.borderColor.withOpacity(0.3),
+                            ),
                           ),
                         ),
                         _buildMenuItem(
@@ -170,10 +173,14 @@ class _ProfilePageState extends State<ProfilePage> {
                           subtitle: _isBiometricEnabled ? 'Đang bật' : 'Đang tắt',
                           showArrow: false,
                           onTap: _toggleBiometric,
-                          trailing: Switch(
-                            value: _isBiometricEnabled,
-                            onChanged: (_) => _toggleBiometric(),
-                            activeColor: AppTheme.primary,
+                          trailing: Transform.scale(
+                            scale: 0.8,
+                            child: CupertinoSwitch(
+                              value: _isBiometricEnabled,
+                              onChanged: (_) => _toggleBiometric(),
+                              activeColor: AppTheme.primary,
+                              trackColor: AppTheme.borderColor.withOpacity(0.3),
+                            ),
                           ),
                         ),
                       ],
@@ -201,7 +208,22 @@ class _ProfilePageState extends State<ProfilePage> {
                           iconColor: AppTheme.error,
                           title: 'Đăng xuất',
                           showArrow: false,
-                          onTap: () => _showLogoutDialog(context),
+                          onTap: () async {
+                            // Clear preferences nếu cần
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.clear();
+                            
+                            if (!mounted) return;
+                            
+                            // Chuyển về màn Login và xóa stack
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
+                              (route) => false,
+                            );
+                          },
                         ),
                       ],
                     ),
