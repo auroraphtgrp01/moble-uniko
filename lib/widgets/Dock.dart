@@ -55,7 +55,7 @@ class CustomBottomNav extends StatelessWidget {
                     color: isDarkMode 
                         ? Colors.white.withOpacity(0.1)
                         : Colors.grey.withOpacity(0.2), // Tăng độ thấy của border
-                    width: 1, // Tăng độ dày border
+                    width: 0.7,
                   ),
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -139,7 +139,7 @@ class CustomBottomNav extends StatelessWidget {
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: 3,
-              width: isSelected ? 20 : 0,
+              width: isSelected ? 10 : 0,
               decoration: BoxDecoration(
                 color: AppTheme.primary,
                 borderRadius: BorderRadius.circular(1.5),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
-import '../widgets/Dock.dart';
 
 class ChatMessage {
   final String text;
