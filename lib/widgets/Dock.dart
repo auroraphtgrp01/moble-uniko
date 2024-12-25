@@ -77,7 +77,7 @@ class CustomBottomNav extends StatelessWidget {
                     _buildNavItem(context, 0, Icons.analytics_outlined, Icons.analytics, 'Tổng quan'),
                     _buildNavItem(context, 1, Icons.account_balance_wallet_outlined, Icons.account_balance_wallet, 'Sổ GD'),
                     _buildNavItem(context, 2, Icons.add_box_outlined, Icons.add_box, 'Ghi chép'),
-                    _buildNavItem(context, 3, Icons.support_agent_outlined, Icons.support_agent, 'Trợ lý'),
+                    _buildNavItem(context, 3, Icons.account_balance_outlined, Icons.account_balance, 'Ví & Quỹ'),
                     _buildNavItem(context, 4, Icons.person_outline_rounded, Icons.person, 'Cá nhân'),
                   ],
                 ),

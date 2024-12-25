@@ -15,6 +15,21 @@ dependencies:
   shared_preferences: ^2.2.2
   provider: ^6.1.2
   animations: ^2.0.8
+  fl_chart: ^0.70.0
+  tab_indicator_styler: ^2.0.0
+  marquee: ^2.2.3
+  flutter_animate: ^4.5.0
+  glassmorphism: ^3.0.0
+  flutter_slidable: ^3.0.1
+  lottie: ^3.0.0
+  form_builder_validators: ^11.1.1
+  flutter_form_builder: ^9.2.1
+  expandable: ^5.0.1
+  flutter_localizations:
+    sdk: flutter
+  animated_custom_dropdown: ^2.0.0
+  tab_container: ^2.0.0
+  calendar_date_picker2: ^0.5.3
 
 dev_dependencies:
   flutter_test:

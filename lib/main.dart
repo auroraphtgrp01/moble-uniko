@@ -26,6 +26,12 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             brightness: themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
             scaffoldBackgroundColor: AppTheme.background,
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+              },
+            ),
             // other theme configurations
           ),
           home: const LoginPage(),

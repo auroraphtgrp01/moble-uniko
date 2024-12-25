@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:animations/animations.dart';
+import 'package:uniko/screens/Wallet.dart';
 import '../widgets/Dock.dart';
 import 'Overview.dart';
 import 'Transactions.dart';
 import 'Profile.dart';
 import 'AddTransaction.dart';
-import 'Chatbot.dart';
+import 'ChatBot.dart';
+import '../config/theme.config.dart';
+import '../widgets/chatbot_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,45 +16,50 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  late PageController _pageController;
+  int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const OverviewPage(),
-    const TransactionsPage(),
-    const AddTransactionPage(),
-    const ChatbotScreen(),
-    const ProfilePage(),
+  final List<Widget> _pages = const [
+    OverviewPage(),
+    TransactionsPage(),
+    AddTransactionPage(),
+    WalletPage(),
+    ProfilePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageTransitionSwitcher(
-        duration: const Duration(milliseconds: 400),
-        reverse: _currentIndex < _currentIndex,
-        transitionBuilder: (child, animation, secondaryAnimation) {
-          return SharedAxisTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            transitionType: SharedAxisTransitionType.horizontal,
-            fillColor: Colors.transparent,
-            child: child,
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: _pages,
+      ),
+      floatingActionButton: const ChatBotButton(),
+      bottomNavigationBar: CustomBottomNav(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() => _selectedIndex = index);
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
           );
         },
-        child: KeyedSubtree(
-          key: ValueKey<int>(_currentIndex),
-          child: _pages[_currentIndex],
-        ),
       ),
-      bottomNavigationBar: _currentIndex == 3
-          ? null 
-          : CustomBottomNav(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() => _currentIndex = index);
-              },
-            ),
     );
   }
 }

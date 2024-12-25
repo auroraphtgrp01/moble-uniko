@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 import 'package:intl/intl.dart';
+import 'TransactionDetail.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -15,7 +16,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
   final List<CategoryItem> _categories = [
     CategoryItem(emoji: '🌟', name: 'Tất cả', color: const Color(0xFF5856D6)),
     CategoryItem(emoji: '🍲', name: 'Ăn uống', color: const Color(0xFFFF6B6B)),
-    CategoryItem(emoji: '🚌', name: 'Di chuyển', color: const Color(0xFF4DABF7)),
+    CategoryItem(
+        emoji: '🚌', name: 'Di chuyển', color: const Color(0xFF4DABF7)),
     CategoryItem(emoji: '🛒', name: 'Mua sắm', color: const Color(0xFFE599F7)),
     CategoryItem(emoji: '🏥', name: 'Sức khỏe', color: const Color(0xFF34C759)),
     CategoryItem(emoji: '🎬', name: 'Giải trí', color: const Color(0xFFFFB86C)),
@@ -66,7 +68,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   color: AppTheme.cardBackground,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppTheme.isDarkMode 
+                    color: AppTheme.isDarkMode
                         ? Colors.white.withOpacity(0.05)
                         : AppTheme.borderColor,
                     width: 0.5,
@@ -106,7 +108,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   itemBuilder: (context, index) {
                     final category = _categories[index];
                     final isSelected = category.name == _selectedCategory;
-                    
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: FilterChip(
@@ -115,15 +117,17 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         avatar: Text(category.emoji),
                         label: Text(category.name),
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : AppTheme.textPrimary,
+                          color:
+                              isSelected ? Colors.white : AppTheme.textPrimary,
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.w500 : FontWeight.normal,
                         ),
                         backgroundColor: AppTheme.cardBackground,
                         selectedColor: category.color,
                         side: BorderSide(
-                          color: isSelected 
-                              ? category.color 
+                          color: isSelected
+                              ? category.color
                               : AppTheme.isDarkMode
                                   ? Colors.white.withOpacity(0.05)
                                   : AppTheme.borderColor,
@@ -227,9 +231,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
         Text(
           '$amount đ',
           style: TextStyle(
-            color: isIncome 
-                ? const Color(0xFF34C759)
-                : AppTheme.error,
+            color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -283,7 +285,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 height: 4,
                 margin: const EdgeInsets.only(top: 12),
                 decoration: BoxDecoration(
-                  color: AppTheme.isDarkMode 
+                  color: AppTheme.isDarkMode
                       ? Colors.white.withOpacity(0.2)
                       : Colors.black.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(2),
@@ -413,8 +415,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         avatar: Text(category.emoji),
                         label: Text(category.name),
                         labelStyle: TextStyle(
-                          color: category.name == currentCategory 
-                              ? Colors.white 
+                          color: category.name == currentCategory
+                              ? Colors.white
                               : AppTheme.textPrimary,
                           fontSize: 13,
                         ),
@@ -477,7 +479,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   itemBuilder: (context, index) {
                     final category = _categories[index];
                     final isSelected = category.name == currentCategory;
-                    
+
                     return InkWell(
                       onTap: () {
                         // TODO: Update category
@@ -485,15 +487,15 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected 
+                          color: isSelected
                               ? category.color.withOpacity(0.1)
                               : AppTheme.isDarkMode
                                   ? Colors.white.withOpacity(0.02)
                                   : Colors.black.withOpacity(0.02),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isSelected 
-                                ? category.color 
+                            color: isSelected
+                                ? category.color
                                 : AppTheme.isDarkMode
                                     ? Colors.white.withOpacity(0.05)
                                     : AppTheme.borderColor,
@@ -518,12 +520,12 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             Text(
                               category.name,
                               style: TextStyle(
-                                color: isSelected 
+                                color: isSelected
                                     ? category.color
                                     : AppTheme.textPrimary,
                                 fontSize: 12,
-                                fontWeight: isSelected 
-                                    ? FontWeight.w500 
+                                fontWeight: isSelected
+                                    ? FontWeight.w500
                                     : FontWeight.normal,
                               ),
                               textAlign: TextAlign.center,
@@ -550,123 +552,136 @@ class _TransactionsPageState extends State<TransactionsPage> {
     required String category,
     bool isIncome = false,
   }) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.isDarkMode 
-              ? Colors.white.withOpacity(0.05)
-              : AppTheme.borderColor,
-          width: 0.5,
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TransactionDetailPage(
+              icon: icon,
+              title: title,
+              amount: amount,
+              date: time,
+              category: category,
+              isIncome: isIncome,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.isDarkMode
+                ? Colors.white.withOpacity(0.05)
+                : AppTheme.borderColor,
+            width: 0.5,
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isIncome 
-                  ? const Color(0xFF34C759).withOpacity(0.1)
-                  : AppTheme.error.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isIncome
+                    ? const Color(0xFF34C759).withOpacity(0.1)
+                    : AppTheme.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                size: 22,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: isIncome 
-                  ? const Color(0xFF34C759)
-                  : AppTheme.error,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+            const SizedBox(width: 12),
+
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () => _showCategoryDrawer(context, category),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.isDarkMode
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.black.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              category,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13,
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () => _showCategoryDrawer(context, category),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.isDarkMode
+                                ? Colors.white.withOpacity(0.05)
+                                : Colors.black.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                category,
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              size: 16,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_drop_down,
+                                size: 16,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      width: 3,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: AppTheme.textSecondary.withOpacity(0.5),
-                        shape: BoxShape.circle,
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 3,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: AppTheme.textSecondary.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ),
-                    Text(
-                      time,
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 13,
+                      Text(
+                        time,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          
-          // Amount
-          Text(
-            '$amount đ',
-            style: TextStyle(
-              color: isIncome 
-                  ? const Color(0xFF34C759)
-                  : AppTheme.error,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+
+            // Amount
+            Text(
+              '$amount đ',
+              style: TextStyle(
+                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -683,4 +698,4 @@ class CategoryItem {
     required this.name,
     required this.color,
   });
-} 
+}
