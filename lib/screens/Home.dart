@@ -5,9 +5,6 @@ import 'Overview.dart';
 import 'Transactions.dart';
 import 'Profile.dart';
 import 'AddTransaction.dart';
-import 'ChatBot.dart';
-import '../config/theme.config.dart';
-import '../widgets/chatbot_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -48,7 +45,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         physics: const NeverScrollableScrollPhysics(),
         children: _pages,
       ),
-      floatingActionButton: const ChatBotButton(),
+      // floatingActionButton: const ChatBotButton(),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _selectedIndex,
         onTap: (index) {
