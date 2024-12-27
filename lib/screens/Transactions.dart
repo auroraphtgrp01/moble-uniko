@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'TransactionDetail.dart';
 import 'package:uniko/screens/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
+import 'package:uniko/widgets/AddCategoryDrawer.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -338,7 +339,12 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     // Add Category Button
                     TextButton.icon(
                       onPressed: () {
-                        // TODO: Implement add category
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          builder: (context) => const AddCategoryDrawer(),
+                        );
                       },
                       icon: Icon(
                         Icons.add_circle_outline_rounded,
@@ -483,7 +489,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Tất c��� danh mục',
+                      'Tất cả danh mục',
                       style: TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 13,
