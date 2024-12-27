@@ -28,6 +28,35 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
   final ScrollController _scrollController = ScrollController();
   late AnimationController _sendButtonController;
   late AnimationController _typeIndicatorController;
+  late AnimationController _drawerController;
+  bool _isDrawerOpen = false;
+
+  final List<QuickAction> _quickActions = [
+    QuickAction(
+      icon: Icons.add_chart,
+      title: 'Ghi chép chi tiêu nhanh giúp tôi',
+      description: 'Ghi chép các khoản chi tiêu một cách nhanh chóng',
+      gradient: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+    ),
+    QuickAction(
+      icon: Icons.analytics_outlined,
+      title: 'Thống kê tài chính của tôi tháng này',
+      description: 'Xem báo cáo chi tiết về thu chi trong tháng',
+      gradient: [Color(0xFF2196F3), Color(0xFF1976D2)],
+    ),
+    QuickAction(
+      icon: Icons.savings_outlined,
+      title: 'Tư vấn tiết kiệm',
+      description: 'Nhận lời khuyên về cách tiết kiệm hiệu quả',
+      gradient: [Color(0xFF9C27B0), Color(0xFF7B1FA2)],
+    ),
+    QuickAction(
+      icon: Icons.trending_up,
+      title: 'Phân tích xu hướng chi tiêu',
+      description: 'Xem xu hướng chi tiêu và đề xuất cải thiện',
+      gradient: [Color(0xFFFF9800), Color(0xFFF57C00)],
+    ),
+  ];
 
   @override
   void initState() {
@@ -48,6 +77,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
         isUser: false,
         timestamp: DateTime.now(),
       ),
+    );
+
+    _drawerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -93,6 +127,254 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
         );
       }
     });
+  }
+
+  void _toggleDrawer() {
+    setState(() {
+      _isDrawerOpen = !_isDrawerOpen;
+      if (_isDrawerOpen) {
+        _drawerController.forward();
+      } else {
+        _drawerController.reverse();
+      }
+    });
+  }
+
+  Widget _buildQuickActionsDrawer() {
+    return AnimatedBuilder(
+      animation: _drawerController,
+      builder: (context, child) {
+        return Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: GestureDetector(
+            onTap: () => _isDrawerOpen ? _toggleDrawer() : null,
+            child: Container(
+              color: _isDrawerOpen 
+                  ? Colors.black.withOpacity(0.3 * _drawerController.value) 
+                  : Colors.transparent,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: _drawerController,
+                    curve: Curves.easeOutCubic,
+                  )),
+                  child: child,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      child: _isDrawerOpen ? _buildDrawerContent() : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildDrawerContent() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.isDarkMode 
+            ? Colors.grey[900] 
+            : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.shadowColor.withOpacity(0.08),
+            blurRadius: 25,
+            offset: const Offset(0, -8),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: AppTheme.isDarkMode 
+                ? Colors.white.withOpacity(0.03)
+                : Colors.black.withOpacity(0.03),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Improved handle with subtle gradient
+            Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 16),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withOpacity(0.2),
+                    AppTheme.primary.withOpacity(0.4),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Title with icon
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.bolt_rounded,
+                      color: AppTheme.primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Tác vụ nhanh',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Quick actions with improved design
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              itemCount: _quickActions.length,
+              itemBuilder: (context, index) {
+                final action = _quickActions[index];
+                return _buildQuickActionItem(action, index);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionItem(QuickAction action, int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            _toggleDrawer();
+            _messageController.text = action.title;
+            _handleSubmit(action.title);
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.isDarkMode 
+                  ? Colors.grey[850] 
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppTheme.primary.withOpacity(0.1),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.shadowColor.withOpacity(0.05),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Icon container with gradient
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        action.gradient[0].withOpacity(0.8),
+                        action.gradient[1],
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: action.gradient[0].withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    action.icon,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Text content with improved typography
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        action.title,
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        action.description,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Animated arrow
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: Duration(milliseconds: 200 + (index * 100)),
+                  builder: (context, value, child) {
+                    return Transform.translate(
+                      offset: Offset(8 * (1 - value), 0),
+                      child: Opacity(
+                        opacity: value,
+                        child: Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: AppTheme.textSecondary,
+                          size: 16,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -196,27 +478,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: AppTheme.primary,
-                  size: 20,
-                ),
-                onPressed: () {
-                  // Show menu options
-                },
-              ),
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -253,6 +514,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               _buildInputField(isDarkMode),
             ],
           ),
+          // Drawer overlay
+          if (_isDrawerOpen)
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: _toggleDrawer,
+                child: Container(
+                  color: Colors.transparent,
+                ),
+              ),
+            ),
+          // Quick actions drawer
+          _buildQuickActionsDrawer(),
         ],
       ),
     );
@@ -397,13 +670,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(
-              Icons.add_circle_outline,
-              color: AppTheme.primary,
-              size: 24,
-            ),
-            onPressed: () {},
+          _buildAnimatedIconButton(
+            icon: Icons.grid_view_rounded,
+            onPressed: _toggleDrawer,
           ),
           Expanded(
             child: TextField(
@@ -429,6 +698,20 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAnimatedIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return IconButton(
+      icon: Icon(
+        icon,
+        color: AppTheme.primary,
+        size: 24,
+      ),
+      onPressed: onPressed,
     );
   }
 
@@ -509,6 +792,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
     _typeIndicatorController.dispose();
     _messageController.dispose();
     _scrollController.dispose();
+    _drawerController.dispose();
     super.dispose();
   }
 }
@@ -530,4 +814,19 @@ class PatternPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+// Quick Action Model
+class QuickAction {
+  final IconData icon;
+  final String title;
+  final String description;
+  final List<Color> gradient;
+
+  QuickAction({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.gradient,
+  });
 } 
