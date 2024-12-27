@@ -61,303 +61,349 @@ class _OverviewPageState extends State<OverviewPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Tổng quan',
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                    FundSelector(
-                      selectedFund: _selectedFund,
-                      onFundChanged: (fund) =>
-                          setState(() => _selectedFund = fund),
-                    ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.isDarkMode
+                        ? AppTheme.background.withOpacity(0.75)
+                        : Colors.white.withOpacity(0.75),
+                    AppTheme.isDarkMode
+                        ? AppTheme.background.withOpacity(0.65)
+                        : Colors.white.withOpacity(0.65),
                   ],
                 ),
-              ),
-            ),
-
-            // Balance Card with Chart
-            SliverToBoxAdapter(
-              child: _buildBalanceCard(),
-            ),
-
-            // Stats Cards
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    // Chi tiêu Card
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _switchTab(0),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _selectedIndex == 0
-                                ? AppTheme.error.withOpacity(0.1)
-                                : AppTheme.cardBackground,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _selectedIndex == 0
-                                  ? AppTheme.error
-                                  : AppTheme.isDarkMode
-                                      ? Colors.white.withOpacity(0.05)
-                                      : AppTheme.borderColor,
-                              width: 1.5,
-                            ),
-                            boxShadow: _selectedIndex == 0
-                                ? [
-                                    BoxShadow(
-                                      color: AppTheme.error.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.trending_down,
-                                    color: _selectedIndex == 0
-                                        ? AppTheme.error
-                                        : AppTheme.textSecondary,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Chi tiêu',
-                                    style: TextStyle(
-                                      color: _selectedIndex == 0
-                                          ? AppTheme.error
-                                          : AppTheme.textSecondary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '8,520,000 đ',
-                                style: TextStyle(
-                                  color: AppTheme.error,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Thu nhập Card
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _switchTab(1),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _selectedIndex == 1
-                                ? const Color(0xFF34C759).withOpacity(0.1)
-                                : AppTheme.cardBackground,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _selectedIndex == 1
-                                  ? const Color(0xFF34C759)
-                                  : AppTheme.isDarkMode
-                                      ? Colors.white.withOpacity(0.05)
-                                      : AppTheme.borderColor,
-                              width: 1.5,
-                            ),
-                            boxShadow: _selectedIndex == 1
-                                ? [
-                                    BoxShadow(
-                                      color: const Color(0xFF34C759)
-                                          .withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.trending_up,
-                                    color: _selectedIndex == 1
-                                        ? const Color(0xFF34C759)
-                                        : AppTheme.textSecondary,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Thu nhập',
-                                    style: TextStyle(
-                                      color: _selectedIndex == 1
-                                          ? const Color(0xFF34C759)
-                                          : AppTheme.textSecondary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '15,300,000 đ',
-                                style: TextStyle(
-                                  color: const Color(0xFF34C759),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 20),
-            ),
-
-            // Chart Content
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: AppTheme.cardBackground,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
+                border: Border(
+                  bottom: BorderSide(
                     color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.05)
-                        : AppTheme.borderColor,
+                        ? Colors.white.withOpacity(0.03)
+                        : Colors.black.withOpacity(0.03),
+                    width: 0.5,
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: 350,
-                      child: TabBarView(
-                        controller: _tabController,
-                        physics: const BouncingScrollPhysics(),
-                        dragStartBehavior: DragStartBehavior.down,
-                        children: [
-                          _buildExpenseChart(),
-                          _buildIncomeChart(),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.isDarkMode
+                        ? Colors.black.withOpacity(0.08)
+                        : Colors.white.withOpacity(0.6),
+                    offset: const Offset(0, 4),
+                    blurRadius: 8,
+                  ),
+                ],
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(height: MediaQuery.of(context).padding.bottom),
-            ),
-
-            // Recent Transactions
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Giao dịch gần đây',
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'Xem tất cả',
-                            style: TextStyle(
-                              color: AppTheme.primary,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildTransactionItem(
-                      context: context,
-                      icon: Icons.restaurant,
-                      title: 'Ăn trưa',
-                      amount: '-45,000',
-                      date: 'Hôm nay, 12:30',
-                      category: 'Ăn uống',
-                    ),
-                    _buildTransactionItem(
-                      context: context,
-                      icon: Icons.directions_bus,
-                      title: 'Xe buýt',
-                      amount: '-7,000',
-                      date: 'Hôm nay, 09:15',
-                      category: '🚌 Di chuyển',
-                    ),
-                    _buildTransactionItem(
-                      context: context,
-                      icon: Icons.work,
-                      title: 'Lương tháng 3',
-                      amount: '+15,300,000',
-                      date: 'Hôm qua, 10:00',
-                      category: '💰 Thu nhập',
-                      isIncome: true,
-                    ),
-                  ],
+          ),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tổng quan',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    height: 1.2,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+            FundSelector(
+              selectedFund: _selectedFund,
+              onFundChanged: (fund) => setState(() => _selectedFund = fund),
             ),
           ],
         ),
+        toolbarHeight: 80,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
+            sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
+          ),
+          // Header
+          // Balance Card with Chart
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: _buildBalanceCard(),
+            ),
+          ),
+
+          // Stats Cards
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  // Chi tiêu Card
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _switchTab(0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _selectedIndex == 0
+                              ? AppTheme.error.withOpacity(0.1)
+                              : AppTheme.cardBackground,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _selectedIndex == 0
+                                ? AppTheme.error
+                                : AppTheme.isDarkMode
+                                    ? Colors.white.withOpacity(0.05)
+                                    : AppTheme.borderColor,
+                            width: 1.5,
+                          ),
+                          boxShadow: _selectedIndex == 0
+                              ? [
+                                  BoxShadow(
+                                    color: AppTheme.error.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.trending_down,
+                                  color: _selectedIndex == 0
+                                      ? AppTheme.error
+                                      : AppTheme.textSecondary,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Chi tiêu',
+                                  style: TextStyle(
+                                    color: _selectedIndex == 0
+                                        ? AppTheme.error
+                                        : AppTheme.textSecondary,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '8,520,000 đ',
+                              style: TextStyle(
+                                color: AppTheme.error,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Thu nhập Card
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _switchTab(1),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _selectedIndex == 1
+                              ? const Color(0xFF34C759).withOpacity(0.1)
+                              : AppTheme.cardBackground,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _selectedIndex == 1
+                                ? const Color(0xFF34C759)
+                                : AppTheme.isDarkMode
+                                    ? Colors.white.withOpacity(0.05)
+                                    : AppTheme.borderColor,
+                            width: 1.5,
+                          ),
+                          boxShadow: _selectedIndex == 1
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF34C759)
+                                        .withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.trending_up,
+                                  color: _selectedIndex == 1
+                                      ? const Color(0xFF34C759)
+                                      : AppTheme.textSecondary,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Thu nhập',
+                                  style: TextStyle(
+                                    color: _selectedIndex == 1
+                                        ? const Color(0xFF34C759)
+                                        : AppTheme.textSecondary,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '15,300,000 đ',
+                              style: TextStyle(
+                                color: const Color(0xFF34C759),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 20),
+          ),
+
+          // Chart Content
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : AppTheme.borderColor,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 350,
+                    child: TabBarView(
+                      controller: _tabController,
+                      physics: const BouncingScrollPhysics(),
+                      dragStartBehavior: DragStartBehavior.down,
+                      children: [
+                        _buildExpenseChart(),
+                        _buildIncomeChart(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(height: MediaQuery.of(context).padding.bottom),
+          ),
+
+          // Recent Transactions
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Giao dịch gần đây',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          'Xem tất cả',
+                          style: TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTransactionItem(
+                    context: context,
+                    icon: Icons.restaurant,
+                    title: 'Ăn trưa',
+                    amount: '-45,000',
+                    date: 'Hôm nay, 12:30',
+                    category: 'Ăn uống',
+                  ),
+                  _buildTransactionItem(
+                    context: context,
+                    icon: Icons.directions_bus,
+                    title: 'Xe buýt',
+                    amount: '-7,000',
+                    date: 'Hôm nay, 09:15',
+                    category: '🚌 Di chuyển',
+                  ),
+                  _buildTransactionItem(
+                    context: context,
+                    icon: Icons.work,
+                    title: 'Lương tháng 3',
+                    amount: '+15,300,000',
+                    date: 'Hôm qua, 10:00',
+                    category: '💰 Thu nhập',
+                    isIncome: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: Row(

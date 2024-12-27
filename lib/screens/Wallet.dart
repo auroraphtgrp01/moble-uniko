@@ -1,8 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:uniko/screens/Chatbot.dart';
 import '../config/theme.config.dart';
 import 'FundDetail.dart';
 import 'package:uniko/widgets/FundSelector.dart';
+import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -27,55 +31,93 @@ class _WalletPageState extends State<WalletPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.account_balance,
-                          color: AppTheme.primary,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Ví & Quỹ',
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppTheme.isDarkMode
+                        ? AppTheme.background.withOpacity(0.45)
+                        : Colors.white.withOpacity(0.45),
+                    AppTheme.isDarkMode
+                        ? AppTheme.background.withOpacity(0.5)
+                        : Colors.white.withOpacity(0.5),
+                  ],
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.03)
+                        : Colors.black.withOpacity(0.03),
+                    width: 0.5,
                   ),
-                  FundSelector(
-                    selectedFund: _selectedFund,
-                    onFundChanged: (fund) =>
-                        setState(() => _selectedFund = fund),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.isDarkMode
+                        ? Colors.black.withOpacity(0.08)
+                        : Colors.white.withOpacity(0.6),
+                    offset: const Offset(0, 4),
+                    blurRadius: 8,
                   ),
                 ],
               ),
             ),
-
-            // Tab Content
-            Expanded(
-              child: _buildFundsTab(),
+          ),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ví & Quỹ',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+            FundSelector(
+              selectedFund: _selectedFund,
+              onFundChanged: (fund) => setState(() => _selectedFund = fund),
             ),
           ],
         ),
+        toolbarHeight: 80,
+      ),
+      body: Column(
+        children: [
+          // Giảm padding top xuống
+          SizedBox(height: MediaQuery.of(context).padding.top + 80),
+          // Tab Content
+          Expanded(
+            child: _buildFundsTab(),
+          ),
+        ],
       ),
       // Trong Scaffold
       floatingActionButton: Padding(
@@ -203,6 +245,33 @@ class _WalletPageState extends State<WalletPage> {
       padding: const EdgeInsets.all(20),
       children: [
         _buildFundItem(
+          'Quỹ cá nhân',
+          '35,320,000',
+          Icons.person,
+          const Color(0xFF4E73F8),
+          '1 thành viên',
+          'Quỹ mặc định',
+        ),
+        const SizedBox(height: 16),
+           _buildFundItem(
+          'Quỹ cá nhân',
+          '35,320,000',
+          Icons.person,
+          const Color(0xFF4E73F8),
+          '1 thành viên',
+          'Quỹ mặc định',
+        ),
+        const SizedBox(height: 16),
+           _buildFundItem(
+          'Quỹ cá nhân',
+          '35,320,000',
+          Icons.person,
+          const Color(0xFF4E73F8),
+          '1 thành viên',
+          'Quỹ mặc định',
+        ),
+        const SizedBox(height: 16),
+           _buildFundItem(
           'Quỹ cá nhân',
           '35,320,000',
           Icons.person,

@@ -5,6 +5,7 @@ import 'TransactionDetail.dart';
 import 'package:uniko/screens/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import 'package:uniko/widgets/AddCategoryDrawer.dart';
+import 'dart:ui';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -32,196 +33,209 @@ class _TransactionsPageState extends State<TransactionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sổ giao dịch',
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                    FundSelector(
-                      selectedFund: _selectedFund,
-                      onFundChanged: (fund) => setState(() => _selectedFund = fund),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Monthly Summary
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.cardBackground,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.background.withOpacity(0.5),
+                border: Border(
+                  bottom: BorderSide(
                     color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.05)
-                        : AppTheme.borderColor,
+                        ? Colors.white.withOpacity(0.03)
+                        : Colors.black.withOpacity(0.03),
                     width: 0.5,
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildSummaryItem(
-                      label: 'Thu nhập',
-                      amount: '15,300,000',
-                      isIncome: true,
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: AppTheme.divider,
-                    ),
-                    _buildSummaryItem(
-                      label: 'Chi tiêu',
-                      amount: '8,520,000',
-                      isIncome: false,
-                    ),
-                  ],
-                ),
               ),
             ),
-
-            // Thêm Categories List sau Monthly Summary
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 50,
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _categories.length,
-                  itemBuilder: (context, index) {
-                    final category = _categories[index];
-                    final isSelected = category.name == _selectedCategory;
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: FilterChip(
-                        selected: isSelected,
-                        showCheckmark: false,
-                        avatar: Text(category.emoji),
-                        label: Text(category.name),
-                        labelStyle: TextStyle(
-                          color:
-                              isSelected ? Colors.white : AppTheme.textPrimary,
-                          fontSize: 13,
-                          fontWeight:
-                              isSelected ? FontWeight.w500 : FontWeight.normal,
-                        ),
-                        backgroundColor: AppTheme.cardBackground,
-                        selectedColor: category.color,
-                        side: BorderSide(
-                          color: isSelected
-                              ? category.color
-                              : AppTheme.isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : AppTheme.borderColor,
-                          width: 0.5,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        onSelected: (bool selected) {
-                          setState(() => _selectedCategory = category.name);
-                        },
-                      ),
-                    );
-                  },
+          ),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sổ giao dịch',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
             ),
-
-            // Transactions List
-            SliverList(
-              delegate: SliverChildListDelegate([
-                _buildDateGroup(
-                  date: 'Hôm nay',
-                  transactions: [
-                    _buildTransaction(
-                      icon: Icons.restaurant,
-                      title: 'Ăn trưa',
-                      amount: '-45,000',
-                      time: '12:30',
-                      category: '🍲 Ăn uống',
-                    ),
-                    _buildTransaction(
-                      icon: Icons.directions_bus,
-                      title: 'Xe buýt',
-                      amount: '-7,000',
-                      time: '09:15',
-                      category: '🚌 Di chuyển',
-                    ),
-                  ],
-                ),
-                _buildDateGroup(
-                  date: 'Hôm qua',
-                  transactions: [
-                    _buildTransaction(
-                      icon: Icons.work,
-                      title: 'Lương tháng 3',
-                      amount: '+15,300,000',
-                      time: '10:00',
-                      category: '💰 Thu nhập',
-                      isIncome: true,
-                    ),
-                    _buildTransaction(
-                      icon: Icons.shopping_bag,
-                      title: 'Siêu thị',
-                      amount: '-320,000',
-                      time: '18:45',
-                      category: '🛒 Mua sắm',
-                    ),
-                  ],
-                ),
-                _buildDateGroup(
-                  date: '21/03/2024',
-                  transactions: [
-                    _buildTransaction(
-                      icon: Icons.local_hospital,
-                      title: 'Khám bệnh',
-                      amount: '-850,000',
-                      time: '14:20',
-                      category: '🏥 Sức khỏe',
-                    ),
-                    _buildTransaction(
-                      icon: Icons.movie,
-                      title: 'Xem phim',
-                      amount: '-150,000',
-                      time: '20:30',
-                      category: '🎬 Giải trí',
-                    ),
-                  ],
-                ),
-              ]),
+            FundSelector(
+              selectedFund: _selectedFund,
+              onFundChanged: (fund) => setState(() => _selectedFund = fund),
             ),
           ],
         ),
+        toolbarHeight: 80,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.only(top: 120),
+            sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : AppTheme.borderColor,
+                  width: 0.5,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildSummaryItem(
+                    label: 'Thu nhập',
+                    amount: '15,300,000',
+                    isIncome: true,
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: AppTheme.divider,
+                  ),
+                  _buildSummaryItem(
+                    label: 'Chi tiêu',
+                    amount: '8,520,000',
+                    isIncome: false,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              height: 50,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  final category = _categories[index];
+                  final isSelected = category.name == _selectedCategory;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: FilterChip(
+                      selected: isSelected,
+                      showCheckmark: false,
+                      avatar: Text(category.emoji),
+                      label: Text(category.name),
+                      labelStyle: TextStyle(
+                        color:
+                            isSelected ? Colors.white : AppTheme.textPrimary,
+                        fontSize: 13,
+                        fontWeight:
+                            isSelected ? FontWeight.w500 : FontWeight.normal,
+                      ),
+                      backgroundColor: AppTheme.cardBackground,
+                      selectedColor: category.color,
+                      side: BorderSide(
+                        color: isSelected
+                            ? category.color
+                            : AppTheme.isDarkMode
+                                ? Colors.white.withOpacity(0.05)
+                                : AppTheme.borderColor,
+                        width: 0.5,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      onSelected: (bool selected) {
+                        setState(() => _selectedCategory = category.name);
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              _buildDateGroup(
+                date: 'Hôm nay',
+                transactions: [
+                  _buildTransaction(
+                    icon: Icons.restaurant,
+                    title: 'Ăn trưa',
+                    amount: '-45,000',
+                    time: '12:30',
+                    category: '🍲 Ăn uống',
+                  ),
+                  _buildTransaction(
+                    icon: Icons.directions_bus,
+                    title: 'Xe buýt',
+                    amount: '-7,000',
+                    time: '09:15',
+                    category: '🚌 Di chuyển',
+                  ),
+                ],
+              ),
+              _buildDateGroup(
+                date: 'Hôm qua',
+                transactions: [
+                  _buildTransaction(
+                    icon: Icons.work,
+                    title: 'Lương tháng 3',
+                    amount: '+15,300,000',
+                    time: '10:00',
+                    category: '💰 Thu nhập',
+                    isIncome: true,
+                  ),
+                  _buildTransaction(
+                    icon: Icons.shopping_bag,
+                    title: 'Siêu thị',
+                    amount: '-320,000',
+                    time: '18:45',
+                    category: '🛒 Mua sắm',
+                  ),
+                ],
+              ),
+              _buildDateGroup(
+                date: '21/03/2024',
+                transactions: [
+                  _buildTransaction(
+                    icon: Icons.local_hospital,
+                    title: 'Khám bệnh',
+                    amount: '-850,000',
+                    time: '14:20',
+                    category: '🏥 Sức khỏe',
+                  ),
+                  _buildTransaction(
+                    icon: Icons.movie,
+                    title: 'Xem phim',
+                    amount: '-150,000',
+                    time: '20:30',
+                    category: '🎬 Giải trí',
+                  ),
+                ],
+              ),
+            ]),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: Row(
@@ -733,4 +747,26 @@ class CategoryItem {
     required this.name,
     required this.color,
   });
+}
+
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _StickyHeaderDelegate({required this.child});
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  double get maxExtent => 50;
+
+  @override
+  double get minExtent => 50;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
+  }
 }
