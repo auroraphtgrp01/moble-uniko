@@ -9,21 +9,98 @@ class AddCategoryDrawer extends StatefulWidget {
   State<AddCategoryDrawer> createState() => _AddCategoryDrawerState();
 }
 
-class _AddCategoryDrawerState extends State<AddCategoryDrawer> {
+class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   String _selectedType = 'Chi tiêu';
   String _selectedEmoji = '🏷️';
-  final Map<String, List<String>> _emojiCategories = EMOJI_CATEGORIES;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTypeSelector(),
+                        const SizedBox(height: 24),
+                        _buildEmojiAndNameSection(),
+                        const SizedBox(height: 24),
+                        _buildDescriptionSection(),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            _buildSubmitButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
       decoration: BoxDecoration(
         color: AppTheme.cardBackground,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.isDarkMode 
+                ? Colors.white.withOpacity(0.05)
+                : Colors.grey.withOpacity(0.1),
+          ),
+        ),
       ),
       child: Column(
         children: [
@@ -31,285 +108,326 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> {
           Container(
             width: 40,
             height: 4,
-            margin: const EdgeInsets.only(top: 12),
             decoration: BoxDecoration(
-              color: AppTheme.isDarkMode
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.black.withOpacity(0.1),
+              color: Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Text(
-                  'Thêm danh mục mới',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Thêm danh mục mới',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close,
-                    color: AppTheme.textSecondary,
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tạo danh mục để quản lý chi tiêu tốt hơn',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          // Form
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Emoji Selector
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Tên phân loại input
-                        Expanded(
-                          child: TextFormField(
-                            controller: _nameController,
-                            decoration: InputDecoration(
-                              labelText: 'Tên phân loại',
-                              labelStyle:
-                                  TextStyle(color: AppTheme.textSecondary),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: AppTheme.isDarkMode
-                                      ? Colors.white.withOpacity(0.1)
-                                      : AppTheme.borderColor,
-                                ),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Vui lòng nhập tên phân loại';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-
-                        // Emoji Selector Button
-                        InkWell(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) => Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.5,
-                                padding: const EdgeInsets.only(top: 20),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.cardBackground,
-                                  borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(24)),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      'Chọn biểu tượng',
-                                      style: TextStyle(
-                                        color: AppTheme.textPrimary,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Expanded(
-                                      child: _buildEmojiGrid(_emojiCategories),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            margin: const EdgeInsets.only(left: 12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : Colors.black.withOpacity(0.03),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppTheme.isDarkMode
-                                    ? Colors.white.withOpacity(0.1)
-                                    : AppTheme.borderColor,
-                              ),
-                            ),
-                            child: Text(
-                              _selectedEmoji,
-                              style: const TextStyle(fontSize: 24),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTypeButton(
-                            title: 'Chi tiêu',
-                            isSelected: _selectedType == 'Chi tiêu',
-                            onTap: () =>
-                                setState(() => _selectedType = 'Chi tiêu'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildTypeButton(
-                            title: 'Thu nhập',
-                            isSelected: _selectedType == 'Thu nhập',
-                            onTap: () =>
-                                setState(() => _selectedType = 'Thu nhập'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Mô tả
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'Mô tả (tùy chọn)',
-                        labelStyle: TextStyle(color: AppTheme.textSecondary),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppTheme.isDarkMode
-                                ? Colors.white.withOpacity(0.1)
-                                : AppTheme.borderColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ),
-          ),
-
-          // Bottom Button
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppTheme.cardBackground,
-              border: Border(
-                top: BorderSide(
-                  color: AppTheme.isDarkMode
-                      ? Colors.white.withOpacity(0.1)
-                      : AppTheme.borderColor,
-                ),
-              ),
-            ),
-            child: ElevatedButton(
-              onPressed: _handleSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Thêm danh mục',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+              const Spacer(),
+              _buildCloseButton(),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTypeButton({
-    required String title,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    // Định nghĩa màu sắc cho từng loại
-    final colors = {
-      'Chi tiêu': {
-        'selected': const Color(0xFFFF5252),      // Đỏ nhạt cho chi tiêu
-        'bg': const Color(0xFFFFEBEE),            // Nền hồng nhạt
-        'border': const Color(0xFFFFCDD2),        // Viền hồng đậm hơn
-      },
-      'Thu nhập': {
-        'selected': const Color(0xFF4CAF50),      // Xanh lá cho thu nhập
-        'bg': const Color(0xFFE8F5E9),            // Nền xanh nhạt
-        'border': const Color(0xFFC8E6C9),        // Viền xanh đậm hơn
-      },
-    };
-
-    final color = colors[title]!;
-
+  Widget _buildCloseButton() {
     return InkWell(
-      onTap: onTap,
+      onTap: () => Navigator.pop(context),
       borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Container(
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? color['selected']!.withOpacity(0.1) 
-              : color['bg']!.withOpacity(AppTheme.isDarkMode ? 0.05 : 0.3),
+          color: Colors.grey.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected 
-                ? color['selected']! 
-                : color['border']!.withOpacity(AppTheme.isDarkMode ? 0.2 : 0.5),
-            width: isSelected ? 2 : 1,
+        ),
+        child: Icon(
+          Icons.close,
+          color: AppTheme.textSecondary,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text(
+          'Loại danh mục',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        child: Row(
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              _buildTypeOption(
+                title: 'Chi tiêu',
+                icon: Icons.remove_circle_outline,
+                color: const Color(0xFFFF5252),
+              ),
+              const SizedBox(width: 4),
+              _buildTypeOption(
+                title: 'Thu nhập',
+                icon: Icons.add_circle_outline,
+                color: const Color(0xFF4CAF50),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeOption({
+    required String title,
+    required IconData icon,
+    required Color color,
+  }) {
+    final isSelected = _selectedType == title;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedType = title),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? color : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected ? color : AppTheme.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? color : AppTheme.textSecondary,
+                  fontSize: 15,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmojiAndNameSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tên danh mục',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          controller: _nameController,
+          label: 'Nhập tên danh mục',
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Vui lòng nhập tên danh mục';
+            }
+            return null;
+          },
+          suffixIcon: IconButton(
+            onPressed: _showEmojiPicker,
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                _selectedEmoji,
+                style: const TextStyle(fontSize: 20),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmojiSelector() {
+    return InkWell(
+      onTap: _showEmojiPicker,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.primary.withOpacity(0.2),
+            width: 2,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            _selectedEmoji,
+            style: const TextStyle(fontSize: 24),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDescriptionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Mô tả',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          controller: _descriptionController,
+          label: 'Mô tả (tùy chọn)',
+          maxLines: 3,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      validator: validator,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      style: TextStyle(color: AppTheme.textPrimary),
+      decoration: InputDecoration(
+        labelText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        labelStyle: TextStyle(color: AppTheme.textSecondary),
+        alignLabelWithHint: true,
+        filled: true,
+        fillColor: Colors.grey.withOpacity(0.1),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.grey.withOpacity(0.2),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: AppTheme.primary,
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.red.shade300,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.red.shade300,
+            width: 2,
+          ),
+        ),
+      ),
+      onTapOutside: (event) => FocusScope.of(context).unfocus(),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _handleSubmit,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+        ),
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              title == 'Chi tiêu' 
-                  ? Icons.remove_circle_outline 
-                  : Icons.add_circle_outline,
-              size: 18,
-              color: isSelected 
-                  ? color['selected'] 
-                  : color['selected']!.withOpacity(0.7),
-            ),
-            const SizedBox(width: 8),
+            Icon(Icons.add_circle_outline, size: 20),
+            SizedBox(width: 8),
             Text(
-              title,
+              'Thêm danh mục',
               style: TextStyle(
-                color: isSelected 
-                    ? color['selected'] 
-                    : color['selected']!.withOpacity(0.7),
-                fontSize: 15,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -321,19 +439,57 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> {
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
       // TODO: Implement category creation
-      print('Tên: ${_nameController.text}');
-      print('Loại: $_selectedType');
-      print('Mô tả: ${_descriptionController.text}');
-      print('Emoji: $_selectedEmoji');
       Navigator.pop(context);
     }
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
+  void _showEmojiPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 16, bottom: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Chọn biểu tượng',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Expanded(
+              child: _buildEmojiGrid(EMOJI_CATEGORIES),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildEmojiGrid(Map<String, List<String>> categories) {
@@ -347,12 +503,12 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> {
             labelColor: AppTheme.primary,
             unselectedLabelColor: AppTheme.textSecondary,
             indicatorColor: AppTheme.primary,
-            tabs: categories.keys
-                .map((category) => Tab(
-                      text: category,
-                      height: 40,
-                    ))
-                .toList(),
+            tabs: categories.keys.map((category) => 
+              Tab(
+                text: category,
+                height: 40,
+              )
+            ).toList(),
           ),
           Expanded(
             child: TabBarView(
@@ -371,11 +527,10 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> {
                         setState(() => _selectedEmoji = entry.value[index]);
                         Navigator.pop(context);
                       },
+                      borderRadius: BorderRadius.circular(8),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.isDarkMode
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.black.withOpacity(0.05),
+                          color: Colors.grey.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
