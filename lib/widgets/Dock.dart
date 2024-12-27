@@ -17,14 +17,10 @@ class CustomBottomNav extends StatelessWidget {
     final itemWidth = (screenWidth - 32) / 5;
 
     return Container(
-      height: 85,
+      height: 80,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       decoration: BoxDecoration(
         color: AppTheme.cardBackground,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(32),
-          topRight: Radius.circular(32),
-        ),
         border: Border.all(
           color: Colors.transparent,
           width: 0,

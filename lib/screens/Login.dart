@@ -3,6 +3,7 @@ import '../config/theme.config.dart';
 import 'Home.dart';
 import 'forgot_password.dart';
 import '../services/auth_service.dart';
+import 'register.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -62,22 +63,52 @@ class _LoginPageState extends State<LoginPage> {
         });
 
         if (response['success']) {
-          // Hiển thị toast bằng ScaffoldMessenger
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Đăng nhập thành công'),
-              backgroundColor: Colors.green[400],
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              content: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Thành công',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'Đăng nhập thành công',
+                            style: TextStyle(fontSize: 14, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              backgroundColor: Colors.green[600],
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height - 200,
+                left: 20,
+                right: 20,
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              duration: const Duration(milliseconds: 1000),
+              elevation: 8,
             ),
           );
-          
-          await Future.delayed(const Duration(milliseconds: 500));
           if (!mounted) return;
-          
+
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -86,16 +117,48 @@ class _LoginPageState extends State<LoginPage> {
             (route) => false,
           );
         } else {
-          // Hiển thị toast lỗi
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response['message'] ?? 'Đăng nhập thất bại'),
-              backgroundColor: Colors.red[400],
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              content: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Lỗi',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            response['message'] ?? 'Đăng nhập thất bại',
+                            style: TextStyle(fontSize: 14, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              backgroundColor: Colors.red[600],
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height - 150,
+                left: 20,
+                right: 20,
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              duration: const Duration(seconds: 2),
+              elevation: 8,
             ),
           );
         }
@@ -138,11 +201,11 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       );
-      
+
       // Delay ngắn để hiện toast
       await Future.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
-      
+
       // Chuyển đến màn hình Home
       Navigator.pushAndRemoveUntil(
         context,
@@ -157,8 +220,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDarkMode ? Colors.grey[900] : Colors.white;
-    final cardColor = isDarkMode ? Colors.grey[850] : Colors.white;
+    final backgroundColor =
+        isDarkMode ? AppTheme.darkBackground : AppTheme.lightBackground;
+    final cardColor = isDarkMode ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDarkMode ? Colors.white : Colors.black87;
     final subtextColor = isDarkMode ? Colors.grey[400] : Colors.grey[600];
     final inputFillColor = isDarkMode ? Colors.grey[800] : Colors.grey[50];
@@ -405,7 +469,8 @@ class _LoginPageState extends State<LoginPage> {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppTheme.primary,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(15),
+                                          borderRadius:
+                                              BorderRadius.circular(15),
                                         ),
                                         elevation: isDarkMode ? 4 : 0,
                                         padding: EdgeInsets.zero,
@@ -481,6 +546,35 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                       ),
+
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Chưa có tài khoản? ',
+                            style: TextStyle(color: subtextColor),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const Register(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'Đăng ký ngay',
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
