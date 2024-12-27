@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../config/theme.config.dart';
 import 'package:intl/intl.dart';
-import 'package:tab_indicator_styler/tab_indicator_styler.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'dart:ui';
+import 'package:uniko/screens/Chatbot.dart';
+import 'package:uniko/widgets/FundSelector.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -25,6 +26,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = '';
   String _selectedWallet = 'Ví chính';
+  String _selectedFund = 'Tất cả';
 
   final List<String> _wallets = ['Ví chính', 'Tiền mặt', 'Ngân hàng', 'Momo'];
 
@@ -59,23 +61,40 @@ class _AddTransactionPageState extends State<AddTransactionPage>
               color: AppTheme.background.withOpacity(0.8),
               child: Column(
                 children: [
-                  AppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    leading: IconButton(
-                      icon: Icon(Icons.arrow_back_ios, color: AppTheme.textPrimary, size: 20),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    title: Text(
-                      'Thêm giao dịch',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Thêm giao dịch',
+                              style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                        FundSelector(
+                          selectedFund: _selectedFund,
+                          onFundChanged: (fund) => setState(() => _selectedFund = fund),
+                        ),
+                      ],
                     ),
                   ),
-                  
+
                   // Tabs
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -107,7 +126,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.arrow_downward, size: 18, color: Colors.red),
+                              Icon(Icons.arrow_downward,
+                                  size: 18, color: Colors.red),
                               const SizedBox(width: 8),
                               const Text('Chi tiêu'),
                             ],
@@ -118,7 +138,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.arrow_upward, size: 18, color: Colors.green),
+                              Icon(Icons.arrow_upward,
+                                  size: 18, color: Colors.green),
                               const SizedBox(width: 8),
                               const Text('Thu nhập'),
                             ],
@@ -174,7 +195,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                   border: InputBorder.none,
                                   hintText: '0',
                                   hintStyle: TextStyle(
-                                    color: AppTheme.textSecondary.withOpacity(0.5),
+                                    color:
+                                        AppTheme.textSecondary.withOpacity(0.5),
                                     fontSize: 24,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -215,7 +237,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                     border: InputBorder.none,
                                     hintText: 'Lí do chi tiêu',
                                     hintStyle: TextStyle(
-                                      color: AppTheme.textSecondary.withOpacity(0.5),
+                                      color: AppTheme.textSecondary
+                                          .withOpacity(0.5),
                                       fontSize: 15,
                                     ),
                                   ),
@@ -404,7 +427,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                   border: InputBorder.none,
                                   hintText: '0',
                                   hintStyle: TextStyle(
-                                    color: AppTheme.textSecondary.withOpacity(0.5),
+                                    color:
+                                        AppTheme.textSecondary.withOpacity(0.5),
                                     fontSize: 24,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -445,7 +469,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                     border: InputBorder.none,
                                     hintText: 'Lí do thu nhập',
                                     hintStyle: TextStyle(
-                                      color: AppTheme.textSecondary.withOpacity(0.5),
+                                      color: AppTheme.textSecondary
+                                          .withOpacity(0.5),
                                       fontSize: 15,
                                     ),
                                   ),
@@ -602,6 +627,18 @@ class _AddTransactionPageState extends State<AddTransactionPage>
           ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: FloatingActionButton(
+        heroTag: "chatbot",
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+          );
+        },
+        backgroundColor: AppTheme.primary,
+        child: const Icon(Icons.chat_outlined, color: Colors.white),
+      ),
     );
   }
 
@@ -629,7 +666,9 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: _tabController.index == 0 ? AppTheme.error : const Color(0xFF34C759),
+          color: _tabController.index == 0
+              ? AppTheme.error
+              : const Color(0xFF34C759),
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
@@ -656,15 +695,15 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     return DropdownButtonFormField<String>(
       value: _selectedCategory.isEmpty ? null : _selectedCategory,
       hint: Text('Chọn danh mục'),
-      items: (_tabController.index == 0 
-          ? ['Ăn uống', 'Di chuyển', 'Mua sắm', 'Giải trí', 'Sức khỏe']
-          : ['Lương', 'Thưởng', 'Đầu tư', 'Khác'])
+      items: (_tabController.index == 0
+              ? ['Ăn uống', 'Di chuyển', 'Mua sắm', 'Giải trí', 'Sức khỏe']
+              : ['Lương', 'Thưởng', 'Đầu tư', 'Khác'])
           .map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
       onChanged: (value) {
         setState(() => _selectedCategory = value ?? '');
       },
@@ -1078,13 +1117,15 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                   if (isExpense) ...[
                     _buildCategoryGroup('Cơ bản', [
                       CategoryItem('Ăn uống', Icons.restaurant, Colors.orange),
-                      CategoryItem('Di chuyển', Icons.directions_car, Colors.blue),
-                      CategoryItem('Mua sắm', Icons.shopping_bag, Colors.purple),
+                      CategoryItem(
+                          'Di chuyển', Icons.directions_car, Colors.blue),
+                      CategoryItem(
+                          'Mua sắm', Icons.shopping_bag, Colors.purple),
                       CategoryItem('Hóa đơn', Icons.receipt, Colors.green),
                     ]),
                     _buildCategoryGroup('Khác', [
                       CategoryItem('Giải trí', Icons.movie, Colors.pink),
-                      CategoryItem('S��c khỏe', Icons.favorite, Colors.red),
+                      CategoryItem('Sức khỏe', Icons.favorite, Colors.red),
                       CategoryItem('Giáo dục', Icons.school, Colors.indigo),
                       CategoryItem('Du lịch', Icons.flight, Colors.teal),
                       CategoryItem('Bảo hiểm', Icons.security, Colors.brown),
@@ -1093,7 +1134,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                   ] else ...[
                     _buildCategoryGroup('Thu nhập', [
                       CategoryItem('Lương', Icons.work, Colors.green),
-                      CategoryItem('Thưởng', Icons.card_giftcard, Colors.orange),
+                      CategoryItem(
+                          'Thưởng', Icons.card_giftcard, Colors.orange),
                       CategoryItem('Đầu tư', Icons.trending_up, Colors.blue),
                       CategoryItem('Bán hàng', Icons.store, Colors.purple),
                       CategoryItem('Cho thuê', Icons.home, Colors.brown),

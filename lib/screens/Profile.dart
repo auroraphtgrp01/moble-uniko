@@ -6,6 +6,7 @@ import '../providers/theme_provider.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:uniko/screens/Chatbot.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -248,6 +249,23 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               SliverPadding(
                 padding: EdgeInsets.only(bottom: bottomPadding + 65),
+              ),
+            ],
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          floatingActionButton: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton(
+                heroTag: "chatbot",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+                  );
+                },
+                backgroundColor: AppTheme.primary,
+                child: const Icon(Icons.chat_outlined, color: Colors.white),
               ),
             ],
           ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 import 'package:intl/intl.dart';
 import 'TransactionDetail.dart';
+import 'package:uniko/screens/Chatbot.dart';
+import 'package:uniko/widgets/FundSelector.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -12,6 +14,7 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   String _selectedCategory = 'Tất cả';
+  String _selectedFund = 'Tất cả';
 
   final List<CategoryItem> _categories = [
     CategoryItem(emoji: '🌟', name: 'Tất cả', color: const Color(0xFF5856D6)),
@@ -35,24 +38,33 @@ class _TransactionsPageState extends State<TransactionsPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Sổ giao dịch',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sổ giao dịch',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
-                      style: TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 15,
-                      ),
+                    FundSelector(
+                      selectedFund: _selectedFund,
+                      onFundChanged: (fund) => setState(() => _selectedFund = fund),
                     ),
                   ],
                 ),
@@ -209,6 +221,23 @@ class _TransactionsPageState extends State<TransactionsPage> {
             ),
           ],
         ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: "chatbot",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+              );
+            },
+            backgroundColor: AppTheme.primary,
+            child: const Icon(Icons.chat_outlined, color: Colors.white),
+          ),
+        ],
       ),
     );
   }
@@ -454,7 +483,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Tất cả danh mục',
+                      'Tất c��� danh mục',
                       style: TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 13,

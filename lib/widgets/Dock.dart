@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import '../config/theme.config.dart';
 
 class CustomBottomNav extends StatelessWidget {
@@ -7,80 +6,117 @@ class CustomBottomNav extends StatelessWidget {
   final Function(int) onTap;
 
   const CustomBottomNav({
-    super.key,
+    Key? key,
     required this.currentIndex,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final itemWidth = (screenWidth - 32) / 5;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: isDarkMode 
-                  ? Colors.black.withOpacity(0.2)
-                  : Colors.grey.withOpacity(0.15),
-              blurRadius: 20,
-              spreadRadius: 1,
-            ),
-          ],
+    return Container(
+      height: 85,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: Stack(
+        border: Border.all(
+          color: Colors.transparent,
+          width: 0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: const Offset(0, -3),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            spreadRadius: 1,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _buildNavItem(
+            index: 0,
+            icon: Icons.account_balance_wallet_outlined,
+            activeIcon: Icons.account_balance_wallet_rounded,
+            label: 'Tổng quan',
+            width: itemWidth,
+          ),
+          _buildNavItem(
+            index: 1,
+            icon: Icons.sync_alt_outlined,
+            activeIcon: Icons.sync_alt_rounded,
+            label: 'Giao dịch',
+            width: itemWidth,
+          ),
+          _buildAddButton(width: itemWidth),
+          _buildNavItem(
+            index: 3,
+            icon: Icons.insert_chart_outlined,
+            activeIcon: Icons.insert_chart_rounded,
+            label: 'Ví & Quỹ',
+            width: itemWidth,
+          ),
+          _buildNavItem(
+            index: 4,
+            icon: Icons.person_outline,
+            activeIcon: Icons.person_rounded,
+            label: 'Cá nhân',
+            width: itemWidth,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required double width,
+  }) {
+    final isSelected = currentIndex == index;
+    return SizedBox(
+      width: width,
+      child: GestureDetector(
+        onTap: () => onTap(index),
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                child: Container(
-                  height: 65,
-                  decoration: BoxDecoration(
-                    color: isDarkMode 
-                        ? Colors.black.withOpacity(0.3)  // Giảm opacity
-                        : Colors.white.withOpacity(0.5), // Giảm opacity
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
+              Icon(
+                isSelected ? activeIcon : icon,
+                color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
+                size: 24,
               ),
-              Container(
-                height: 65,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isDarkMode 
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.2), // Tăng độ thấy của border
-                    width: 0.7,
-                  ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: isDarkMode 
-                        ? [
-                            Colors.white.withOpacity(0.1),
-                            Colors.white.withOpacity(0.05),
-                          ]
-                        : [
-                            Colors.white.withOpacity(0.3), // Giảm opacity
-                            Colors.white.withOpacity(0.1), // Giảm opacity
-                          ],
-                  ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(context, 0, Icons.analytics_outlined, Icons.analytics, 'Tổng quan'),
-                    _buildNavItem(context, 1, Icons.account_balance_wallet_outlined, Icons.account_balance_wallet, 'Sổ GD'),
-                    _buildNavItem(context, 2, Icons.add_box_outlined, Icons.add_box, 'Ghi chép'),
-                    _buildNavItem(context, 3, Icons.account_balance_outlined, Icons.account_balance, 'Ví & Quỹ'),
-                    _buildNavItem(context, 4, Icons.person_outline_rounded, Icons.person, 'Cá nhân'),
-                  ],
-                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -89,63 +125,24 @@ class CustomBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, IconData icon,
-      IconData activeIcon, String label) {
-    final isSelected = currentIndex == index;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return GestureDetector(
-      onTap: () => onTap(index),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return ScaleTransition(
-                  scale: animation,
-                  child: child,
-                );
-              },
-              child: Icon(
-                isSelected ? activeIcon : icon,
-                key: ValueKey(isSelected),
-                size: 24,
-                color: isSelected
-                    ? AppTheme.primary
-                    : isDarkMode
-                        ? Colors.white70
-                        : Colors.black54,
-              ),
-            ),
-            const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected
-                    ? AppTheme.primary
-                    : isDarkMode
-                        ? Colors.white70
-                        : Colors.black54,
-              ),
-              child: Text(label),
-            ),
-            const SizedBox(height: 4),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 3,
-              width: isSelected ? 10 : 0,
-              decoration: BoxDecoration(
-                color: AppTheme.primary,
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-          ],
+  Widget _buildAddButton({required double width}) {
+    return SizedBox(
+      width: width,
+      child: GestureDetector(
+        onTap: () => onTap(2),
+        child: Container(
+          width: 42,
+          height: 42,
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.add_rounded,
+            color: Colors.white,
+            size: 24,
+          ),
         ),
       ),
     );

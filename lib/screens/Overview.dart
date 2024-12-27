@@ -3,15 +3,11 @@ import '../config/theme.config.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'TransactionDetail.dart';
-import 'package:tab_indicator_styler/tab_indicator_styler.dart';
 import 'dart:ui';
-import 'package:marquee/marquee.dart';
 import 'package:flutter/gestures.dart';
-import '../widgets/Dock.dart';
-import 'Transactions.dart';
-import 'AddTransaction.dart';
-import 'Wallet.dart';
-import 'Profile.dart';
+import '../widgets/BalanceCard.dart';
+import 'package:uniko/screens/Chatbot.dart';
+import 'package:uniko/widgets/FundSelector.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -20,11 +16,11 @@ class OverviewPage extends StatefulWidget {
   State<OverviewPage> createState() => _OverviewPageState();
 }
 
-class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderStateMixin {
+class _OverviewPageState extends State<OverviewPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _selectedIndex = 0;
   String _selectedFund = 'Tất cả';
-  final List<String> _funds = ['Tất cả', 'Quỹ cá nhân', 'Quỹ gia đình', 'Quỹ đầu tư'];
 
   @override
   void initState() {
@@ -34,12 +30,12 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
       vsync: this,
       animationDuration: const Duration(milliseconds: 300),
     )..addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {
-          _selectedIndex = _tabController.index;
-        });
-      }
-    });
+        if (!_tabController.indexIsChanging) {
+          setState(() {
+            _selectedIndex = _tabController.index;
+          });
+        }
+      });
   }
 
   void _switchTab(int index) {
@@ -96,48 +92,10 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                         ),
                       ],
                     ),
-                    GestureDetector(
-                      onTap: () => _showFundDrawer(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardBackground,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppTheme.isDarkMode
-                                ? Colors.white.withOpacity(0.05)
-                                : AppTheme.borderColor,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.account_balance_wallet,
-                              color: AppTheme.primary,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _selectedFund,
-                              style: TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: AppTheme.textSecondary,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
+                    FundSelector(
+                      selectedFund: _selectedFund,
+                      onFundChanged: (fund) =>
+                          setState(() => _selectedFund = fund),
                     ),
                   ],
                 ),
@@ -246,7 +204,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                             boxShadow: _selectedIndex == 1
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF34C759).withOpacity(0.1),
+                                      color: const Color(0xFF34C759)
+                                          .withOpacity(0.1),
                                       blurRadius: 10,
                                       offset: const Offset(0, 5),
                                     ),
@@ -309,7 +268,7 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                   color: AppTheme.cardBackground,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: AppTheme.isDarkMode 
+                    color: AppTheme.isDarkMode
                         ? Colors.white.withOpacity(0.05)
                         : AppTheme.borderColor,
                   ),
@@ -400,6 +359,23 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
           ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: "chatbot",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+              );
+            },
+            backgroundColor: AppTheme.primary,
+            child: const Icon(Icons.chat_outlined, color: Colors.white),
+          ),
+        ],
+      ),
     );
   }
 
@@ -426,7 +402,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
-                    borderSide: const BorderSide(color: Colors.white, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Colors.white, width: 1.5),
                   ),
                   PieChartSectionData(
                     value: 35,
@@ -438,7 +415,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
-                    borderSide: const BorderSide(color: Colors.white, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Colors.white, width: 1.5),
                   ),
                   PieChartSectionData(
                     value: 20,
@@ -450,7 +428,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
-                    borderSide: const BorderSide(color: Colors.white, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Colors.white, width: 1.5),
                   ),
                 ],
               ),
@@ -515,7 +494,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildCompactLegendItem(String label, String amount, Color color, String percentage) {
+  Widget _buildCompactLegendItem(
+      String label, String amount, Color color, String percentage) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -596,7 +576,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
-                    borderSide: const BorderSide(color: Colors.white, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Colors.white, width: 1.5),
                   ),
                   PieChartSectionData(
                     value: 20,
@@ -608,7 +589,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
-                    borderSide: const BorderSide(color: Colors.white, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Colors.white, width: 1.5),
                   ),
                 ],
               ),
@@ -689,7 +671,7 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: AppTheme.isDarkMode 
+                    color: AppTheme.isDarkMode
                         ? Colors.white.withOpacity(0.1)
                         : AppTheme.borderColor,
                   ),
@@ -721,21 +703,47 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                 padding: const EdgeInsets.all(20),
                 children: [
                   if (isExpense) ...[
-                    _buildDrawerItem('Ăn uống', '3,834,000', const Color(0xFF4E73F8).withOpacity(0.9), Icons.restaurant),
+                    _buildDrawerItem(
+                        'Ăn uống',
+                        '3,834,000',
+                        const Color(0xFF4E73F8).withOpacity(0.9),
+                        Icons.restaurant),
                     const SizedBox(height: 12),
-                    _buildDrawerItem('Di chuyển', '2,982,000', const Color(0xFF00C48C).withOpacity(0.9), Icons.directions_car),
+                    _buildDrawerItem(
+                        'Di chuyển',
+                        '2,982,000',
+                        const Color(0xFF00C48C).withOpacity(0.9),
+                        Icons.directions_car),
                     const SizedBox(height: 12),
-                    _buildDrawerItem('Mua sắm', '850,000', const Color(0xFFFFA26B).withOpacity(0.9), Icons.shopping_bag),
+                    _buildDrawerItem(
+                        'Mua sắm',
+                        '850,000',
+                        const Color(0xFFFFA26B).withOpacity(0.9),
+                        Icons.shopping_bag),
                     const SizedBox(height: 12),
-                    _buildDrawerItem('Giải trí', '520,000', const Color(0xFFFF6B6B).withOpacity(0.9), Icons.movie),
+                    _buildDrawerItem('Giải trí', '520,000',
+                        const Color(0xFFFF6B6B).withOpacity(0.9), Icons.movie),
                     const SizedBox(height: 12),
-                    _buildDrawerItem('Sức khỏe', '334,000', const Color(0xFF34C759).withOpacity(0.9), Icons.favorite),
+                    _buildDrawerItem(
+                        'Sức khỏe',
+                        '334,000',
+                        const Color(0xFF34C759).withOpacity(0.9),
+                        Icons.favorite),
                   ] else ...[
-                    _buildDrawerItem('Lương', '12,240,000', const Color(0xFF00C48C).withOpacity(0.9), Icons.work),
+                    _buildDrawerItem('Lương', '12,240,000',
+                        const Color(0xFF00C48C).withOpacity(0.9), Icons.work),
                     const SizedBox(height: 12),
-                    _buildDrawerItem('Thưởng', '2,500,000', const Color(0xFF4E73F8).withOpacity(0.9), Icons.card_giftcard),
+                    _buildDrawerItem(
+                        'Thưởng',
+                        '2,500,000',
+                        const Color(0xFF4E73F8).withOpacity(0.9),
+                        Icons.card_giftcard),
                     const SizedBox(height: 12),
-                    _buildDrawerItem('Đầu tư', '560,000', const Color(0xFFFFA26B).withOpacity(0.9), Icons.trending_up),
+                    _buildDrawerItem(
+                        'Đầu tư',
+                        '560,000',
+                        const Color(0xFFFFA26B).withOpacity(0.9),
+                        Icons.trending_up),
                   ],
                 ],
               ),
@@ -746,7 +754,8 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildDrawerItem(String label, String amount, Color color, IconData icon) {
+  Widget _buildDrawerItem(
+      String label, String amount, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -840,7 +849,7 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
           color: AppTheme.cardBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppTheme.isDarkMode 
+            color: AppTheme.isDarkMode
                 ? Colors.white.withOpacity(0.05)
                 : AppTheme.borderColor,
             width: 0.5,
@@ -851,16 +860,14 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isIncome 
+                color: isIncome
                     ? const Color(0xFF34C759).withOpacity(0.1)
                     : AppTheme.error.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
-                color: isIncome 
-                    ? const Color(0xFF34C759)
-                    : AppTheme.error,
+                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
                 size: 20,
               ),
             ),
@@ -911,215 +918,9 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
             Text(
               '$amount đ',
               style: TextStyle(
-                color: isIncome 
-                    ? const Color(0xFF34C759)
-                    : AppTheme.error,
+                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBalanceCard() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primary.withOpacity(0.8),
-                  AppTheme.primary.withOpacity(0.6),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Số dư khả dụng',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              '32,450,000 đ',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(
-                            Icons.trending_up,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            '+5.2%',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    _buildBalanceStatItem(
-                      label: 'Thu nhập',
-                      amount: '15,300,000',
-                      trend: '+8.3%',
-                      isPositive: true,
-                    ),
-                    const SizedBox(width: 16),
-                    _buildBalanceStatItem(
-                      label: 'Chi tiêu',
-                      amount: '8,520,000',
-                      trend: '+12.5%',
-                      isPositive: false,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBalanceStatItem({
-    required String label,
-    required String amount,
-    required String trend,
-    required bool isPositive,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 4),
-            SizedBox(
-              height: 20,
-              child: Marquee(
-                text: '$amount đ',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                scrollAxis: Axis.horizontal,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                blankSpace: 20.0,
-                velocity: 30.0,
-                pauseAfterRound: const Duration(seconds: 1),
-                startPadding: 10.0,
-                accelerationDuration: const Duration(seconds: 1),
-                accelerationCurve: Curves.linear,
-                decelerationDuration: const Duration(milliseconds: 500),
-                decelerationCurve: Curves.easeOut,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: (isPositive ? Colors.green : Colors.red).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                    color: Colors.white,
-                    size: 12,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    trend,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
               ),
             ),
           ],
@@ -1177,88 +978,19 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
     );
   }
 
-  void _showFundDrawer(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.cardBackground,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.5,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppTheme.isDarkMode 
-                        ? Colors.white.withOpacity(0.1)
-                        : AppTheme.borderColor,
-                  ),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Chọn quỹ',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.close,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: _funds.length,
-                itemBuilder: (context, index) {
-                  final fund = _funds[index];
-                  return ListTile(
-                    onTap: () {
-                      setState(() => _selectedFund = fund);
-                      Navigator.pop(context);
-                    },
-                    leading: Icon(
-                      Icons.account_balance_wallet,
-                      color: _selectedFund == fund
-                          ? AppTheme.primary
-                          : AppTheme.textSecondary,
-                    ),
-                    title: Text(
-                      fund,
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: _selectedFund == fund
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    trailing: _selectedFund == fund
-                        ? Icon(
-                            Icons.check_circle,
-                            color: AppTheme.primary,
-                          )
-                        : null,
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildBalanceCard() {
+    return BalanceCard(
+      balance: 67802200,
+      percentChange: 12.5,
+      chartData: const [
+        FlSpot(0, 120),
+        FlSpot(1, 130),
+        FlSpot(2, 125),
+        FlSpot(3, 140),
+        FlSpot(4, 135),
+        FlSpot(5, 150),
+        FlSpot(6, 145),
+      ],
     );
   }
-} 
+}
