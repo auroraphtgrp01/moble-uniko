@@ -199,17 +199,17 @@ class _LoginPageState extends State<LoginPage> {
     final isAuthenticated = await AuthService.authenticateWithBiometrics();
     if (isAuthenticated && mounted) {
       // Hiển thị toast thành công
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Đăng nhập thành công'),
-          backgroundColor: Colors.green[400],
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: const Text('Đăng nhập thành công'),
+      //     backgroundColor: Colors.green[400],
+      //     behavior: SnackBarBehavior.floating,
+      //     margin: const EdgeInsets.all(20),
+      //     shape: RoundedRectangleBorder(
+      //       borderRadius: BorderRadius.circular(10),
+      //     ),
+      //   ),
+      // );
 
       // Delay ngắn để hiện toast
       await Future.delayed(const Duration(milliseconds: 500));
