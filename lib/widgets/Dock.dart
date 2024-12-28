@@ -63,7 +63,7 @@ class CustomBottomNav extends StatelessWidget {
             index: 3,
             icon: Icons.insert_chart_outlined,
             activeIcon: Icons.insert_chart_rounded,
-            label: 'Ví & Quỹ',
+            label: 'TT tài chính',
             width: itemWidth,
           ),
           _buildNavItem(

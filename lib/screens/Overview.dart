@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import '../widgets/BalanceCard.dart';
 import 'package:uniko/screens/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
+import 'AccountDetail.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -1025,18 +1026,26 @@ class _OverviewPageState extends State<OverviewPage>
   }
 
   Widget _buildBalanceCard() {
-    return BalanceCard(
-      balance: 67802200,
-      percentChange: 12.5,
-      chartData: const [
-        FlSpot(0, 120),
-        FlSpot(1, 130),
-        FlSpot(2, 125),
-        FlSpot(3, 140),
-        FlSpot(4, 135),
-        FlSpot(5, 150),
-        FlSpot(6, 145),
-      ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AccountDetailPage()),
+        );
+      },
+      child: BalanceCard(
+        balance: 67802200,
+        percentChange: 12.5,
+        chartData: const [
+          FlSpot(0, 120),
+          FlSpot(1, 130),
+          FlSpot(2, 125),
+          FlSpot(3, 140),
+          FlSpot(4, 135),
+          FlSpot(5, 150),
+          FlSpot(6, 145),
+        ],
+      ),
     );
   }
 }

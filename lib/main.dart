@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uniko/screens/login.dart';
 import 'package:uniko/config/theme.config.dart';
 import 'providers/theme_provider.dart';
+import 'screens/SplashScreen.dart';
 
 void main() {
   runApp(
@@ -24,7 +24,8 @@ class MyApp extends StatelessWidget {
       builder: (context, themeProvider, _) {
         return MaterialApp(
           theme: ThemeData(
-            brightness: themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
+            brightness:
+                themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
             scaffoldBackgroundColor: AppTheme.background,
             pageTransitionsTheme: const PageTransitionsTheme(
               builders: {
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
             ),
             // other theme configurations
           ),
-          home: const LoginPage(),
+          home: const SplashScreen(),
         );
       },
     );

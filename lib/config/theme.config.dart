@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 
 class AppTheme {
   static bool isDarkMode = false;
+  
+  // Sử dụng font hệ thống của iOS cho cả 2 platform
+  static String get fontFamily => Platform.isIOS ? '.SF Pro Display' : '.SF UI Display';
 
   // Colors for both modes
   static const Color primaryLight = Color(0xFFD61A3C);
@@ -54,24 +58,44 @@ class AppTheme {
   }
 
   static ThemeData lightTheme = ThemeData(
-    fontFamily: 'Poppins',
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(fontWeight: FontWeight.w600),
-      bodyMedium: TextStyle(fontWeight: FontWeight.w600),
-      labelLarge: TextStyle(fontWeight: FontWeight.w600),
-      // ... các text style khác
+    fontFamily: fontFamily,
+    textTheme: TextTheme(
+      displayLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displayMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displaySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      bodyLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      bodyMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      bodySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      labelLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
     ),
-    // ... các cấu hình theme khác
   );
 
   static ThemeData darkTheme = ThemeData(
-    fontFamily: 'Poppins',
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(fontWeight: FontWeight.w600),
-      bodyMedium: TextStyle(fontWeight: FontWeight.w600),
-      labelLarge: TextStyle(fontWeight: FontWeight.w600),
-      // ... các text style khác
+    fontFamily: fontFamily,
+    textTheme: TextTheme(
+      displayLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displayMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displaySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      bodyLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      bodyMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      bodySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      labelLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
     ),
-    // ... các cấu hình theme khác
   );
 }

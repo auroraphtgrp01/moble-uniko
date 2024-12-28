@@ -6,6 +6,7 @@ import 'package:uniko/screens/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import 'package:uniko/widgets/AddCategoryDrawer.dart';
 import 'dart:ui';
+import 'package:uniko/widgets/DateFilterDrawer.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -17,6 +18,9 @@ class TransactionsPage extends StatefulWidget {
 class _TransactionsPageState extends State<TransactionsPage> {
   String _selectedCategory = 'Tất cả';
   String _selectedFund = 'Tất cả';
+  DateTime? _filterStartDate;
+  DateTime? _filterEndDate;
+  FilterType? _filterType;
 
   final List<CategoryItem> _categories = [
     CategoryItem(emoji: '🌟', name: 'Tất cả', color: const Color(0xFF5856D6)),
@@ -79,9 +83,20 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 ),
               ],
             ),
-            FundSelector(
-              selectedFund: _selectedFund,
-              onFundChanged: (fund) => setState(() => _selectedFund = fund),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.filter_list_rounded,
+                    color: AppTheme.textPrimary,
+                  ),
+                  onPressed: () => _showFilterDrawer(),
+                ),
+                FundSelector(
+                  selectedFund: _selectedFund,
+                  onFundChanged: (fund) => setState(() => _selectedFund = fund),
+                ),
+              ],
             ),
           ],
         ),
@@ -734,6 +749,27 @@ class _TransactionsPageState extends State<TransactionsPage> {
       ),
     );
   }
+
+  void _showFilterDrawer() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => DateFilterDrawer(
+        startDate: _filterStartDate,
+        endDate: _filterEndDate,
+        currentFilter: _filterType,
+        onFilterChanged: (start, end, type) {
+          setState(() {
+            _filterStartDate = start;
+            _filterEndDate = end;
+            _filterType = type;
+          });
+          // TODO: Implement filter logic
+        },
+      ),
+    );
+  }
 }
 
 // Thêm class CategoryItem
@@ -768,5 +804,386 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
     return true;
+  }
+}
+
+enum FilterType {
+  all,
+  today,
+  yesterday,
+  thisWeek,
+  thisMonth,
+  lastMonth,
+  thisYear,
+  custom,
+}
+
+class DateFilterDrawer extends StatefulWidget {
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final FilterType? currentFilter;
+  final Function(DateTime? start, DateTime? end, FilterType type) onFilterChanged;
+
+  const DateFilterDrawer({
+    super.key,
+    this.startDate,
+    this.endDate,
+    this.currentFilter,
+    required this.onFilterChanged,
+  });
+
+  @override
+  State<DateFilterDrawer> createState() => _DateFilterDrawerState();
+}
+
+class _DateFilterDrawerState extends State<DateFilterDrawer> {
+  late FilterType _selectedFilter;
+  DateTime? _startDate;
+  DateTime? _endDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFilter = widget.currentFilter ?? FilterType.all;
+    _startDate = widget.startDate;
+    _endDate = widget.endDate;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.7,
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Drawer Handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.isDarkMode
+                    ? Colors.white.withOpacity(0.2)
+                    : Colors.black.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Text(
+                  'Bộ lọc thời gian',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Đóng',
+                    style: TextStyle(
+                      color: AppTheme.primary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Quick Filters
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              children: [
+                _buildFilterOption(
+                  FilterType.all,
+                  'Tất cả',
+                  'Hiển thị toàn bộ giao dịch',
+                  Icons.all_inclusive_rounded,
+                ),
+                _buildFilterOption(
+                  FilterType.today,
+                  'Hôm nay',
+                  DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                  Icons.today_rounded,
+                ),
+                _buildFilterOption(
+                  FilterType.yesterday,
+                  'Hôm qua',
+                  DateFormat('dd/MM/yyyy')
+                      .format(DateTime.now().subtract(const Duration(days: 1))),
+                  Icons.history_rounded,
+                ),
+                _buildFilterOption(
+                  FilterType.thisWeek,
+                  'Tuần này',
+                  'Từ thứ 2 đến chủ nhật',
+                  Icons.view_week_rounded,
+                ),
+                _buildFilterOption(
+                  FilterType.thisMonth,
+                  'Tháng này',
+                  DateFormat('MM/yyyy').format(DateTime.now()),
+                  Icons.calendar_view_month_rounded,
+                ),
+                _buildFilterOption(
+                  FilterType.lastMonth,
+                  'Tháng trước',
+                  DateFormat('MM/yyyy').format(
+                    DateTime(DateTime.now().year, DateTime.now().month - 1),
+                  ),
+                  Icons.calendar_month_rounded,
+                ),
+                _buildFilterOption(
+                  FilterType.thisYear,
+                  'Năm nay',
+                  DateFormat('yyyy').format(DateTime.now()),
+                  Icons.calendar_today_rounded,
+                ),
+                _buildFilterOption(
+                  FilterType.custom,
+                  'Tùy chọn',
+                  'Chọn khoảng thời gian',
+                  Icons.date_range_rounded,
+                ),
+                if (_selectedFilter == FilterType.custom) ...[
+                  const SizedBox(height: 16),
+                  _buildCustomDateRange(),
+                ],
+              ],
+            ),
+          ),
+
+          // Apply Button
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: ElevatedButton(
+              onPressed: () {
+                _updateDateRange();
+                widget.onFilterChanged(_startDate, _endDate, _selectedFilter);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Áp dụng',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterOption(
+    FilterType type,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
+    final isSelected = _selectedFilter == type;
+    return InkWell(
+      onTap: () => setState(() => _selectedFilter = type),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primary.withOpacity(0.1) : null,
+          border: Border.all(
+            color: isSelected
+                ? AppTheme.primary
+                : AppTheme.isDarkMode
+                    ? Colors.white.withOpacity(0.05)
+                    : AppTheme.borderColor,
+            width: 0.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppTheme.primary.withOpacity(0.1)
+                    : AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: isSelected ? AppTheme.primary : AppTheme.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_rounded,
+                color: AppTheme.primary,
+                size: 20,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomDateRange() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildDateButton(
+            'Từ ngày',
+            _startDate,
+            (date) => setState(() => _startDate = date),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildDateButton(
+            'Đến ngày',
+            _endDate,
+            (date) => setState(() => _endDate = date),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateButton(
+    String label,
+    DateTime? date,
+    Function(DateTime?) onDateSelected,
+  ) {
+    return InkWell(
+      onTap: () async {
+        final selected = await showDatePicker(
+          context: context,
+          initialDate: date ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (selected != null) {
+          onDateSelected(selected);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppTheme.borderColor),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              date != null
+                  ? DateFormat('dd/MM/yyyy').format(date)
+                  : 'Chọn ngày',
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateDateRange() {
+    switch (_selectedFilter) {
+      case FilterType.all:
+        _startDate = null;
+        _endDate = null;
+        break;
+      case FilterType.today:
+        _startDate = DateTime.now();
+        _endDate = DateTime.now();
+        break;
+      case FilterType.yesterday:
+        _startDate = DateTime.now().subtract(const Duration(days: 1));
+        _endDate = DateTime.now().subtract(const Duration(days: 1));
+        break;
+      case FilterType.thisWeek:
+        final now = DateTime.now();
+        _startDate = now.subtract(Duration(days: now.weekday - 1));
+        _endDate = _startDate!.add(const Duration(days: 6));
+        break;
+      case FilterType.thisMonth:
+        final now = DateTime.now();
+        _startDate = DateTime(now.year, now.month, 1);
+        _endDate = DateTime(now.year, now.month + 1, 0);
+        break;
+      case FilterType.lastMonth:
+        final now = DateTime.now();
+        _startDate = DateTime(now.year, now.month - 1, 1);
+        _endDate = DateTime(now.year, now.month, 0);
+        break;
+      case FilterType.thisYear:
+        final now = DateTime.now();
+        _startDate = DateTime(now.year, 1, 1);
+        _endDate = DateTime(now.year, 12, 31);
+        break;
+      case FilterType.custom:
+        // Dates are already set through date pickers
+        break;
+    }
   }
 }

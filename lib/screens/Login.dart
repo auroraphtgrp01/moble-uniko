@@ -4,6 +4,7 @@ import 'Home.dart';
 import 'forgot_password.dart';
 import '../services/auth_service.dart';
 import 'register.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -63,6 +64,14 @@ class _LoginPageState extends State<LoginPage> {
         });
 
         if (response['success']) {
+          // Lưu token và thông tin user
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', 'mock_token');
+          await prefs.setString('userName', 'Lê Minh Tuấn');
+          await prefs.setString('userEmail', 'minhtuanledng@gmail.com');
+          
+          if (!mounted) return;
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Container(
