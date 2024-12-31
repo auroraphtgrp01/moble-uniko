@@ -27,6 +27,15 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
+  Future<void> _onRefresh() async {
+    // Giả lập loading trong 1.5 giây
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    setState(() {
+      // Thêm logic cập nhật dữ liệu ở đây
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,15 +118,19 @@ class _WalletPageState extends State<WalletPage> {
         ),
         toolbarHeight: 80,
       ),
-      body: Column(
-        children: [
-          // Giảm padding top xuống
-          SizedBox(height: MediaQuery.of(context).padding.top + 80),
-          // Tab Content
-          Expanded(
-            child: _buildFundsTab(),
-          ),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: AppTheme.primary,
+        backgroundColor: AppTheme.cardBackground,
+        edgeOffset: MediaQuery.of(context).padding.top + 80,
+        child: Column(
+          children: [
+            SizedBox(height: MediaQuery.of(context).padding.top + 80),
+            Expanded(
+              child: _buildFundsTab(),
+            ),
+          ],
+        ),
       ),
       // Trong Scaffold
       floatingActionButton: Padding(

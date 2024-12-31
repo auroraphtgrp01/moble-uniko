@@ -78,6 +78,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _onRefresh() async {
+    // Giả lập loading trong 1.5 giây
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    setState(() {
+      // Thêm logic cập nhật dữ liệu ở đây
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -86,171 +95,177 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context, themeProvider, _) {
         return Scaffold(
           backgroundColor: AppTheme.background,
-          body: CustomScrollView(
-            slivers: [
-              const SliverPadding(
-                padding: EdgeInsets.only(top: 48),
-              ),
-            SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    _buildProfileHeader(),
+          body: RefreshIndicator(
+            onRefresh: _onRefresh,
+            color: AppTheme.primary,
+            backgroundColor: AppTheme.cardBackground,
+            edgeOffset: MediaQuery.of(context).padding.top,
+            child: CustomScrollView(
+              slivers: [
+                const SliverPadding(
+                  padding: EdgeInsets.only(top: 48),
+                ),
+              SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      _buildProfileHeader(),
 
-                    // Quick Actions
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        children: [
-                          _buildQuickAction(
-                            icon: Icons.workspace_premium_outlined,
-                            title: 'Premium',
+                      // Quick Actions
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            _buildQuickAction(
+                              icon: Icons.workspace_premium_outlined,
+                              title: 'Premium',
+                              onTap: () {},
+                            ),
+                            _buildQuickAction(
+                              icon: Icons.card_giftcard_outlined,
+                              title: 'Ưu đãi',
+                              onTap: () {},
+                            ),
+                            _buildQuickAction(
+                              icon: Icons.star_outline,
+                              title: 'Đánh giá',
+                              onTap: () {},
+                            ),
+                            _buildQuickAction(
+                              icon: Icons.share_outlined,
+                              title: 'Chia sẻ',
+                              onTap: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Settings Sections
+                      _buildSection(
+                        title: 'Cài đặt tài khoản',
+                        items: [
+                          _buildProfileAccordion(),
+                          _buildMenuItem(
+                            icon: Icons.security_outlined,
+                            iconColor: const Color(0xFF34C759),
+                            title: 'Bảo mật',
+                            subtitle: 'Mật khẩu và xác thực',
                             onTap: () {},
                           ),
-                          _buildQuickAction(
-                            icon: Icons.card_giftcard_outlined,
-                            title: 'Ưu đãi',
+                          _buildMenuItem(
+                            icon: Icons.notifications_outlined,
+                            iconColor: const Color(0xFFFF9500),
+                            title: 'Thông báo',
+                            subtitle: 'Tùy chỉnh thông báo',
                             onTap: () {},
                           ),
-                          _buildQuickAction(
-                            icon: Icons.star_outline,
-                            title: 'Đánh giá',
-                            onTap: () {},
+                          _buildMenuItem(
+                            icon: Icons.dark_mode_outlined,
+                            title: 'Chế độ tối',
+                            subtitle: themeProvider.isDarkMode ? 'Đang bật' : 'Đang tắt',
+                            showArrow: false,
+                            onTap: () => themeProvider.toggleTheme(),
+                            trailing: Transform.scale(
+                              scale: 0.8,
+                              child: CupertinoSwitch(
+                                value: themeProvider.isDarkMode,
+                                onChanged: (_) => themeProvider.toggleTheme(),
+                                activeColor: AppTheme.primary,
+                                trackColor: AppTheme.borderColor.withOpacity(0.3),
+                              ),
+                            ),
                           ),
-                          _buildQuickAction(
-                            icon: Icons.share_outlined,
-                            title: 'Chia sẻ',
-                            onTap: () {},
+                          _buildMenuItem(
+                            icon: Icons.fingerprint,
+                            iconColor: const Color(0xFF34C759),
+                            title: 'Đăng nhập vân tay',
+                            subtitle: _isBiometricEnabled ? 'Đang bật' : 'Đang tắt',
+                            showArrow: false,
+                            onTap: _toggleBiometric,
+                            trailing: Transform.scale(
+                              scale: 0.8,
+                              child: CupertinoSwitch(
+                                value: _isBiometricEnabled,
+                                onChanged: (_) => _toggleBiometric(),
+                                activeColor: AppTheme.primary,
+                                trackColor: AppTheme.borderColor.withOpacity(0.3),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    ),
 
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
-                    // Settings Sections
-                    _buildSection(
-                      title: 'Cài đặt tài khoản',
-                      items: [
-                        _buildProfileAccordion(),
-                        _buildMenuItem(
-                          icon: Icons.security_outlined,
-                          iconColor: const Color(0xFF34C759),
-                          title: 'Bảo mật',
-                          subtitle: 'Mật khẩu và xác thực',
-                          onTap: () {},
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.notifications_outlined,
-                          iconColor: const Color(0xFFFF9500),
-                          title: 'Thông báo',
-                          subtitle: 'Tùy chỉnh thông báo',
-                          onTap: () {},
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.dark_mode_outlined,
-                          title: 'Chế độ tối',
-                          subtitle: themeProvider.isDarkMode ? 'Đang bật' : 'Đang tắt',
-                          showArrow: false,
-                          onTap: () => themeProvider.toggleTheme(),
-                          trailing: Transform.scale(
-                            scale: 0.8,
-                            child: CupertinoSwitch(
-                              value: themeProvider.isDarkMode,
-                              onChanged: (_) => themeProvider.toggleTheme(),
-                              activeColor: AppTheme.primary,
-                              trackColor: AppTheme.borderColor.withOpacity(0.3),
-                            ),
+                      _buildSection(
+                        title: 'Khác',
+                        items: [
+                          _buildMenuItem(
+                            icon: Icons.help_outline_rounded,
+                            iconColor: const Color(0xFF007AFF),
+                            title: 'Trợ giúp & Hỗ trợ',
+                            onTap: () {},
                           ),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.fingerprint,
-                          iconColor: const Color(0xFF34C759),
-                          title: 'Đăng nhập vân tay',
-                          subtitle: _isBiometricEnabled ? 'Đang bật' : 'Đang tắt',
-                          showArrow: false,
-                          onTap: _toggleBiometric,
-                          trailing: Transform.scale(
-                            scale: 0.8,
-                            child: CupertinoSwitch(
-                              value: _isBiometricEnabled,
-                              onChanged: (_) => _toggleBiometric(),
-                              activeColor: AppTheme.primary,
-                              trackColor: AppTheme.borderColor.withOpacity(0.3),
-                            ),
+                          _buildMenuItem(
+                            icon: Icons.description_outlined,
+                            iconColor: const Color(0xFF5856D6),
+                            title: 'Điều khoản & Chính sách',
+                            onTap: () {},
                           ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildSection(
-                      title: 'Khác',
-                      items: [
-                        _buildMenuItem(
-                          icon: Icons.help_outline_rounded,
-                          iconColor: const Color(0xFF007AFF),
-                          title: 'Trợ giúp & Hỗ trợ',
-                          onTap: () {},
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.description_outlined,
-                          iconColor: const Color(0xFF5856D6),
-                          title: 'Điều khoản & Chính sách',
-                          onTap: () {},
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.logout_rounded,
-                          iconColor: AppTheme.error,
-                          title: 'Đăng xuất',
-                          showArrow: false,
-                          onTap: () async {
-                            // Clear preferences nếu cần
-                            final prefs = await SharedPreferences.getInstance();
-                            await prefs.clear();
-                            
-                            if (!mounted) return;
-                            
-                            // Chuyển về màn Login và xóa stack
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
-                              (route) => false,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Phiên bản 1.0.0',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
-                        ),
+                          _buildMenuItem(
+                            icon: Icons.logout_rounded,
+                            iconColor: AppTheme.error,
+                            title: 'Đăng xuất',
+                            showArrow: false,
+                            onTap: () async {
+                              // Clear preferences nếu cần
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.clear();
+                              
+                              if (!mounted) return;
+                              
+                              // Chuyển về màn Login và xóa stack
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ),
+
                       Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Developed by Minh Tuan Le',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'Phiên bản 1.0.0',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'Developed by Minh Tuan Le',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              SliverPadding(
-                padding: EdgeInsets.only(bottom: bottomPadding + 65),
-              ),
-            ],
+                SliverPadding(
+                  padding: EdgeInsets.only(bottom: bottomPadding + 65),
+                ),
+              ],
+            ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: Row(

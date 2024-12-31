@@ -58,6 +58,14 @@ class _OverviewPageState extends State<OverviewPage>
     super.dispose();
   }
 
+  Future<void> _onRefresh() async {
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    setState(() {
+      // Thêm logic cập nhật dữ liệu ở đây
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,271 +148,277 @@ class _OverviewPageState extends State<OverviewPage>
         ),
         toolbarHeight: 80,
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
-            sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
-          ),
-          // Header
-          // Balance Card with Chart
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: _buildBalanceCard(),
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: AppTheme.primary,
+        backgroundColor: AppTheme.cardBackground,
+        edgeOffset: MediaQuery.of(context).padding.top + 80,
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
+              sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
-          ),
+            // Header
+            // Balance Card with Chart
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: _buildBalanceCard(),
+              ),
+            ),
 
-          // Stats Cards
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  // Chi tiêu Card
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _switchTab(0),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: _selectedIndex == 0
-                              ? AppTheme.error.withOpacity(0.1)
-                              : AppTheme.cardBackground,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
+            // Stats Cards
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    // Chi tiêu Card
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _switchTab(0),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
                             color: _selectedIndex == 0
-                                ? AppTheme.error
-                                : AppTheme.isDarkMode
-                                    ? Colors.white.withOpacity(0.05)
-                                    : AppTheme.borderColor,
-                            width: 1.5,
+                                ? AppTheme.error.withOpacity(0.1)
+                                : AppTheme.cardBackground,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _selectedIndex == 0
+                                  ? AppTheme.error
+                                  : AppTheme.isDarkMode
+                                      ? Colors.white.withOpacity(0.05)
+                                      : AppTheme.borderColor,
+                              width: 1.5,
+                            ),
+                            boxShadow: _selectedIndex == 0
+                                ? [
+                                    BoxShadow(
+                                      color: AppTheme.error.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ]
+                                : null,
                           ),
-                          boxShadow: _selectedIndex == 0
-                              ? [
-                                  BoxShadow(
-                                    color: AppTheme.error.withOpacity(0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.trending_down,
-                                  color: _selectedIndex == 0
-                                      ? AppTheme.error
-                                      : AppTheme.textSecondary,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Chi tiêu',
-                                  style: TextStyle(
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.trending_down,
                                     color: _selectedIndex == 0
                                         ? AppTheme.error
                                         : AppTheme.textSecondary,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
+                                    size: 16,
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '8,520,000 đ',
-                              style: TextStyle(
-                                color: AppTheme.error,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Chi tiêu',
+                                    style: TextStyle(
+                                      color: _selectedIndex == 0
+                                          ? AppTheme.error
+                                          : AppTheme.textSecondary,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 8),
+                              Text(
+                                '8,520,000 đ',
+                                style: TextStyle(
+                                  color: AppTheme.error,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Thu nhập Card
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _switchTab(1),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: _selectedIndex == 1
-                              ? const Color(0xFF34C759).withOpacity(0.1)
-                              : AppTheme.cardBackground,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
+                    const SizedBox(width: 12),
+                    // Thu nhập Card
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _switchTab(1),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
                             color: _selectedIndex == 1
-                                ? const Color(0xFF34C759)
-                                : AppTheme.isDarkMode
-                                    ? Colors.white.withOpacity(0.05)
-                                    : AppTheme.borderColor,
-                            width: 1.5,
+                                ? const Color(0xFF34C759).withOpacity(0.1)
+                                : AppTheme.cardBackground,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _selectedIndex == 1
+                                  ? const Color(0xFF34C759)
+                                  : AppTheme.isDarkMode
+                                      ? Colors.white.withOpacity(0.05)
+                                      : AppTheme.borderColor,
+                              width: 1.5,
+                            ),
+                            boxShadow: _selectedIndex == 1
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF34C759)
+                                          .withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ]
+                                : null,
                           ),
-                          boxShadow: _selectedIndex == 1
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFF34C759)
-                                        .withOpacity(0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.trending_up,
-                                  color: _selectedIndex == 1
-                                      ? const Color(0xFF34C759)
-                                      : AppTheme.textSecondary,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Thu nhập',
-                                  style: TextStyle(
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.trending_up,
                                     color: _selectedIndex == 1
                                         ? const Color(0xFF34C759)
                                         : AppTheme.textSecondary,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
+                                    size: 16,
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '15,300,000 đ',
-                              style: TextStyle(
-                                color: const Color(0xFF34C759),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Thu nhập',
+                                    style: TextStyle(
+                                      color: _selectedIndex == 1
+                                          ? const Color(0xFF34C759)
+                                          : AppTheme.textSecondary,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 20),
-          ),
-
-          // Chart Content
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(
-                color: AppTheme.cardBackground,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: AppTheme.isDarkMode
-                      ? Colors.white.withOpacity(0.05)
-                      : AppTheme.borderColor,
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: 350,
-                    child: TabBarView(
-                      controller: _tabController,
-                      physics: const BouncingScrollPhysics(),
-                      dragStartBehavior: DragStartBehavior.down,
-                      children: [
-                        _buildExpenseChart(),
-                        _buildIncomeChart(),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(height: MediaQuery.of(context).padding.bottom),
-          ),
-
-          // Recent Transactions
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Giao dịch gần đây',
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Xem tất cả',
-                          style: TextStyle(
-                            color: AppTheme.primary,
-                            fontSize: 14,
+                              const SizedBox(height: 8),
+                              Text(
+                                '15,300,000 đ',
+                                style: TextStyle(
+                                  color: const Color(0xFF34C759),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildTransactionItem(
-                    context: context,
-                    icon: Icons.restaurant,
-                    title: 'Ăn trưa',
-                    amount: '-45,000',
-                    date: 'Hôm nay, 12:30',
-                    category: 'Ăn uống',
-                  ),
-                  _buildTransactionItem(
-                    context: context,
-                    icon: Icons.directions_bus,
-                    title: 'Xe buýt',
-                    amount: '-7,000',
-                    date: 'Hôm nay, 09:15',
-                    category: '🚌 Di chuyển',
-                  ),
-                  _buildTransactionItem(
-                    context: context,
-                    icon: Icons.work,
-                    title: 'Lương tháng 3',
-                    amount: '+15,300,000',
-                    date: 'Hôm qua, 10:00',
-                    category: '💰 Thu nhập',
-                    isIncome: true,
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 20),
+            ),
+
+            // Chart Content
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardBackground,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.05)
+                        : AppTheme.borderColor,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 350,
+                      child: TabBarView(
+                        controller: _tabController,
+                        physics: const BouncingScrollPhysics(),
+                        dragStartBehavior: DragStartBehavior.down,
+                        children: [
+                          _buildExpenseChart(),
+                          _buildIncomeChart(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ),
+
+            // Recent Transactions
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Giao dịch gần đây',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'Xem tất cả',
+                            style: TextStyle(
+                              color: AppTheme.primary,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTransactionItem(
+                      context: context,
+                      icon: Icons.restaurant,
+                      title: 'Ăn trưa',
+                      amount: '-45,000',
+                      date: 'Hôm nay, 12:30',
+                      category: 'Ăn uống',
+                    ),
+                    _buildTransactionItem(
+                      context: context,
+                      icon: Icons.directions_bus,
+                      title: 'Xe buýt',
+                      amount: '-7,000',
+                      date: 'Hôm nay, 09:15',
+                      category: '🚌 Di chuyển',
+                    ),
+                    _buildTransactionItem(
+                      context: context,
+                      icon: Icons.work,
+                      title: 'Lương tháng 3',
+                      amount: '+15,300,000',
+                      date: 'Hôm qua, 10:00',
+                      category: '💰 Thu nhập',
+                      isIncome: true,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: Row(

@@ -501,7 +501,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               Expanded(
                 child: ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 80,
+                    bottom: 80,
+                    left: 20,
+                    right: 20,
+                  ),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     final message = _messages[index];
