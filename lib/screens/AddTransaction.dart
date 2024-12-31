@@ -89,7 +89,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                         ),
                         FundSelector(
                           selectedFund: _selectedFund,
-                          onFundChanged: (fund) => setState(() => _selectedFund = fund),
+                          onFundChanged: (fund) =>
+                              setState(() => _selectedFund = fund),
                         ),
                       ],
                     ),
@@ -280,14 +281,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
                               // Ngày giao dịch
                               ListTile(
-                                onTap: () async {
-                                  final date = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2100),
-                                  );
-                                  // TODO: Handle date selection
+                                onTap: () {
+                                  _showDatePicker();
                                 },
                                 leading: Container(
                                   padding: const EdgeInsets.all(8),
@@ -312,7 +307,52 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      '15/03/2024', // TODO: Replace with selected date
+                                      DateFormat('dd/MM/yyyy')
+                                          .format(_selectedDate),
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.chevron_right,
+                                      color: AppTheme.textSecondary,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Nguồn tiền
+                              ListTile(
+                                onTap: () {
+                                  _showWalletDrawer(context);
+                                },
+                                leading: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.account_balance_wallet,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                ),
+                                title: Text(
+                                  'Nguồn tiền',
+                                  style: TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      _selectedWallet,
                                       style: TextStyle(
                                         color: AppTheme.textSecondary,
                                         fontSize: 14,
@@ -512,14 +552,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
                               // Ngày giao dịch
                               ListTile(
-                                onTap: () async {
-                                  final date = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2100),
-                                  );
-                                  // TODO: Handle date selection
+                                onTap: () {
+                                  _showDatePicker();
                                 },
                                 leading: Container(
                                   padding: const EdgeInsets.all(8),
@@ -544,7 +578,52 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      '15/03/2024',
+                                      DateFormat('dd/MM/yyyy')
+                                          .format(_selectedDate),
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.chevron_right,
+                                      color: AppTheme.textSecondary,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Nguồn tiền
+                              ListTile(
+                                onTap: () {
+                                  _showWalletDrawer(context);
+                                },
+                                leading: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.account_balance_wallet,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                ),
+                                title: Text(
+                                  'Nguồn tiền',
+                                  style: TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      _selectedWallet,
                                       style: TextStyle(
                                         color: AppTheme.textSecondary,
                                         fontSize: 14,

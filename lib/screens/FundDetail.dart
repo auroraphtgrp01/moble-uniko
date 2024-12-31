@@ -32,53 +32,63 @@ class FundDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: SafeArea(
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          flexibleSpace: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.background.withOpacity(0.7),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: AppTheme.textPrimary,
+              size: 20,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          centerTitle: true,
+          title: Text(
+            name,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // TODO: Thêm logic refresh data
+          await Future.delayed(const Duration(milliseconds: 1500));
+        },
+        color: AppTheme.primary,
+        backgroundColor: AppTheme.cardBackground,
+        edgeOffset: MediaQuery.of(context).padding.top + 80,
         child: CustomScrollView(
           slivers: [
-            // Header
-            SliverAppBar(
-              backgroundColor: AppTheme.background.withOpacity(0.8),
-              elevation: 0,
-              pinned: true,
-              stretch: true,
-              expandedHeight: 0,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                  color: AppTheme.textPrimary,
-                  size: 20,
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-              title: Text(
-                name,
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              flexibleSpace: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    color: Colors.transparent,
-                  ),
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: AppTheme.textPrimary,
-                  ),
-                  onPressed: () {
-                    // TODO: Show fund settings
-                  },
-                ),
-              ],
+            // Thêm padding cho content
+            SliverPadding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
+              sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
-
+            
             // Content
             SliverToBoxAdapter(
               child: Padding(
