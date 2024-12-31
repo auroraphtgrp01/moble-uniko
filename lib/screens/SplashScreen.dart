@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/theme.config.dart';
-import 'Home.dart';
 import 'Login.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,15 +10,15 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    
-    // Thêm try-catch để xử lý lỗi khởi tạo
+
     try {
       _controller = AnimationController(
         duration: const Duration(milliseconds: 1000),
@@ -34,23 +33,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       );
 
       _controller.forward();
-      
-      // Wrap trong Future.delayed để đảm bảo widget đã mount
-      Future.delayed(Duration.zero, () {
+
+      // Đợi animation hoàn thành và kiểm tra trạng thái đăng nhập
+      Future.delayed(const Duration(milliseconds: 2200), () {
         if (mounted) {
-          Future.delayed(const Duration(milliseconds: 2200), () {
-            if (mounted) {
-              _checkLoginStatus();
-            }
-          });
+          _checkLoginStatus();
         }
       });
     } catch (e) {
       print('SplashScreen initialization error: $e');
-      // Fallback navigation nếu có lỗi
+      // Nếu có lỗi, chuyển thẳng đến màn hình Login
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (mounted) {
-          _checkLoginStatus();
+          _navigateToLogin();
         }
       });
     }
@@ -60,42 +55,41 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      
-      if (token != null) {
-        // Nếu có token, load thêm thông tin user
-        final userName = prefs.getString('userName') ?? '';
-        final userEmail = prefs.getString('userEmail') ?? '';
-        
-        // Có thể lưu thông tin user vào một service hoặc state management solution
-        // Ví dụ: UserService.setCurrentUser(userName, userEmail);
-      }
 
       if (!mounted) return;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => token != null ? const HomePage() : const LoginPage(),
-        ),
-      );
+      if (token == null) {
+        // Nếu không có token, chuyển đến màn hình Login
+        _navigateToLogin();
+      } else {
+        // Nếu có token, chuyển đến màn hình Home
+        _navigateToHome();
+      }
     } catch (e) {
       print('Login status check error: $e');
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-        );
+        _navigateToLogin();
       }
     }
   }
 
+  void _navigateToLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
+
+  void _navigateToHome() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
+
   @override
   void dispose() {
-    try {
-      _controller.dispose();
-    } catch (e) {
-      print('Controller dispose error: $e');
-    }
+    _controller.dispose();
     super.dispose();
   }
 
@@ -103,18 +97,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
-      backgroundColor: isDarkMode ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDarkMode ? AppTheme.darkBackground : AppTheme.lightBackground,
       body: Stack(
         children: [
           // Grid pattern background
           CustomPaint(
             size: Size(size.width, size.height),
             painter: GridPainter(
-              color: (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03),
-              spacing: 25, // Khoảng cách giữa các đường grid
-              strokeWidth: 0.5, // Độ mỏng của đường
+              color:
+                  (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03),
+              spacing: 25,
+              strokeWidth: 0.5,
             ),
           ),
 
@@ -128,7 +124,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo lớn hơn
+                      // Logo
                       TweenAnimationBuilder(
                         duration: const Duration(milliseconds: 1000),
                         tween: Tween<double>(begin: 0.85, end: 1.0),
@@ -139,15 +135,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               tag: 'app_logo',
                               child: Image.asset(
                                 'assets/images/logo.png',
-                                width: size.width * 0.5, // Tăng từ 0.4 lên 0.5
+                                width: size.width * 0.5,
                                 height: size.width * 0.5,
                               ),
                             ),
                           );
                         },
                       ),
-                      
-                      const SizedBox(height: 16), // Giảm từ 24 xuống 16
+                      const SizedBox(height: 16),
                       Text(
                         'Quản lý tài chính thông minh',
                         textAlign: TextAlign.center,
@@ -155,27 +150,30 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
-                          color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                          color:
+                              isDarkMode ? Colors.grey[300] : Colors.grey[800],
                         ),
                       ),
-                      const SizedBox(height: 8), // Giảm từ 12 xuống 8
+                      const SizedBox(height: 8),
                       Text(
                         'Định hình tương lai tài chính của bạn',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 15,
                           letterSpacing: 0.3,
-                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
                         ),
                       ),
-                      const SizedBox(height: 6), // Giảm từ 8 xuống 6
+                      const SizedBox(height: 6),
                       Text(
                         'Mỗi khoản chi tiêu - Một quyết định thông minh',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
                           fontStyle: FontStyle.italic,
-                          color: isDarkMode ? Colors.grey[500] : Colors.grey[600],
+                          color:
+                              isDarkMode ? Colors.grey[500] : Colors.grey[600],
                         ),
                       ),
                     ],
