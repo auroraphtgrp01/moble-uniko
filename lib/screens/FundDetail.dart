@@ -3,12 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 import 'package:flutter/rendering.dart';
-
-// Thêm enum cho loại nguồn tiền
-enum WalletType {
-  cash,
-  bank,
-}
+import '../widgets/WalletsList.dart';
+import '../widgets/AddWalletDrawer.dart';
 
 class FundDetail extends StatelessWidget {
   final String name;
@@ -85,10 +81,11 @@ class FundDetail extends StatelessWidget {
           slivers: [
             // Thêm padding cho content
             SliverPadding(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
+              padding:
+                  EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
               sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
-            
+
             // Content
             SliverToBoxAdapter(
               child: Padding(
@@ -217,7 +214,8 @@ class FundDetail extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Container(
@@ -265,16 +263,18 @@ class FundDetail extends StatelessWidget {
       ),
       child: Column(
         children: [
-          ...members.map((member) => Column(
-            children: [
-              MemberItem(member: member),
-              if (members.indexOf(member) != members.length - 1)
-                Divider(
-                  color: AppTheme.borderColor,
-                  height: 1,
-                ),
-            ],
-          )).toList(),
+          ...members
+              .map((member) => Column(
+                    children: [
+                      MemberItem(member: member),
+                      if (members.indexOf(member) != members.length - 1)
+                        Divider(
+                          color: AppTheme.borderColor,
+                          height: 1,
+                        ),
+                    ],
+                  ))
+              .toList(),
           Divider(color: AppTheme.borderColor, height: 1),
           ListTile(
             onTap: () => _showInviteDialog(context),
@@ -340,7 +340,7 @@ class FundDetail extends StatelessWidget {
                     size: 20,
                   ),
                   filled: true,
-                  fillColor: AppTheme.isDarkMode 
+                  fillColor: AppTheme.isDarkMode
                       ? Colors.white.withOpacity(0.05)
                       : Colors.grey.withOpacity(0.05),
                   border: OutlineInputBorder(
@@ -432,18 +432,14 @@ class FundDetail extends StatelessWidget {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: index % 2 == 0 
+                color: index % 2 == 0
                     ? Colors.red.withOpacity(0.1)
                     : Colors.green.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                index % 2 == 0 
-                    ? Icons.arrow_downward
-                    : Icons.arrow_upward,
-                color: index % 2 == 0 
-                    ? Colors.red
-                    : Colors.green,
+                index % 2 == 0 ? Icons.arrow_downward : Icons.arrow_upward,
+                color: index % 2 == 0 ? Colors.red : Colors.green,
                 size: 16,
               ),
             ),
@@ -477,101 +473,10 @@ class FundDetail extends StatelessWidget {
   }
 
   Widget _buildWalletsList() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.borderColor,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          ...wallets.map((wallet) => Column(
-            children: [
-              _buildWalletItem(wallet),
-              if (wallets.indexOf(wallet) != wallets.length - 1)
-                Divider(
-                  color: AppTheme.borderColor,
-                  height: 1,
-                ),
-            ],
-          )).toList(),
-          Builder(
-            builder: (context) => ListTile(
-              onTap: () => _showAddWalletDrawer(context),
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.add,
-                  color: color,
-                  size: 24,
-                ),
-              ),
-              title: Text(
-                'Thêm nguồn tiền',
-                style: TextStyle(
-                  color: color,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWalletItem(Wallet wallet) {
-    return ListTile(
-      contentPadding: const EdgeInsets.all(16),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: wallet.color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          wallet.icon,
-          color: wallet.color,
-          size: 24,
-        ),
-      ),
-      title: Text(
-        wallet.name,
-        style: TextStyle(
-          color: AppTheme.textPrimary,
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 4),
-          Text(
-            wallet.description,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-      trailing: Text(
-        '${wallet.amount} đ',
-        style: TextStyle(
-          color: wallet.color,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    return WalletsList(
+      wallets: wallets,
+      color: color,
+      onAddWallet: _showAddWalletDrawer,
     );
   }
 
@@ -580,7 +485,7 @@ class FundDetail extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddWalletDrawer(color: color),
+      builder: (context) => AddWalletDrawer(color: AppTheme.primary),
     );
   }
 }
@@ -643,12 +548,12 @@ class _MemberItemState extends State<MemberItem> {
           secondChild: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.isDarkMode 
+              color: AppTheme.isDarkMode
                   ? Colors.black.withOpacity(0.3)
                   : Colors.grey.withOpacity(0.05),
               border: Border(
                 top: BorderSide(
-                  color: AppTheme.isDarkMode 
+                  color: AppTheme.isDarkMode
                       ? Colors.white.withOpacity(0.05)
                       : AppTheme.divider,
                   width: 0.5,
@@ -668,7 +573,7 @@ class _MemberItemState extends State<MemberItem> {
                 _buildInfoRow(
                   'Trạng thái',
                   widget.member.status,
-                  widget.member.status == 'Đã tham gia' 
+                  widget.member.status == 'Đã tham gia'
                       ? Icons.check_circle
                       : Icons.access_time,
                   widget.member.status == 'Đã tham gia'
@@ -685,14 +590,14 @@ class _MemberItemState extends State<MemberItem> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                ...widget.member.history.map((item) => 
-                  _buildHistoryItem(item)
-                ).toList(),
+                ...widget.member.history
+                    .map((item) => _buildHistoryItem(item))
+                    .toList(),
               ],
             ),
           ),
-          crossFadeState: _isExpanded 
-              ? CrossFadeState.showSecond 
+          crossFadeState: _isExpanded
+              ? CrossFadeState.showSecond
               : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 200),
         ),
@@ -754,8 +659,7 @@ class _MemberItemState extends State<MemberItem> {
                   ],
                 ),
               ),
-              if (trailing != null)
-                trailing,
+              if (trailing != null) trailing,
             ],
           ),
         ),
@@ -852,370 +756,3 @@ class Wallet {
     required this.description,
   });
 }
-
-// Thêm class mới cho drawer
-class AddWalletDrawer extends StatefulWidget {
-  final Color color;
-
-  const AddWalletDrawer({
-    super.key,
-    required this.color,
-  });
-
-  @override
-  State<AddWalletDrawer> createState() => _AddWalletDrawerState();
-}
-
-class _AddWalletDrawerState extends State<AddWalletDrawer> {
-  WalletType _selectedType = WalletType.cash;
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _amountController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _accountNumberController = TextEditingController();
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _amountController.dispose();
-    _descriptionController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    _accountNumberController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: AppTheme.background,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: AppTheme.borderColor,
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Thêm nguồn tiền',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close,
-                    color: AppTheme.textPrimary,
-                    size: 24,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Form
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Tên nguồn tiền
-                    _buildLabel('Tên nguồn tiền'),
-                    _buildTextField(
-                      controller: _nameController,
-                      hintText: 'Nhập tên nguồn tiền',
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'Vui lòng nhập tên nguồn tiền';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Loại nguồn tiền
-                    _buildLabel('Loại nguồn tiền'),
-                    _buildWalletTypeSelector(),
-                    const SizedBox(height: 20),
-
-                    // Tiền khởi tạo
-                    _buildLabel('Tiền khởi tạo'),
-                    _buildTextField(
-                      controller: _amountController,
-                      hintText: 'Nhập số tiền',
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'Vui lòng nhập số tiền';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Mô tả
-                    _buildLabel('Mô tả'),
-                    _buildTextField(
-                      controller: _descriptionController,
-                      hintText: 'Nhập mô tả (tùy chọn)',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Các trường cho ngân hàng
-                    if (_selectedType == WalletType.bank) ...[
-                      _buildLabel('Tên đăng nhập'),
-                      _buildTextField(
-                        controller: _usernameController,
-                        hintText: 'Nhập tên đăng nhập',
-                        validator: (value) {
-                          if (_selectedType == WalletType.bank && 
-                              (value?.isEmpty ?? true)) {
-                            return 'Vui lòng nhập tên đăng nhập';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      _buildLabel('Mật khẩu'),
-                      _buildTextField(
-                        controller: _passwordController,
-                        hintText: 'Nhập mật khẩu',
-                        obscureText: true,
-                        validator: (value) {
-                          if (_selectedType == WalletType.bank && 
-                              (value?.isEmpty ?? true)) {
-                            return 'Vui lòng nhập mật khẩu';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      _buildLabel('Số tài khoản'),
-                      _buildTextField(
-                        controller: _accountNumberController,
-                        hintText: 'Nhập số tài khoản',
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (_selectedType == WalletType.bank && 
-                              (value?.isEmpty ?? true)) {
-                            return 'Vui lòng nhập số tài khoản';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom Button
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: AppTheme.borderColor,
-                  width: 1,
-                ),
-              ),
-            ),
-            child: ElevatedButton(
-              onPressed: _handleSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.color,
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Thêm nguồn tiền',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: AppTheme.textPrimary,
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    bool obscureText = false,
-    int? maxLines = 1,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: TextStyle(
-        color: AppTheme.textPrimary,
-        fontSize: 15,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 15,
-        ),
-        filled: true,
-        fillColor: AppTheme.isDarkMode 
-            ? Colors.white.withOpacity(0.05)
-            : Colors.grey.withOpacity(0.05),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: widget.color,
-            width: 1.5,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 1.5,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 1.5,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWalletTypeSelector() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppTheme.isDarkMode 
-            ? Colors.white.withOpacity(0.05)
-            : Colors.grey.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildTypeOption(
-              type: WalletType.cash,
-              icon: Icons.money,
-              label: 'Tiền mặt',
-            ),
-          ),
-          Expanded(
-            child: _buildTypeOption(
-              type: WalletType.bank,
-              icon: Icons.account_balance,
-              label: 'Ngân hàng',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTypeOption({
-    required WalletType type,
-    required IconData icon,
-    required String label,
-  }) {
-    final isSelected = _selectedType == type;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedType = type),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? widget.color : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: isSelected ? Colors.white : AppTheme.textSecondary,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : AppTheme.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _handleSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Handle form submission
-      Navigator.pop(context);
-    }
-  }
-} 

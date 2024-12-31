@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 
-class CustomBottomNav extends StatefulWidget {
+class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
 
@@ -12,55 +12,15 @@ class CustomBottomNav extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CustomBottomNavState createState() => _CustomBottomNavState();
-}
-
-class _CustomBottomNavState extends State<CustomBottomNav>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    // Khởi tạo AnimationController
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    // Khởi tạo ScaleAnimation
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _onTapAddButton() {
-    // Kích hoạt animation khi nhấn
-    _animationController.forward().then((_) {
-      _animationController.reverse();
-    });
-    widget.onTap(2); // Gọi callback
-  }
-
-  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final itemWidth = (screenWidth - 32) / 5;
 
     return Container(
-      height: 70, // Giảm chiều cao của thanh dock
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      height: 80,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
+        color: AppTheme.darkBottomNav,
         border: Border.all(
           color: Colors.transparent,
           width: 0,
@@ -125,116 +85,199 @@ class _CustomBottomNavState extends State<CustomBottomNav>
     required String label,
     required double width,
   }) {
-    final isSelected = widget.currentIndex == index;
+    final isSelected = currentIndex == index;
     return SizedBox(
       width: width,
       child: GestureDetector(
-        onTap: () => widget.onTap(index),
+        onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 6), // Giảm padding
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return ScaleTransition(
-                    scale: animation,
-                    child: child,
-                  );
-                },
-                child: Icon(
-                  isSelected ? activeIcon : icon,
-                  key: ValueKey<bool>(isSelected),
-                  color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
-                  size: 24,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Border line indicator
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              bottom: 0,
+              left:
+                  isSelected ? width * 0.15 : width * 0.5, // Thu hẹp từ giữa ra
+              right: isSelected ? width * 0.15 : width * 0.5,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: 2,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(isSelected ? 0.8 : 0),
+                  borderRadius: BorderRadius.circular(1),
                 ),
               ),
-              const SizedBox(height: 4),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: TextStyle(
-                  color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(
+                      begin: 0.0,
+                      end: isSelected ? 1.0 : 0.0,
+                    ),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) {
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Opacity(
+                            opacity: 1 - value,
+                            child: Icon(
+                              icon,
+                              color: AppTheme.textSecondary,
+                              size: 24,
+                            ),
+                          ),
+                          Transform.translate(
+                            offset: Offset(
+                                0, 2 * (1 - value)), // Giảm độ dịch chuyển
+                            child: Transform.scale(
+                              scale: 0.9 + (0.1 * value), // Giảm độ scale
+                              child: Opacity(
+                                opacity: value,
+                                child: Icon(
+                                  activeIcon,
+                                  color: AppTheme.primary,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    style: TextStyle(
+                      color: isSelected
+                          ? AppTheme.primary
+                          : AppTheme.textSecondary,
+                      fontSize: 12,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isSelected ? 1.0 : 0.8,
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildAddButton({required double width}) {
+    final isSelected = currentIndex == 2;
+    
     return SizedBox(
       width: width,
       child: GestureDetector(
-        onTap: _onTapAddButton,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 56,
-            height: 56,
-            margin: const EdgeInsets.only(bottom: 4), // Giảm margin
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.4),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 4),
+        onTap: () => onTap(2),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Main button with improved gradient
+            Container(
+              margin: const EdgeInsets.only(bottom: 5),
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    isSelected ? AppTheme.primary : const Color(0xFF27272A),
+                    isSelected 
+                      ? AppTheme.primary.withOpacity(0.9)
+                      : const Color(0xFF27272A).withOpacity(0.9),
+                  ],
                 ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Outer circle border
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.primary.withOpacity(0.2),
-                      width: 2,
+                shape: BoxShape.circle,
+                boxShadow: isSelected ? [
+                  BoxShadow(
+                    color: AppTheme.primary.withOpacity(0.25),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ] : [],
+              ),
+              child: Stack(
+                children: [
+                  // Animated background circles
+                  if (isSelected) ...{
+                    for (var i = 0; i < 4; i++)
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: Duration(milliseconds: 500 + (i * 100)),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, child) {
+                          return Transform.scale(
+                            scale: 0.5 + (value * 0.5),
+                            child: Opacity(
+                              opacity: (1 - value) * 0.4,
+                              child: Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppTheme.primary,
+                                    width: 2 * (1 - value),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                  },
+                  
+                  // Center icon with animations
+                  Center(
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.rotate(
+                          angle: value * 0.125 * 3.14,
+                          child: Icon(
+                            Icons.add_rounded,
+                            color: Color.lerp(
+                              Colors.white.withOpacity(0.9),
+                              Colors.white,
+                              value
+                            ),
+                            size: 24 + (value * 2),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                ),
-                // Inner circle with gradient
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppTheme.primary, AppTheme.primary.withOpacity(0.8)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.add_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

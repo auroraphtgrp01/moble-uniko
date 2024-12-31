@@ -3,14 +3,16 @@ import 'dart:io' show Platform;
 
 class AppTheme {
   static bool isDarkMode = false;
-  
+
   // Sử dụng font hệ thống của iOS cho cả 2 platform
-  static String get fontFamily => Platform.isIOS ? '.SF Pro Display' : '.SF UI Display';
+  static String get fontFamily =>
+      Platform.isIOS ? '.SF Pro Display' : '.SF UI Display';
 
   // Colors for both modes
   static const Color primaryLight = Color(0xFFD61A3C);
   static const Color primaryDark = Color(0xFFE82B4B);
   static const Color darkBackground = Color(0xFF121212);
+  static const Color darkBottomNav = Color(0xFF18181B);
   static const Color lightBackground = Color(0xFFF5F5F5);
   static const Color darkSurface = Color(0xFF1E1E1E);
   static const Color lightSurface = Color(0xFFFFFFFF);
@@ -60,42 +62,68 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     fontFamily: fontFamily,
     textTheme: TextTheme(
-      displayLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      displayMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      displaySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      headlineLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      headlineMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      headlineSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      titleLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      titleMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      titleSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displayLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displayMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displaySmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineSmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleSmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
       bodyLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
-      bodyMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      bodyMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
       bodySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
-      labelLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      labelMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      labelSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelSmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
     ),
   );
 
   static ThemeData darkTheme = ThemeData(
     fontFamily: fontFamily,
     textTheme: TextTheme(
-      displayLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      displayMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      displaySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      headlineLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      headlineMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      headlineSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      titleLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      titleMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      titleSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displayLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displayMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      displaySmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      headlineSmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      titleSmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
       bodyLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
-      bodyMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
+      bodyMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
       bodySmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w400),
-      labelLarge: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      labelMedium: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
-      labelSmall: TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelLarge:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelMedium:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
+      labelSmall:
+          TextStyle(fontFamily: fontFamily, fontWeight: FontWeight.w600),
     ),
   );
 }
