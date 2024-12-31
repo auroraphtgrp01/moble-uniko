@@ -156,6 +156,7 @@ class _RegisterState extends State<Register> {
                     onPressed: _handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -163,6 +164,7 @@ class _RegisterState extends State<Register> {
                     child: const Text(
                       'Đăng ký',
                       style: TextStyle(
+                        color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),

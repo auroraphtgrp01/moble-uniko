@@ -7,6 +7,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/screens/Chatbot.dart';
+import 'package:uniko/screens/Security.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -151,7 +152,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             iconColor: const Color(0xFF34C759),
                             title: 'Bảo mật',
                             subtitle: 'Mật khẩu và xác thực',
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const SecurityPage()),
+                              );
+                            },
                           ),
                           _buildMenuItem(
                             icon: Icons.notifications_outlined,
