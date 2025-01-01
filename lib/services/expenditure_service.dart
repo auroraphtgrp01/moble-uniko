@@ -21,10 +21,10 @@ class ExpenditureService {
     }
   }
 
-  Future<ExpenditureFund> createFund({
+  Future<CreateFundResponse> createFund({
     required String name,
+    required String currency,
     String? description,
-    List<String>? memberEmails,
   }) async {
     try {
       final response = await ApiService.call(
@@ -32,13 +32,13 @@ class ExpenditureService {
         method: 'POST',
         body: {
           'name': name,
-          'description': description,
-          'memberEmails': memberEmails,
+          'currency': currency,
+          if (description != null) 'description': description,
         },
       );
 
       if (response.statusCode == 201) {
-        return ExpenditureFund.fromJson(jsonDecode(response.body));
+        return CreateFundResponse.fromJson(jsonDecode(response.body));
       } else {
         throw Exception('Failed to create fund: ${response.statusCode}');
       }

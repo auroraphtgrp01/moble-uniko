@@ -64,7 +64,10 @@ class _WalletPageState extends State<WalletPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddFundDrawer(color: AppTheme.primary),
+      builder: (context) => AddFundDrawer(
+        color: AppTheme.primary,
+        onSuccess: () => _loadFunds(),
+      ),
     );
   }
 
@@ -534,10 +537,12 @@ class _WalletPageState extends State<WalletPage> {
 
 class AddFundDrawer extends StatefulWidget {
   final Color color;
+  final VoidCallback onSuccess;
 
   const AddFundDrawer({
     super.key,
     required this.color,
+    required this.onSuccess,
   });
 
   @override
@@ -550,6 +555,40 @@ class _AddFundDrawerState extends State<AddFundDrawer> {
   final _descriptionController = TextEditingController();
   final _emailController = TextEditingController();
   final List<String> _invitedEmails = [];
+  final _expenditureService = ExpenditureService();
+  bool _isLoading = false;
+  String _selectedCurrency = 'VND'; // Có thể thêm option USD nếu cần
+
+  void _handleSubmit() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isLoading = true);
+      try {
+        await _expenditureService.createFund(
+          name: _nameController.text,
+          currency: _selectedCurrency,
+          description: _descriptionController.text.isNotEmpty
+              ? _descriptionController.text
+              : null,
+        );
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.pop(context); // Đóng drawer trước
+          widget.onSuccess(); // Sau đó gọi callback để refresh
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Có lỗi xảy ra: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -704,7 +743,7 @@ class _AddFundDrawerState extends State<AddFundDrawer> {
               ),
             ),
             child: ElevatedButton(
-              onPressed: _handleSubmit,
+              onPressed: _isLoading ? null : _handleSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.color,
                 minimumSize: const Size.fromHeight(50),
@@ -712,14 +751,23 @@ class _AddFundDrawerState extends State<AddFundDrawer> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Tạo quỹ',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text(
+                      'Tạo quỹ',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -816,12 +864,5 @@ class _AddFundDrawerState extends State<AddFundDrawer> {
     setState(() {
       _invitedEmails.remove(email);
     });
-  }
-
-  void _handleSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Handle form submission
-      Navigator.pop(context);
-    }
   }
 }

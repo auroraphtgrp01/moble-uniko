@@ -12,7 +12,9 @@ class ExpenditureFundResponse {
   factory ExpenditureFundResponse.fromJson(Map<String, dynamic> json) {
     return ExpenditureFundResponse(
       pagination: Pagination.fromJson(json['pagination']),
-      data: (json['data'] as List).map((e) => ExpenditureFund.fromJson(e)).toList(),
+      data: (json['data'] as List)
+          .map((e) => ExpenditureFund.fromJson(e))
+          .toList(),
       statusCode: json['statusCode'],
     );
   }
@@ -96,11 +98,16 @@ class ExpenditureFund {
       createdBy: json['createdBy'],
       updatedAt: DateTime.parse(json['updatedAt']),
       updatedBy: json['updatedBy'],
-      deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt']) : null,
+      deletedAt:
+          json['deletedAt'] != null ? DateTime.parse(json['deletedAt']) : null,
       deletedBy: json['deletedBy'],
-      defaultForUser: json['defaultForUser'] != null ? User.fromJson(json['defaultForUser']) : null,
+      defaultForUser: json['defaultForUser'] != null
+          ? User.fromJson(json['defaultForUser'])
+          : null,
       owner: User.fromJson(json['owner']),
-      participants: (json['participants'] as List).map((e) => Participant.fromJson(e)).toList(),
+      participants: (json['participants'] as List)
+          .map((e) => Participant.fromJson(e))
+          .toList(),
       countParticipants: json['countParticipants'],
       categories: json['categories'],
       time: DateTime.parse(json['time']),
@@ -171,4 +178,50 @@ class Participant {
       status: json['status'],
     );
   }
-} 
+}
+
+class CreateFundResponse {
+  final CreateFundData data;
+  final int statusCode;
+
+  CreateFundResponse({
+    required this.data,
+    required this.statusCode,
+  });
+
+  factory CreateFundResponse.fromJson(Map<String, dynamic> json) {
+    return CreateFundResponse(
+      data: CreateFundData.fromJson(json['data']),
+      statusCode: json['statusCode'],
+    );
+  }
+}
+
+class CreateFundData {
+  final String id;
+  final String name;
+  final String? description;
+  final String status;
+  final double currentAmount;
+  final String currency;
+
+  CreateFundData({
+    required this.id,
+    required this.name,
+    this.description,
+    required this.status,
+    required this.currentAmount,
+    required this.currency,
+  });
+
+  factory CreateFundData.fromJson(Map<String, dynamic> json) {
+    return CreateFundData(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'],
+      status: json['status'],
+      currentAmount: json['currentAmount'].toDouble(),
+      currency: json['currency'],
+    );
+  }
+}

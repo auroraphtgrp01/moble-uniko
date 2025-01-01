@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/services/toast_service.dart';
 import '../../config/theme.config.dart';
 import '../Main/Home.dart';
 import 'ForgotPassword.dart';
 import '../../services/auth_service.dart';
-import '../register.dart';
+import 'register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -74,53 +75,8 @@ class _LoginPageState extends State<LoginPage> {
           await prefs.setString('userEmail', 'minhtuanledng@gmail.com');
 
           if (!mounted) return;
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Thành công',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            'Đăng nhập thành công',
-                            style: TextStyle(fontSize: 14, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              backgroundColor: Colors.green[600],
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height - 200,
-                left: 20,
-                right: 20,
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              duration: const Duration(milliseconds: 1000),
-              elevation: 8,
-            ),
-          );
-          if (!mounted) return;
-
+          ToastService.showSuccess(
+              'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -213,19 +169,6 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleBiometricLogin() async {
     final isAuthenticated = await AuthService.authenticateWithBiometrics();
     if (isAuthenticated && mounted) {
-      // Hiển thị toast thành công
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(
-      //     content: const Text('Đăng nhập thành công'),
-      //     backgroundColor: Colors.green[400],
-      //     behavior: SnackBarBehavior.floating,
-      //     margin: const EdgeInsets.all(20),
-      //     shape: RoundedRectangleBorder(
-      //       borderRadius: BorderRadius.circular(10),
-      //     ),
-      //   ),
-      // );
-
       // Delay ngắn để hiện toast
       await Future.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;

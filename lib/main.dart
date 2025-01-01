@@ -4,6 +4,8 @@ import 'package:uniko/config/theme.config.dart';
 import 'providers/theme_provider.dart';
 import 'screens/Auth/SplashScreen.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(
     MultiProvider(
@@ -23,6 +25,7 @@ class MyApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           theme: ThemeData(
             brightness:
                 themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
