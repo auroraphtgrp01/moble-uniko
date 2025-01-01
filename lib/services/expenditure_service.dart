@@ -1,3 +1,5 @@
+import 'package:uniko/services/toast_service.dart';
+
 import '../models/expenditure_fund.dart';
 import 'core/api_service.dart';
 import 'dart:convert';
@@ -38,8 +40,10 @@ class ExpenditureService {
       );
 
       if (response.statusCode == 201) {
+        ToastService.showSuccess('Tạo quỹ thành công');
         return CreateFundResponse.fromJson(jsonDecode(response.body));
       } else {
+        ToastService.showError('Tạo quỹ thất bại - Vui lòng thử lại');
         throw Exception('Failed to create fund: ${response.statusCode}');
       }
     } catch (e) {

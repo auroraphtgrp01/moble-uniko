@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uniko/services/toast_service.dart';
+import 'package:uniko/services/core/toast_service.dart';
 import '../../config/theme.config.dart';
 import '../Main/Home.dart';
 import 'ForgotPassword.dart';

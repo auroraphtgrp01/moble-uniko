@@ -33,7 +33,6 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Future<void> _loadFunds() async {
-    setState(() => _isLoading = true);
     try {
       final response = await _expenditureService.getFunds();
       setState(() {
@@ -43,7 +42,6 @@ class _WalletPageState extends State<WalletPage> {
     } catch (e) {
       print('Error loading funds: $e');
       setState(() => _isLoading = false);
-      // Hiển thị thông báo lỗi cho người dùng
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
