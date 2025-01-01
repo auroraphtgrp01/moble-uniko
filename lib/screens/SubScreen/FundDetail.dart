@@ -7,6 +7,7 @@ import '../../widgets/WalletsList.dart';
 import '../../widgets/AddWalletDrawer.dart';
 
 class FundDetail extends StatelessWidget {
+  final String fundId;
   final String name;
   final String amount;
   final Color color;
@@ -16,6 +17,7 @@ class FundDetail extends StatelessWidget {
 
   const FundDetail({
     super.key,
+    required this.fundId,
     required this.name,
     required this.amount,
     required this.color,

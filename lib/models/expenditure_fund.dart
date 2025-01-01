@@ -1,117 +1,18 @@
 class ExpenditureFundResponse {
-  final Pagination pagination;
   final List<ExpenditureFund> data;
-  final int statusCode;
+  final Map<String, dynamic> pagination;
 
   ExpenditureFundResponse({
-    required this.pagination,
     required this.data,
-    required this.statusCode,
+    required this.pagination,
   });
 
   factory ExpenditureFundResponse.fromJson(Map<String, dynamic> json) {
     return ExpenditureFundResponse(
-      pagination: Pagination.fromJson(json['pagination']),
       data: (json['data'] as List)
-          .map((e) => ExpenditureFund.fromJson(e))
+          .map((item) => ExpenditureFund.fromJson(item))
           .toList(),
-      statusCode: json['statusCode'],
-    );
-  }
-}
-
-class Pagination {
-  final int totalPage;
-  final int currentPage;
-  final int limit;
-  final int skip;
-
-  Pagination({
-    required this.totalPage,
-    required this.currentPage,
-    required this.limit,
-    required this.skip,
-  });
-
-  factory Pagination.fromJson(Map<String, dynamic> json) {
-    return Pagination(
-      totalPage: json['totalPage'],
-      currentPage: json['currentPage'],
-      limit: json['limit'],
-      skip: json['skip'],
-    );
-  }
-}
-
-class ExpenditureFund {
-  final String id;
-  final String name;
-  final String? description;
-  final String status;
-  final double currentAmount;
-  final String currency;
-  final DateTime createdAt;
-  final String createdBy;
-  final DateTime updatedAt;
-  final String? updatedBy;
-  final DateTime? deletedAt;
-  final String? deletedBy;
-  final User? defaultForUser;
-  final User owner;
-  final List<Participant> participants;
-  final int countParticipants;
-  final List<dynamic> categories;
-  final DateTime time;
-  final List<dynamic> transactions;
-
-  ExpenditureFund({
-    required this.id,
-    required this.name,
-    this.description,
-    required this.status,
-    required this.currentAmount,
-    required this.currency,
-    required this.createdAt,
-    required this.createdBy,
-    required this.updatedAt,
-    this.updatedBy,
-    this.deletedAt,
-    this.deletedBy,
-    this.defaultForUser,
-    required this.owner,
-    required this.participants,
-    required this.countParticipants,
-    required this.categories,
-    required this.time,
-    required this.transactions,
-  });
-
-  factory ExpenditureFund.fromJson(Map<String, dynamic> json) {
-    return ExpenditureFund(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      status: json['status'],
-      currentAmount: json['currentAmount'].toDouble(),
-      currency: json['currency'],
-      createdAt: DateTime.parse(json['createdAt']),
-      createdBy: json['createdBy'],
-      updatedAt: DateTime.parse(json['updatedAt']),
-      updatedBy: json['updatedBy'],
-      deletedAt:
-          json['deletedAt'] != null ? DateTime.parse(json['deletedAt']) : null,
-      deletedBy: json['deletedBy'],
-      defaultForUser: json['defaultForUser'] != null
-          ? User.fromJson(json['defaultForUser'])
-          : null,
-      owner: User.fromJson(json['owner']),
-      participants: (json['participants'] as List)
-          .map((e) => Participant.fromJson(e))
-          .toList(),
-      countParticipants: json['countParticipants'],
-      categories: json['categories'],
-      time: DateTime.parse(json['time']),
-      transactions: json['transactions'],
+      pagination: json['pagination'],
     );
   }
 }
@@ -176,6 +77,57 @@ class Participant {
       subEmail: json['subEmail'],
       tokenAcceped: json['tokenAcceped'],
       status: json['status'],
+    );
+  }
+}
+
+class ExpenditureFund {
+  final String id;
+  final String name;
+  final String description;
+  final String status;
+  final double currentAmount;
+  final String currency;
+  final DateTime createdAt;
+  final String createdBy;
+  final User? defaultForUser;
+  final User owner;
+  final List<Participant> participants;
+  final int countParticipants;
+
+  ExpenditureFund({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.status,
+    required this.currentAmount,
+    required this.currency,
+    required this.createdAt,
+    required this.createdBy,
+    this.defaultForUser,
+    required this.owner,
+    required this.participants,
+    required this.countParticipants,
+  });
+
+  factory ExpenditureFund.fromJson(Map<String, dynamic> json) {
+    return ExpenditureFund(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'] ?? '',
+      status: json['status'],
+      currentAmount: (json['currentAmount'] ?? 0).toDouble(),
+      currency: json['currency'],
+      createdAt: DateTime.parse(json['createdAt']),
+      createdBy: json['createdBy'],
+      defaultForUser: json['defaultForUser'] != null 
+          ? User.fromJson(json['defaultForUser'])
+          : null,
+      owner: User.fromJson(json['owner']),
+      participants: (json['participants'] as List)
+          .map((p) => Participant.fromJson(p))
+          .toList(),
+      countParticipants: json['countParticipants'],
     );
   }
 }

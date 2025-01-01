@@ -310,6 +310,7 @@ class _WalletPageState extends State<WalletPage> {
       itemBuilder: (context, index) {
         final fund = _funds[index];
         return _buildFundItem(
+          index,
           fund.name,
           NumberFormat.currency(
             locale: 'vi_VN',
@@ -353,56 +354,33 @@ class _WalletPageState extends State<WalletPage> {
     return colors[index % colors.length];
   }
 
-  Widget _buildFundItem(String name, String amount, IconData icon, Color color,
-      String members, String description) {
+  Widget _buildFundItem(int index, String name, String amount, IconData icon,
+      Color color, String members, String description) {
     return GestureDetector(
       onTap: () {
+        final fund = _funds[index];
         _navigateToScreen(
           FundDetail(
-            name: name,
-            amount: amount,
+            fundId: fund.id,
+            name: fund.name,
+            amount: NumberFormat.currency(
+              locale: 'vi_VN',
+              symbol: fund.currency,
+              decimalDigits: 0,
+            ).format(fund.currentAmount),
             color: color,
-            description: description,
-            members: [
-              Member(
-                name: 'Nguyễn Văn A',
-                email: 'nguyenvana@gmail.com',
-                avatar: 'https://i.pravatar.cc/150?img=1',
-                status: 'Đã tham gia',
-                history: ['Tạo quỹ', 'Thêm thành viên'],
-              ),
-              Member(
-                name: 'Trần Thị B',
-                email: 'tranthib@gmail.com',
-                avatar: 'https://i.pravatar.cc/150?img=2',
-                status: 'Đã tham gia',
-                history: ['Tham gia quỹ'],
-              ),
-              // Thêm các thành viên khác
-            ],
-            wallets: [
-              Wallet(
-                name: 'Tiền mặt',
-                amount: '12,500,000',
-                icon: Icons.money,
-                color: const Color(0xFF00C48C),
-                description: 'Nguồn tiền mặt',
-              ),
-              Wallet(
-                name: 'Ngân hàng',
-                amount: '35,820,000',
-                icon: Icons.account_balance,
-                color: const Color(0xFF4E73F8),
-                description: 'Tài khoản VCB',
-              ),
-              Wallet(
-                name: 'Momo',
-                amount: '6,000,000',
-                icon: Icons.account_balance_wallet,
-                color: const Color(0xFFFF6B6B),
-                description: 'Ví điện tử',
-              ),
-            ],
+            description: fund.description,
+            members: fund.participants
+                .map((p) => Member(
+                      name: p.user.fullName,
+                      email: p.user.email,
+                      avatar:
+                          p.user.avatarId ?? 'https://i.pravatar.cc/150?img=1',
+                      status: p.status,
+                      history: ['Tham gia quỹ với vai trò ${p.role}'],
+                    ))
+                .toList(),
+            wallets: [], // Tạm thời để trống vì API chưa có data wallets
           ),
         );
       },
@@ -505,6 +483,32 @@ class _WalletPageState extends State<WalletPage> {
         ),
       ),
     );
+  }
+
+  IconData _getWalletIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'cash':
+        return Icons.money;
+      case 'bank':
+        return Icons.account_balance;
+      case 'ewallet':
+        return Icons.account_balance_wallet;
+      default:
+        return Icons.attach_money;
+    }
+  }
+
+  Color _getWalletColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'cash':
+        return const Color(0xFF00C48C);
+      case 'bank':
+        return const Color(0xFF4E73F8);
+      case 'ewallet':
+        return const Color(0xFFFF6B6B);
+      default:
+        return const Color(0xFF7F3DFF);
+    }
   }
 
   void _navigateToScreen(Widget screen) {
