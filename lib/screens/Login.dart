@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController =
       TextEditingController(text: 'minhtuanledng@gmail.com');
   final TextEditingController _passwordController =
-      TextEditingController(text: '123');
+      TextEditingController(text: '1234');
   bool _obscurePassword = true;
   bool _isLoading = false;
   final _authService = AuthService();
@@ -722,8 +722,9 @@ class _LoginPageState extends State<LoginPage> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color:
-                                      isDarkMode ? Colors.white : Colors.black87,
+                                  color: isDarkMode
+                                      ? Colors.white
+                                      : Colors.black87,
                                   fontFamily: 'Poppins',
                                 ),
                               ),

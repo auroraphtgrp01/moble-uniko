@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/screens/Chatbot.dart';
 import 'package:uniko/screens/Security.dart';
+import 'package:uniko/services/storage_service.dart';
+import 'package:uniko/screens/UserInfo.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,11 +22,22 @@ class _ProfilePageState extends State<ProfilePage> {
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _isBiometricEnabled = false;
   bool _isProfileExpanded = false;
-  
+  Map<String, dynamic>? userInfo;
+
   @override
   void initState() {
     super.initState();
     _loadBiometricSettings();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final data = await StorageService.getUserInfo();
+    if (data != null) {
+      setState(() {
+        userInfo = data;
+      });
+    }
   }
 
   Future<void> _loadBiometricSettings() async {
@@ -37,10 +50,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _toggleBiometric() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       if (!_isBiometricEnabled) {
         // Kiểm tra thiết bị có hỗ trợ vân tay
-        final List<BiometricType> availableBiometrics = 
+        final List<BiometricType> availableBiometrics =
             await _localAuth.getAvailableBiometrics();
 
         if (availableBiometrics.isEmpty) {
@@ -82,7 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _onRefresh() async {
     // Giả lập loading trong 1.5 giây
     await Future.delayed(const Duration(milliseconds: 1500));
-    
+
     setState(() {
       // Thêm logic cập nhật dữ liệu ở đây
     });
@@ -106,7 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SliverPadding(
                   padding: EdgeInsets.only(top: 48),
                 ),
-              SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Column(
                     children: [
                       _buildProfileHeader(),
@@ -155,7 +168,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const SecurityPage()),
+                                MaterialPageRoute(
+                                    builder: (context) => const SecurityPage()),
                               );
                             },
                           ),
@@ -169,7 +183,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           _buildMenuItem(
                             icon: Icons.dark_mode_outlined,
                             title: 'Chế độ tối',
-                            subtitle: themeProvider.isDarkMode ? 'Đang bật' : 'Đang tắt',
+                            subtitle: themeProvider.isDarkMode
+                                ? 'Đang bật'
+                                : 'Đang tắt',
                             showArrow: false,
                             onTap: () => themeProvider.toggleTheme(),
                             trailing: Transform.scale(
@@ -178,7 +194,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 value: themeProvider.isDarkMode,
                                 onChanged: (_) => themeProvider.toggleTheme(),
                                 activeColor: AppTheme.primary,
-                                trackColor: AppTheme.borderColor.withOpacity(0.3),
+                                trackColor:
+                                    AppTheme.borderColor.withOpacity(0.3),
                               ),
                             ),
                           ),
@@ -186,7 +203,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             icon: Icons.fingerprint,
                             iconColor: const Color(0xFF34C759),
                             title: 'Đăng nhập vân tay',
-                            subtitle: _isBiometricEnabled ? 'Đang bật' : 'Đang tắt',
+                            subtitle:
+                                _isBiometricEnabled ? 'Đang bật' : 'Đang tắt',
                             showArrow: false,
                             onTap: _toggleBiometric,
                             trailing: Transform.scale(
@@ -195,7 +213,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 value: _isBiometricEnabled,
                                 onChanged: (_) => _toggleBiometric(),
                                 activeColor: AppTheme.primary,
-                                trackColor: AppTheme.borderColor.withOpacity(0.3),
+                                trackColor:
+                                    AppTheme.borderColor.withOpacity(0.3),
                               ),
                             ),
                           ),
@@ -226,11 +245,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             showArrow: false,
                             onTap: () async {
                               // Clear preferences nếu cần
-                              final prefs = await SharedPreferences.getInstance();
+                              final prefs =
+                                  await SharedPreferences.getInstance();
                               await prefs.clear();
-                              
+
                               if (!mounted) return;
-                              
+
                               // Chuyển về màn Login và xóa stack
                               Navigator.pushAndRemoveUntil(
                                 context,
@@ -282,7 +302,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const ChatbotScreen()),
                   );
                 },
                 backgroundColor: AppTheme.primary,
@@ -347,10 +368,10 @@ class _ProfilePageState extends State<ProfilePage> {
         color: AppTheme.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.isDarkMode 
-              ? Colors.white.withOpacity(0.05)  // Tối hơn cho dark mode
+          color: AppTheme.isDarkMode
+              ? Colors.white.withOpacity(0.05) // Tối hơn cho dark mode
               : AppTheme.borderColor,
-          width: 0.5,  // Mỏng hơn
+          width: 0.5, // Mỏng hơn
         ),
       ),
       child: Column(
@@ -390,10 +411,10 @@ class _ProfilePageState extends State<ProfilePage> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: AppTheme.isDarkMode 
-                  ? Colors.white.withOpacity(0.05)  // Tối hơn cho dark mode
+              color: AppTheme.isDarkMode
+                  ? Colors.white.withOpacity(0.05) // Tối hơn cho dark mode
                   : AppTheme.divider,
-              width: 0.5,  // Mỏng hơn
+              width: 0.5, // Mỏng hơn
             ),
           ),
         ),
@@ -489,7 +510,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -501,7 +521,8 @@ class _ProfilePageState extends State<ProfilePage> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
-                'https://avatars.githubusercontent.com/u/118455507?v=4',
+                userInfo?['avatar'] ??
+                    'https://avatars.githubusercontent.com/u/118455507?v=4',
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
@@ -509,22 +530,20 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(width: 16),
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Minh Tuan Le',
+                  userInfo?['fullName'] ?? 'Loading...',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
-                  'minhtuanledng@gmail.com',
+                  userInfo?['email'] ?? 'Loading...',
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.textSecondary,
@@ -546,29 +565,24 @@ class _ProfilePageState extends State<ProfilePage> {
           iconColor: const Color(0xFF5856D6),
           title: 'Thông tin cá nhân',
           subtitle: 'Cập nhật thông tin của bạn',
-          showArrow: true,
-          trailing: AnimatedRotation(
-            turns: _isProfileExpanded ? 0.25 : 0,
-            duration: const Duration(milliseconds: 200),
-            child: Icon(
-              Icons.chevron_right,
-              color: AppTheme.textSecondary.withOpacity(0.6),
-              size: 20,
-            ),
-          ),
-          onTap: () => setState(() => _isProfileExpanded = !_isProfileExpanded),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const UserInfoPage()),
+            );
+          },
         ),
         AnimatedCrossFade(
           firstChild: const SizedBox(height: 0),
           secondChild: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.isDarkMode 
+              color: AppTheme.isDarkMode
                   ? Colors.black.withOpacity(0.3)
                   : Colors.grey.withOpacity(0.05),
               border: Border(
                 top: BorderSide(
-                  color: AppTheme.isDarkMode 
+                  color: AppTheme.isDarkMode
                       ? Colors.white.withOpacity(0.05)
                       : AppTheme.divider,
                   width: 0.5,
@@ -577,15 +591,30 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             child: Column(
               children: [
-                _buildProfileField('Họ và tên', 'Minh Tuan Le'),
-                _buildProfileField('Email', 'minhtuanledng@gmail.com'),
-                _buildProfileField('Số điện thoại', '0123456789'),
-                _buildProfileField('Ngày sinh', '01/01/2000'),
+                _buildProfileField(
+                    'Họ và tên', userInfo?['fullName'] ?? 'Chưa cập nhật'),
+                _buildProfileField(
+                    'Email', userInfo?['email'] ?? 'Chưa cập nhật'),
+                _buildProfileField('Số điện thoại',
+                    userInfo?['phone_number'] ?? 'Chưa cập nhật'),
+                _buildProfileField(
+                    'Địa chỉ', userInfo?['address'] ?? 'Chưa cập nhật'),
+                _buildProfileField(
+                    'Ngày sinh', userInfo?['dateOfBirth'] ?? 'Chưa cập nhật'),
+                _buildProfileField(
+                    'Giới tính',
+                    userInfo == null
+                        ? 'Chưa cập nhật'
+                        : userInfo?['gender'] == 'MALE'
+                            ? 'Nam'
+                            : userInfo?['gender'] == 'FEMALE'
+                                ? 'Nữ'
+                                : 'Khác'),
               ],
             ),
           ),
-          crossFadeState: _isProfileExpanded 
-              ? CrossFadeState.showSecond 
+          crossFadeState: _isProfileExpanded
+              ? CrossFadeState.showSecond
               : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 200),
         ),
