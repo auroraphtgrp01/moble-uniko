@@ -1,4 +1,4 @@
-import 'package:uniko/services/toast_service.dart';
+import 'package:uniko/services/core/toast_service.dart';
 
 import '../models/expenditure_fund.dart';
 import 'core/api_service.dart';
