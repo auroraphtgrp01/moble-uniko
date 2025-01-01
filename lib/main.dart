@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/config/theme.config.dart';
 import 'providers/theme_provider.dart';
-import 'screens/SplashScreen.dart';
+import 'screens/Auth/SplashScreen.dart';
 
 void main() {
   runApp(

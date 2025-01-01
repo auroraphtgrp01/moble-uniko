@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:uniko/screens/Chatbot.dart';
-import '../config/theme.config.dart';
-import 'FundDetail.dart';
+import 'package:uniko/screens/ChatBot/Chatbot.dart';
+import '../../config/theme.config.dart';
+import '../SubScreen/FundDetail.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';

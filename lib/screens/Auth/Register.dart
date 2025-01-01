@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 import 'package:flutter/services.dart';
 
 class Register extends StatefulWidget {
@@ -82,7 +82,8 @@ class _RegisterState extends State<Register> {
                     if (value == null || value.isEmpty) {
                       return 'Vui lòng nhập email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                        .hasMatch(value)) {
                       return 'Email không hợp lệ';
                     }
                     return null;
@@ -98,7 +99,9 @@ class _RegisterState extends State<Register> {
                   obscureText: !_isPasswordVisible,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                      _isPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: AppTheme.textSecondary,
                     ),
                     onPressed: () {
@@ -127,7 +130,9 @@ class _RegisterState extends State<Register> {
                   obscureText: !_isConfirmPasswordVisible,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                      _isConfirmPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: AppTheme.textSecondary,
                     ),
                     onPressed: () {
@@ -241,7 +246,7 @@ class _RegisterState extends State<Register> {
               fontSize: 15,
             ),
             filled: true,
-            fillColor: AppTheme.isDarkMode 
+            fillColor: AppTheme.isDarkMode
                 ? Colors.white.withOpacity(0.05)
                 : Colors.grey.withOpacity(0.05),
             border: OutlineInputBorder(
@@ -264,4 +269,4 @@ class _RegisterState extends State<Register> {
       print('Password: ${_passwordController.text}');
     }
   }
-} 
+}

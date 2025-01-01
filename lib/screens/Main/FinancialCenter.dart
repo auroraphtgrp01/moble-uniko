@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 
 class FinancialCenterPage extends StatefulWidget {
   const FinancialCenterPage({super.key});

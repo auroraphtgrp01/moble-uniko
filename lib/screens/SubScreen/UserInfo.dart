@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
-import '../services/storage_service.dart';
+import '../../config/theme.config.dart';
+import '../../services/core/storage_service.dart';
 import 'package:flutter/cupertino.dart';
 
 class UserInfoPage extends StatefulWidget {

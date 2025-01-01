@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'package:local_auth/local_auth.dart';
 
-import '../services/storage_service.dart';
-import '../services/api_service.dart';
-import '../services/logger_service.dart';
+import 'core/storage_service.dart';
+import 'core/api_service.dart';
+import 'core/logger_service.dart';
 
 class AuthService {
   static final LocalAuthentication _localAuth = LocalAuthentication();
@@ -78,17 +78,18 @@ class AuthService {
 // Get Me user info
   Future<Map<String, dynamic>> getMe() async {
     try {
-      final response = await ApiService.call('/users/me');
+      final getMeEndpoint = AppConfig.getMeEndpoint;
+      final response = await ApiService.call(getMeEndpoint);
       final data = json.decode(response.body);
       LoggerService.api('GET /users/me', data);
 
       if (response.statusCode == 200) {
         await StorageService.saveUserInfo(data);
         LoggerService.info('User info saved successfully');
-        
+
         final savedData = await StorageService.getUserInfo();
         LoggerService.debug('Saved user data: $savedData');
-        
+
         return {'success': true, 'data': data['data']};
       } else {
         LoggerService.warning('Failed to get user info: ${data['message']}');

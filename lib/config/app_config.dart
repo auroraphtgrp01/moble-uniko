@@ -13,4 +13,5 @@ class AppConfig {
   // AUTHENTICATION
   static const String loginEndpoint = '$apiUrl/auth/login';
   static const String registerEndpoint = '$apiUrl/auth/register';
+  static const String getMeEndpoint = '/users/me';
 }

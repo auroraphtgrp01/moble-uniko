@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
-import '../screens/FundDetail.dart'; // để import class Wallet
+import '../screens/SubScreen/FundDetail.dart'; // để import class Wallet
 
 class WalletsList extends StatelessWidget {
   final List<Wallet> wallets;

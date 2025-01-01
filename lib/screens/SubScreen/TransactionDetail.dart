@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui';
-import '../widgets/CategoryDrawer.dart';
-import '../widgets/WalletDrawer.dart';
+import '../../widgets/CategoryDrawer.dart';
+import '../../widgets/WalletDrawer.dart';
 
 class TransactionDetailPage extends StatefulWidget {
   final IconData icon;

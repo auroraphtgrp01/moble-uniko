@@ -1,10 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 import 'package:flutter/rendering.dart';
-import '../widgets/WalletsList.dart';
-import '../widgets/AddWalletDrawer.dart';
+import '../../widgets/WalletsList.dart';
+import '../../widgets/AddWalletDrawer.dart';
 
 class FundDetail extends StatelessWidget {
   final String name;

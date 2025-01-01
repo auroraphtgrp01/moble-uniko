@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 import 'package:intl/intl.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'dart:ui';
-import 'package:uniko/screens/Chatbot.dart';
+import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 
 class AddTransactionPage extends StatefulWidget {

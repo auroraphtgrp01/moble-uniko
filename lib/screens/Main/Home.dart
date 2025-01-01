@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:uniko/screens/Wallet.dart';
-import '../widgets/Dock.dart';
+import 'package:uniko/screens/Main/Wallet.dart';
+import '../../widgets/Dock.dart';
 import 'Overview.dart';
 import 'Transactions.dart';
 import 'Profile.dart';

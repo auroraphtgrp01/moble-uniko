@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
-import 'Home.dart';
-import 'forgot_password.dart';
-import '../services/auth_service.dart';
-import 'register.dart';
+import '../../config/theme.config.dart';
+import '../Main/Home.dart';
+import 'ForgotPassword.dart';
+import '../../services/auth_service.dart';
+import '../register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {

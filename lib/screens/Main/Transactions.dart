@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 import 'package:intl/intl.dart';
-import 'TransactionDetail.dart';
-import 'package:uniko/screens/Chatbot.dart';
+import '../SubScreen/TransactionDetail.dart';
+import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import 'package:uniko/widgets/AddCategoryDrawer.dart';
 import 'dart:ui';

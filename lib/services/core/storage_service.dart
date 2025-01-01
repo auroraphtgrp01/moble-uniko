@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../services/logger_service.dart';
+import 'logger_service.dart';
 
 class StorageService {
   static const String keyAccessToken = 'access_token';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class StatisticsPage extends StatefulWidget {

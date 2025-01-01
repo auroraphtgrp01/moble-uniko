@@ -1,15 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:uniko/screens/Login.dart';
-import '../config/theme.config.dart';
-import '../providers/theme_provider.dart';
+import 'package:uniko/screens/Auth/Login.dart';
+import '../../config/theme.config.dart';
+import '../../providers/theme_provider.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import 'package:uniko/screens/Chatbot.dart';
-import 'package:uniko/screens/Security.dart';
-import 'package:uniko/services/storage_service.dart';
-import 'package:uniko/screens/UserInfo.dart';
+import 'package:uniko/screens/ChatBot/Chatbot.dart';
+import 'package:uniko/screens/SubScreen/Security.dart';
+import 'package:uniko/services/core/storage_service.dart';
+import 'package:uniko/screens/SubScreen/UserInfo.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

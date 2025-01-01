@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../config/theme.config.dart';
+import '../../config/theme.config.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'TransactionDetail.dart';
+import '../SubScreen/TransactionDetail.dart';
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
-import '../widgets/BalanceCard.dart';
-import 'package:uniko/screens/Chatbot.dart';
+import '../../widgets/BalanceCard.dart';
+import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
-import 'AccountDetail.dart';
+import '../SubScreen/AccountDetail.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
