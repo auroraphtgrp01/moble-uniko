@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
-import '../screens/ChatBot.dart';
+import '../screens/ChatBot/Chatbot.dart';
 
 class ChatBotButton extends StatelessWidget {
   const ChatBotButton({Key? key}) : super(key: key);

@@ -1,37 +1,57 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user.dart';
+import './core/api_service.dart';
+import './core/logger_service.dart';
+import 'dart:convert';
 
 class UserService {
-  static User? _currentUser;
+  static Future<Map<String, dynamic>> updateUserInfo({
+    required String userId,
+    String? fullName,
+    String? gender,
+    String? phoneNumber,
+    String? address,
+    String? dateOfBirth,
+    String? avatarId,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {};
 
-  static User? get currentUser => _currentUser;
+      if (fullName?.isNotEmpty ?? false) data['fullName'] = fullName;
+      if (gender?.isNotEmpty ?? false) data['gender'] = gender;
+      if (phoneNumber?.isNotEmpty ?? false) data['phone_number'] = phoneNumber;
+      if (address?.isNotEmpty ?? false) data['address'] = address;
+      if (dateOfBirth?.isNotEmpty ?? false) data['dateOfBirth'] = dateOfBirth;
+      if (avatarId?.isNotEmpty ?? false) data['avatarId'] = avatarId;
 
-  static Future<void> setCurrentUser(String name, String email) async {
-    _currentUser = User(name: name, email: email);
+      LoggerService.info('UPDATE_USER_INFO Request: ${json.encode({
+            'userId': userId,
+            'endpoint': '/users/$userId',
+            'method': 'PATCH',
+            'body': data,
+          })}');
 
-    // Lưu thông tin user vào SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userName', name);
-    await prefs.setString('userEmail', email);
-  }
+      final response = await ApiService.call(
+        '/users/$userId',
+        method: 'PATCH',
+        body: data,
+      );
 
-  static Future<User?> loadUserFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString('userName');
-    final email = prefs.getString('userEmail');
+      LoggerService.info('UPDATE_USER_INFO Response: ${json.encode({
+            'statusCode': response.statusCode,
+            'body': response.body,
+          })}');
 
-    if (name != null && email != null) {
-      _currentUser = User(name: name, email: email);
-      return _currentUser;
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        LoggerService.error('UPDATE_USER_INFO Error:', {
+          'statusCode': response.statusCode,
+          'body': response.body,
+        });
+        throw Exception('Cập nhật thông tin thất bại');
+      }
+    } catch (e) {
+      LoggerService.error('UPDATE_USER_INFO Exception:', e.toString());
+      throw Exception('Có lỗi xảy ra: ${e.toString()}');
     }
-    return null;
-  }
-
-  static Future<void> clearUser() async {
-    _currentUser = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('userName');
-    await prefs.remove('userEmail');
-    await prefs.remove('token');
   }
 }

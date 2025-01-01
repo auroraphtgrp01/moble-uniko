@@ -10,6 +10,7 @@ import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/screens/SubScreen/Security.dart';
 import 'package:uniko/services/core/storage_service.dart';
 import 'package:uniko/screens/SubScreen/UserInfo.dart';
+import 'package:uniko/widgets/Avatar.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -511,21 +512,12 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Row(
         children: [
           Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppTheme.borderColor,
-                width: 1,
-              ),
-            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                userInfo?['avatar'] ??
-                    'https://avatars.githubusercontent.com/u/118455507?v=4',
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
+              child: Avatar(
+                avatarId: userInfo?['avatarId'],
+                size: 60,
+                isOnline: true,
               ),
             ),
           ),

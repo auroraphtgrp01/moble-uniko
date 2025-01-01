@@ -11,8 +11,7 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(keyAccessToken, data['accessToken'] ?? '');
     await prefs.setString(keyRefreshToken, data['refreshToken'] ?? '');
-
-    // Không lưu user info ở đây nữa
+    
     LoggerService.info('Auth tokens saved successfully');
   }
 
@@ -31,6 +30,7 @@ class StorageService {
 
         final userInfo = {
           'fullName': userData['fullName'],
+          'id': userData['id'],
           'email': userData['email'],
           'phone_number': userData['phone_number'],
           'dateOfBirth': userData['dateOfBirth'],
