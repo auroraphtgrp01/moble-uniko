@@ -1,0 +1,49 @@
+import '../models/expenditure_fund.dart';
+import 'core/api_service.dart';
+import 'dart:convert';
+
+class ExpenditureService {
+  static final ExpenditureService _instance = ExpenditureService._internal();
+  factory ExpenditureService() => _instance;
+  ExpenditureService._internal();
+
+  Future<ExpenditureFundResponse> getFunds() async {
+    try {
+      final response = await ApiService.call('/expenditure-funds');
+
+      if (response.statusCode == 200) {
+        return ExpenditureFundResponse.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to load funds: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load funds: $e');
+    }
+  }
+
+  Future<ExpenditureFund> createFund({
+    required String name,
+    String? description,
+    List<String>? memberEmails,
+  }) async {
+    try {
+      final response = await ApiService.call(
+        '/expenditure-funds',
+        method: 'POST',
+        body: {
+          'name': name,
+          'description': description,
+          'memberEmails': memberEmails,
+        },
+      );
+
+      if (response.statusCode == 201) {
+        return ExpenditureFund.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to create fund: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to create fund: $e');
+    }
+  }
+}

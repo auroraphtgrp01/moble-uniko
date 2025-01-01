@@ -7,6 +7,11 @@ import '../SubScreen/FundDetail.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:uniko/models/expenditure_fund.dart';
+import '../../services/expenditure_service.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -17,6 +22,42 @@ class WalletPage extends StatefulWidget {
 
 class _WalletPageState extends State<WalletPage> {
   String _selectedFund = 'Tất cả';
+  List<ExpenditureFund> _funds = [];
+  bool _isLoading = true;
+  final _expenditureService = ExpenditureService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFunds();
+  }
+
+  Future<void> _loadFunds() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await _expenditureService.getFunds();
+      setState(() {
+        _funds = response.data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading funds: $e');
+      setState(() => _isLoading = false);
+      // Hiển thị thông báo lỗi cho người dùng
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Có lỗi xảy ra khi tải dữ liệu: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    await _loadFunds();
+  }
 
   void _showAddFundDrawer(BuildContext context) {
     showModalBottomSheet(
@@ -25,15 +66,6 @@ class _WalletPageState extends State<WalletPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => AddFundDrawer(color: AppTheme.primary),
     );
-  }
-
-  Future<void> _onRefresh() async {
-    // Giả lập loading trong 1.5 giây
-    await Future.delayed(const Duration(milliseconds: 1500));
-    
-    setState(() {
-      // Thêm logic cập nhật dữ liệu ở đây
-    });
   }
 
   @override
@@ -235,17 +267,6 @@ class _WalletPageState extends State<WalletPage> {
                 ),
               ),
               const SizedBox(width: 4),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  'đ',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
             ],
           ),
         ],
@@ -254,73 +275,81 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Widget _buildFundsTab() {
-    return ListView(
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_funds.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 64,
+              color: AppTheme.textSecondary.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Chưa có quỹ nào',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
       padding: const EdgeInsets.all(20),
-      children: [
-        _buildFundItem(
-          'Quỹ cá nhân',
-          '35,320,000',
-          Icons.person,
-          const Color(0xFF4E73F8),
-          '1 thành viên',
-          'Quỹ mặc định',
-        ),
-        const SizedBox(height: 16),
-           _buildFundItem(
-          'Quỹ cá nhân',
-          '35,320,000',
-          Icons.person,
-          const Color(0xFF4E73F8),
-          '1 thành viên',
-          'Quỹ mặc định',
-        ),
-        const SizedBox(height: 16),
-           _buildFundItem(
-          'Quỹ cá nhân',
-          '35,320,000',
-          Icons.person,
-          const Color(0xFF4E73F8),
-          '1 thành viên',
-          'Quỹ mặc định',
-        ),
-        const SizedBox(height: 16),
-           _buildFundItem(
-          'Quỹ cá nhân',
-          '35,320,000',
-          Icons.person,
-          const Color(0xFF4E73F8),
-          '1 thành viên',
-          'Quỹ mặc định',
-        ),
-        const SizedBox(height: 16),
-        _buildFundItem(
-          'Quỹ gia đình',
-          '25,500,000',
-          Icons.family_restroom,
-          const Color(0xFF00C48C),
-          '4 thành viên',
-          'Quỹ chung với gia đình',
-        ),
-        const SizedBox(height: 16),
-        _buildFundItem(
-          'Quỹ du lịch',
-          '12,800,000',
-          Icons.card_travel,
-          const Color(0xFFFFA26B),
-          '3 thành viên',
-          'Quỹ đi chơi với bạn bè',
-        ),
-        const SizedBox(height: 16),
-        _buildFundItem(
-          'Quỹ đầu tư',
-          '8,500,000',
-          Icons.trending_up,
-          const Color(0xFFFF6B6B),
-          '2 thành viên',
-          'Đầu tư với đối tác',
-        ),
-      ],
+      itemCount: _funds.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final fund = _funds[index];
+        return _buildFundItem(
+          fund.name,
+          NumberFormat.currency(
+            locale: 'vi_VN',
+            symbol: fund.currency,
+            decimalDigits: 0,
+          ).format(fund.currentAmount),
+          _getIconForFund(fund),
+          _getFundColor(index),
+          '${fund.countParticipants} thành viên',
+          fund.description ?? 'Không có mô tả',
+        );
+      },
     );
+  }
+
+  IconData _getIconForFund(ExpenditureFund fund) {
+    if (fund.defaultForUser != null) {
+      return Icons.person;
+    }
+    switch (fund.countParticipants) {
+      case 1:
+        return Icons.person;
+      case 2:
+        return Icons.favorite;
+      case > 2:
+        return Icons.group;
+      default:
+        return Icons.account_balance_wallet;
+    }
+  }
+
+  Color _getFundColor(int index) {
+    final colors = [
+      const Color(0xFF4E73F8), // Blue
+      const Color(0xFF00C48C), // Green
+      const Color(0xFFFFA26B), // Orange
+      const Color(0xFFFF6B6B), // Red
+      const Color(0xFF7F3DFF), // Purple
+      const Color(0xFFFFB800), // Yellow
+    ];
+    return colors[index % colors.length];
   }
 
   Widget _buildFundItem(String name, String amount, IconData icon, Color color,
@@ -434,7 +463,7 @@ class _WalletPageState extends State<WalletPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '$amount đ',
+                  '$amount',
                   style: TextStyle(
                     color: color,
                     fontSize: 15,
