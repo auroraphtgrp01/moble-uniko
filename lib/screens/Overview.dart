@@ -393,7 +393,7 @@ class _OverviewPageState extends State<OverviewPage>
                       icon: Icons.restaurant,
                       title: 'Ăn trưa',
                       amount: '-45,000',
-                      date: 'Hôm nay, 12:30',
+                      date: '12:30',
                       category: 'Ăn uống',
                     ),
                     _buildTransactionItem(
@@ -401,7 +401,7 @@ class _OverviewPageState extends State<OverviewPage>
                       icon: Icons.directions_bus,
                       title: 'Xe buýt',
                       amount: '-7,000',
-                      date: 'Hôm nay, 09:15',
+                      date: '09:15',
                       category: '🚌 Di chuyển',
                     ),
                     _buildTransactionItem(
@@ -409,7 +409,7 @@ class _OverviewPageState extends State<OverviewPage>
                       icon: Icons.work,
                       title: 'Lương tháng 3',
                       amount: '+15,300,000',
-                      date: 'Hôm qua, 10:00',
+                      date: '01/01 10:00',
                       category: '💰 Thu nhập',
                       isIncome: true,
                     ),
@@ -968,7 +968,7 @@ class _OverviewPageState extends State<OverviewPage>
                         date,
                         style: TextStyle(
                           color: AppTheme.textSecondary,
-                          fontSize: 13,
+                          fontSize: 11,
                         ),
                       ),
                     ],

@@ -366,146 +366,171 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   Widget _buildTransaction({
-    required IconData icon,
-    required String title,
-    required String amount,
-    required String time,
-    required String category,
-    bool isIncome = false,
-  }) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TransactionDetailPage(
-              icon: icon,
-              title: title,
-              amount: amount,
-              date: time,
-              category: category,
-              isIncome: isIncome,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppTheme.isDarkMode
-                ? Colors.white.withOpacity(0.05)
-                : AppTheme.borderColor,
-            width: 0.5,
+  required IconData icon,
+  required String title,
+  required String amount,
+  required String time,
+  required String category,
+  bool isIncome = false,
+}) {
+  return InkWell(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TransactionDetailPage(
+            icon: icon,
+            title: title,
+            amount: amount,
+            date: time,
+            category: category,
+            isIncome: isIncome,
           ),
         ),
-        child: Row(
-          children: [
-            // Icon
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isIncome
-                    ? const Color(0xFF34C759).withOpacity(0.1)
-                    : AppTheme.error.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 12),
-
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
+      );
+    },
+    child: Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.isDarkMode
+              ? Colors.white.withOpacity(0.05)
+              : AppTheme.borderColor,
+          width: 0.5,
+        ),
+      ),
+      // 
+      // Sử dụng Row với mainAxisAlignment: spaceBetween
+      // để tách phần nội dung bên trái và amount bên phải
+      //
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Bên trái: Icon + Title + Category + Time
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isIncome
+                        ? const Color(0xFF34C759).withOpacity(0.1)
+                        : AppTheme.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
+                  child: Icon(
+                    icon,
+                    color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                
+                // Nội dung (title, category, time)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      InkWell(
-                        onTap: () => _showCategoryDrawer(context, category),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.isDarkMode
-                                ? Colors.white.withOpacity(0.05)
-                                : Colors.black.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                category,
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.arrow_drop_down,
-                                size: 16,
-                                color: AppTheme.textSecondary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        width: 3,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: AppTheme.textSecondary.withOpacity(0.5),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                      // Title
                       Text(
-                        time,
+                        title,
                         style: TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 13,
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Category + Time
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () => _showCategoryDrawer(context, category),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.isDarkMode
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.black.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    category,
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.arrow_drop_down,
+                                    size: 16,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            width: 3,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: AppTheme.textSecondary.withOpacity(0.5),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          
+                          // Để tránh tràn text, có thể bọc Text(time) 
+                          // bởi Expanded hoặc cho thêm overflow.
+                          Expanded(
+                            child: Text(
+                              time,
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 13,
+                              ),
+                              maxLines: 1,                // chỉ hiển thị 1 dòng
+                              overflow: TextOverflow.ellipsis, // cắt ngắn nếu quá dài
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
-            // Amount
-            Text(
-              '$amount đ',
-              style: TextStyle(
-                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+          // Bên phải: Amount
+          Text(
+            '$amount đ',
+            style: TextStyle(
+              color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   void _showFilterDrawer() {
     showModalBottomSheet(
