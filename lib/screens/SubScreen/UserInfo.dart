@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:uniko/config/app_config.dart';
+import 'package:uniko/services/core/api_service.dart';
 import '../../config/theme.config.dart';
 import '../../services/core/storage_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,10 +16,10 @@ class AvatarDrawer extends StatefulWidget {
   final Function(String) onAvatarSelected;
 
   const AvatarDrawer({
-    Key? key,
+    super.key,
     this.currentAvatarId,
     required this.onAvatarSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<AvatarDrawer> createState() => _AvatarDrawerState();
@@ -180,10 +184,10 @@ class DatePickerDrawer extends StatefulWidget {
   final Function(DateTime) onDateSelected;
 
   const DatePickerDrawer({
-    Key? key,
+    super.key,
     this.initialDate,
     required this.onDateSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<DatePickerDrawer> createState() => _DatePickerDrawerState();
@@ -319,9 +323,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
     if (data != null) {
       setState(() {
         userInfo = data;
-        phoneController = TextEditingController(text: data['phone_number'] ?? '');
+        phoneController =
+            TextEditingController(text: data['phone_number'] ?? '');
         addressController = TextEditingController(text: data['address'] ?? '');
-        dobController = TextEditingController(text: _formatDateFromServer(data['dateOfBirth']));
+        dobController = TextEditingController(
+            text: _formatDateFromServer(data['dateOfBirth']));
         selectedGender = data['gender'] ?? 'OTHER';
       });
     }
@@ -345,7 +351,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
         }
 
         // Chuyển đổi định dạng ngày
-        DateTime parsedDate = DateFormat('dd/MM/yyyy').parse(dobController.text.trim());
+        DateTime parsedDate =
+            DateFormat('dd/MM/yyyy').parse(dobController.text.trim());
         String isoDate = parsedDate.toIso8601String();
 
         final updatedInfo = await UserService.updateUserInfo(
@@ -355,16 +362,18 @@ class _UserInfoPageState extends State<UserInfoPage> {
           dateOfBirth: isoDate, // Sử dụng định dạng ISO
           gender: selectedGender,
         );
-        print(updatedInfo);
+        final getMeEndpoint = AppConfig.getMeEndpoint;
+        final response = await ApiService.call(getMeEndpoint);
+        final data = json.decode(response.body);
 
         setState(() {
           userInfo = updatedInfo;
           isEditing = false;
         });
-        print("user info: $userInfo");
 
         // Cập nhật storage
-        await StorageService.saveUserInfo(updatedInfo);
+
+        await StorageService.saveUserInfo(data);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -646,9 +655,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
                           context: context,
                           backgroundColor: Colors.transparent,
                           builder: (context) => DatePickerDrawer(
-                            initialDate: DateFormat('dd/MM/yyyy').parseStrict(controller!.text),
+                            initialDate: DateFormat('dd/MM/yyyy')
+                                .parseStrict(controller!.text),
                             onDateSelected: (date) {
-                              final formattedDate = DateFormat('dd/MM/yyyy').format(date);
+                              final formattedDate =
+                                  DateFormat('dd/MM/yyyy').format(date);
                               controller.text = formattedDate;
                             },
                           ),
