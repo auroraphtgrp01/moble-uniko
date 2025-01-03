@@ -41,7 +41,12 @@ class UserService {
           })}');
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final decoded = json.decode(response.body);
+        if (decoded['data'] != null) {
+          return decoded['data'];
+        } else {
+          throw Exception('No data found in response');
+        }
       } else {
         LoggerService.error('UPDATE_USER_INFO Error:', {
           'statusCode': response.statusCode,
@@ -55,3 +60,4 @@ class UserService {
     }
   }
 }
+

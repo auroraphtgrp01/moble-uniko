@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:uniko/config/app_config.dart';
+import 'package:uniko/services/core/api_service.dart';
 import '../../config/theme.config.dart';
 import '../../services/core/storage_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,10 +16,10 @@ class AvatarDrawer extends StatefulWidget {
   final Function(String) onAvatarSelected;
 
   const AvatarDrawer({
-    Key? key,
+    super.key,
     this.currentAvatarId,
     required this.onAvatarSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<AvatarDrawer> createState() => _AvatarDrawerState();
@@ -179,10 +184,10 @@ class DatePickerDrawer extends StatefulWidget {
   final Function(DateTime) onDateSelected;
 
   const DatePickerDrawer({
-    Key? key,
+    super.key,
     this.initialDate,
     required this.onDateSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<DatePickerDrawer> createState() => _DatePickerDrawerState();
@@ -288,13 +293,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
   bool isEditing = false;
   final _formKey = GlobalKey<FormState>();
 
-  // Thêm các controller để quản lý text input
-  late TextEditingController phoneController;
-  late TextEditingController addressController;
-  late TextEditingController dobController;
-  late String selectedGender;
+  // Controllers
+  late TextEditingController phoneController = TextEditingController();
+  late TextEditingController addressController = TextEditingController();
+  late TextEditingController dobController = TextEditingController();
+  late String selectedGender = '';
 
-  // Thêm FocusNode để quản lý focus tốt hơn
+  // FocusNodes
   final FocusNode _phoneFocus = FocusNode();
   final FocusNode _addressFocus = FocusNode();
   final FocusNode _dobFocus = FocusNode();
@@ -307,14 +312,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
   @override
   void dispose() {
-    // Giải phóng FocusNode khi widget bị dispose
     _phoneFocus.dispose();
     _addressFocus.dispose();
     _dobFocus.dispose();
     super.dispose();
   }
 
-  // Khởi tạo các controller trong _loadUserInfo
   Future<void> _loadUserInfo() async {
     final data = await StorageService.getUserInfo();
     if (data != null) {
@@ -323,13 +326,23 @@ class _UserInfoPageState extends State<UserInfoPage> {
         phoneController =
             TextEditingController(text: data['phone_number'] ?? '');
         addressController = TextEditingController(text: data['address'] ?? '');
-        dobController = TextEditingController(text: data['dateOfBirth'] ?? '');
+        dobController = TextEditingController(
+            text: _formatDateFromServer(data['dateOfBirth']));
         selectedGender = data['gender'] ?? 'OTHER';
       });
     }
   }
 
-  // Thêm hàm lưu thông tin
+  String _formatDateFromServer(String? date) {
+    if (date == null || date.isEmpty) return '';
+    try {
+      DateTime parsedDate = DateTime.parse(date);
+      return DateFormat('dd/MM/yyyy').format(parsedDate);
+    } catch (e) {
+      return date; // Nếu parse thất bại, trả về nguyên bản
+    }
+  }
+
   Future<void> _saveUserInfo() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -337,13 +350,21 @@ class _UserInfoPageState extends State<UserInfoPage> {
           throw Exception('Không tìm thấy thông tin người dùng');
         }
 
+        // Chuyển đổi định dạng ngày
+        DateTime parsedDate =
+            DateFormat('dd/MM/yyyy').parse(dobController.text.trim());
+        String isoDate = parsedDate.toIso8601String();
+
         final updatedInfo = await UserService.updateUserInfo(
           userId: userInfo!['id'].toString(),
           phoneNumber: phoneController.text.trim(),
           address: addressController.text.trim(),
-          dateOfBirth: dobController.text.trim(),
+          dateOfBirth: isoDate, // Sử dụng định dạng ISO
           gender: selectedGender,
         );
+        final getMeEndpoint = AppConfig.getMeEndpoint;
+        final response = await ApiService.call(getMeEndpoint);
+        final data = json.decode(response.body);
 
         setState(() {
           userInfo = updatedInfo;
@@ -351,7 +372,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
         });
 
         // Cập nhật storage
-        await StorageService.saveUserInfo(updatedInfo);
+
+        await StorageService.saveUserInfo(data);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -633,13 +655,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                           context: context,
                           backgroundColor: Colors.transparent,
                           builder: (context) => DatePickerDrawer(
-                            initialDate: DateTime.tryParse(
-                              controller?.text?.split('/')?.reversed?.join('-') ?? '',
-                            ),
+                            initialDate: DateFormat('dd/MM/yyyy')
+                                .parseStrict(controller!.text),
                             onDateSelected: (date) {
                               final formattedDate =
-                                  "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
-                              controller?.text = formattedDate;
+                                  DateFormat('dd/MM/yyyy').format(date);
+                              controller.text = formattedDate;
                             },
                           ),
                         );
@@ -701,7 +722,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     )
                   else
                     Text(
-                      value,
+                      _formatDateFromServer(value),
                       style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 16,
