@@ -28,6 +28,8 @@ class ApiService {
           return http.put(uri, headers: headers, body: json.encode(body));
         case 'DELETE':
           return http.delete(uri, headers: headers);
+        case 'PATCH':
+          return http.patch(uri, headers: headers, body: json.encode(body));
         default:
           return http.get(uri, headers: headers);
       }
