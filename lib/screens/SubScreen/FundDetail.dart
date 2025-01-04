@@ -487,7 +487,7 @@ class FundDetail extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddWalletDrawer(color: AppTheme.primary),
+      builder: (context) => AddWalletDrawer(color: AppTheme.primary, fundId: fundId,),
     );
   }
 }

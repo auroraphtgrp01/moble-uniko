@@ -1,5 +1,9 @@
+// lib/widgets/AddWalletDrawer.dart
+
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
+import '../services/account_source_service.dart';
+import '../models/account_source.dart';
 
 enum WalletType {
   cash,
@@ -8,10 +12,12 @@ enum WalletType {
 
 class AddWalletDrawer extends StatefulWidget {
   final Color color;
+  final String fundId; // Thêm tham số fundId
 
   const AddWalletDrawer({
     super.key,
     required this.color,
+    required this.fundId, // Yêu cầu fundId
   });
 
   @override
@@ -26,7 +32,11 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
   final _descriptionController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _accountNumberController = TextEditingController();
+  final _accountInputController = TextEditingController();
+
+  List<String> _accounts = []; // Danh sách số tài khoản đã nhập
+
+  bool _isLoading = false; // Biến để hiển thị trạng thái tải
 
   @override
   void dispose() {
@@ -35,8 +45,48 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
     _descriptionController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
-    _accountNumberController.dispose();
+    _accountInputController.dispose();
     super.dispose();
+  }
+
+  void _addAccount(String account) {
+    final trimmedAccount = account.trim();
+    if (trimmedAccount.isNotEmpty && !_accounts.contains(trimmedAccount)) {
+      setState(() {
+        _accounts.add(trimmedAccount);
+      });
+    }
+  }
+
+  void _removeAccount(String account) {
+    setState(() {
+      _accounts.remove(account);
+    });
+  }
+
+  void _handleAccountInput(String value) {
+    if (value.endsWith(' ') || value.endsWith(',') || value.endsWith('\n')) {
+      final accounts = value.split(RegExp(r'[ ,\n]+'));
+      for (var account in accounts) {
+        if (account.trim().isNotEmpty) {
+          _addAccount(account);
+        }
+      }
+      _accountInputController.clear();
+    }
+  }
+
+  void _processFinalAccountInput() {
+    final accountInput = _accountInputController.text.trim();
+    if (accountInput.isNotEmpty) {
+      final accounts = accountInput.split(RegExp(r'[ ,\n]+'));
+      for (var account in accounts) {
+        if (account.trim().isNotEmpty) {
+          _addAccount(account);
+        }
+      }
+      _accountInputController.clear();
+    }
   }
 
   @override
@@ -121,6 +171,9 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
                         if (value?.isEmpty ?? true) {
                           return 'Vui lòng nhập số tiền';
                         }
+                        if (int.tryParse(value ?? '') == null) {
+                          return 'Vui lòng nhập số tiền hợp lệ';
+                        }
                         return null;
                       },
                     ),
@@ -165,19 +218,10 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
                       ),
                       const SizedBox(height: 20),
                       _buildLabel('Số tài khoản'),
-                      _buildTextField(
-                        controller: _accountNumberController,
-                        hintText: 'Nhập số tài khoản',
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (_selectedType == WalletType.bank &&
-                              (value?.isEmpty ?? true)) {
-                            return 'Vui lòng nhập số tài khoản';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
+                      _buildAccountInputField(),
+                      const SizedBox(height: 10),
+                      _buildAccountsChips(),
+                      const SizedBox(height: 10),
                     ],
                   ],
                 ),
@@ -197,7 +241,7 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
               ),
             ),
             child: ElevatedButton(
-              onPressed: _handleSubmit,
+              onPressed: _isLoading ? null : _handleSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.color,
                 minimumSize: const Size.fromHeight(50),
@@ -205,14 +249,18 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Thêm nguồn tiền',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    )
+                  : const Text(
+                      'Thêm nguồn tiền',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -295,6 +343,78 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
     );
   }
 
+  Widget _buildAccountInputField() {
+    return TextFormField(
+      controller: _accountInputController,
+      decoration: InputDecoration(
+        hintText: 'Nhập số tài khoản (cách nhau bằng khoảng trắng hoặc dấu phẩy)',
+        hintStyle: TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 15,
+        ),
+        filled: true,
+        fillColor: AppTheme.isDarkMode
+            ? Colors.white.withOpacity(0.05)
+            : Colors.grey.withOpacity(0.05),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: widget.color,
+            width: 1.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: Colors.red,
+            width: 1.5,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: Colors.red,
+            width: 1.5,
+          ),
+        ),
+      ),
+      onChanged: _handleAccountInput,
+      onFieldSubmitted: (value) {
+        _handleAccountInput(value);
+      },
+    );
+  }
+
+  Widget _buildAccountsChips() {
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      children: _accounts.map((account) {
+        return Chip(
+          label: Text(account),
+          deleteIcon: Icon(Icons.close),
+          onDeleted: () => _removeAccount(account),
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: widget.color),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          backgroundColor: Colors.transparent,
+          labelStyle: TextStyle(
+            color: AppTheme.textPrimary,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildWalletTypeSelector() {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -362,10 +482,63 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
     );
   }
 
-  void _handleSubmit() {
+  void _handleSubmit() async {
+    // Xử lý các số tài khoản còn lại trong trường nhập liệu
+    _processFinalAccountInput();
+
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Handle form submission
-      Navigator.pop(context);
+      if (_selectedType == WalletType.bank && _accounts.isEmpty) {
+        // Nếu là ngân hàng nhưng không có số tài khoản, hiển thị lỗi
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Vui lòng nhập ít nhất một số tài khoản'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      setState(() {
+        _isLoading = true;
+      });
+
+      final name = _nameController.text.trim();
+      final amount = int.parse(_amountController.text.trim());
+      final description = _descriptionController.text.trim();
+      final fundId = widget.fundId;
+
+      final accountSourceType =
+          _selectedType == WalletType.bank ? 'BANKING' : 'WALLET';
+
+      final service = AccountSourceService();
+
+      try {
+        final accountSource = await service.createAccountSource(
+          name: name,
+          accountSourceType: accountSourceType,
+          initAmount: amount,
+          fundId: fundId,
+          accounts: _selectedType == WalletType.bank ? _accounts : null, // Truyền accounts nếu là BANKING
+          password: _selectedType == WalletType.bank
+              ? _passwordController.text.trim()
+              : null,
+          loginId: _selectedType == WalletType.bank
+              ? _usernameController.text.trim()
+              : null,
+          type: _selectedType == WalletType.bank ? 'MB_BANK' : null,
+        );
+
+        // Thực hiện thêm hành động sau khi tạo thành công, ví dụ:
+        Navigator.pop(context, accountSource);
+      } catch (e) {
+        // Lỗi đã được xử lý trong service bằng ToastService
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 }
