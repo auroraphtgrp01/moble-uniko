@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:uniko/services/core/logger_service.dart';
 import '../config/app_config.dart';
 
 class ChatResponse {
@@ -10,6 +11,7 @@ class ChatResponse {
   final bool done;
   final List<Transaction> transactions;
   final Map<String, dynamic> statistics;
+  final String html;
 
   ChatResponse({
     required this.type,
@@ -18,6 +20,7 @@ class ChatResponse {
     required this.done,
     required this.transactions,
     required this.statistics,
+    required this.html,
   });
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) {
@@ -27,35 +30,43 @@ class ChatResponse {
       recent: json['recent'] ?? '',
       done: json['done'] ?? false,
       transactions: (json['transactions'] as List?)
-          ?.map((e) => Transaction.fromJson(e))
-          .toList() ?? [],
+              ?.map((e) => Transaction.fromJson(e))
+              .toList() ??
+          [],
       statistics: json['statistics'] as Map<String, dynamic>? ?? {},
+      html: json['html'] as String,
     );
   }
 }
 
 class Transaction {
-  final String item;
+  final String description;
   final int amount;
-  final Category category;
   final String type;
-  final Wallet wallet;
+  final String walletName;
+  final String categoryId;
+  final String categoryName;
+  final String accountSourceName;
 
   Transaction({
-    required this.item,
+    required this.description,
     required this.amount,
-    required this.category,
     required this.type,
-    required this.wallet,
+    required this.walletName,
+    required this.categoryId,
+    required this.categoryName,
+    required this.accountSourceName,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
-      item: json['item'] ?? '',
+      description: json['description'] ?? '',
       amount: json['amount'] ?? 0,
-      category: Category.fromJson(json['category'] ?? {}),
       type: json['type'] ?? '',
-      wallet: Wallet.fromJson(json['wallet'] ?? {}),
+      walletName: json['walletName'] ?? '',
+      categoryId: json['categoryId'] ?? '',
+      categoryName: json['categoryName'] ?? '',
+      accountSourceName: json['accountSourceName'] ?? '',
     );
   }
 }
@@ -108,54 +119,61 @@ class Wallet {
 
 class ChatService {
   final String _baseUrl = AppConfig.chatbotUrl;
+  final String _token;
 
-  Future<Stream<Map<String, dynamic>>> streamChat(String message) async {
+  ChatService({required String token}) : _token = token;
+
+  Future<ChatResponse> streamChat(String message) async {
     try {
       final url = Uri.parse(_baseUrl);
-      print('Calling API: ${url.toString()}'); // Debug log
+      LoggerService.debug('Calling API: ${url.toString()}');
 
-      final request = http.Request('POST', url);
-      request.headers['Content-Type'] = 'application/json';
-      // Thêm headers khác nếu cần
-      // request.headers['Authorization'] = 'Bearer $token';
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({
+          'message': message,
+          'fundId': '1',
+        }),
+      );
 
-      request.body = jsonEncode({'content': message, 'stream': true});
-
-      final client = http.Client();
-      final response = await client.send(request);
+      LoggerService.api(url.toString(), response.body);
 
       if (response.statusCode == 200) {
-        return response.stream
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())
-            .where((line) => line.isNotEmpty)
-            .map((line) {
-          try {
-            if (line.startsWith('data: ')) {
-              line = line.substring(6);
-            }
-            return jsonDecode(line) as Map<String, dynamic>;
-          } catch (e) {
-            print('Error parsing JSON: $line');
-            throw Exception('Invalid response format');
-          }
-        });
-      } else {
-        print('API Error: Status ${response.statusCode}');
-        print('Response headers: ${response.headers}');
-        // Đọc response body để debug
-        final body = await response.stream.transform(utf8.decoder).join();
-        print('Response body: $body');
+        final responseData = jsonDecode(response.body);
+        LoggerService.debug('Raw Response: $responseData');
 
+        String htmlContent = responseData['message'] ?? '';
+        
+        // Lấy transactions từ data
+        final transactions = (responseData['data']?['transactions'] as List?)
+            ?.map((e) => Transaction.fromJson(e))
+            .toList() ?? [];
+            
+        return ChatResponse(
+          type: 'message',
+          messages: htmlContent,
+          recent: '',
+          done: true,
+          transactions: transactions, // Sử dụng danh sách transactions đã parse
+          statistics: {},
+          html: htmlContent,
+        );
+      } else {
+        LoggerService.error('API Error: Status ${response.statusCode}');
+        LoggerService.error('Response body: ${response.body}');
         throw Exception('Server returned status code: ${response.statusCode}');
       }
     } catch (e) {
-      print('ChatService Error: $e');
-      rethrow; // Ném lại lỗi để xử lý ở UI
+      LoggerService.error('ChatService Error: $e');
+      rethrow;
     }
   }
 
-  void listenToChatStream(
+  Future<void> listenToChatStream(
     String message, {
     required Function(String) onMessage,
     required Function(String) onRecent,
@@ -164,32 +182,21 @@ class ChatService {
     Function(dynamic)? onError,
   }) async {
     try {
-      final stream = await streamChat(message);
-      await for (final data in stream) {
-        try {
-          final response = ChatResponse.fromJson(data);
-          
-          if (response.type == 'message') {
-            onMessage(response.messages);
-            if (response.recent.isNotEmpty) {
-              onRecent(response.recent);
-            }
-            if (response.transactions.isNotEmpty) {
-              onTransactions(response.transactions);
-            }
-          }
-          
-          if (response.done) {
-            onDone?.call();
-            break;
-          }
-        } catch (e) {
-          print('Error processing message: $e');
-          onError?.call(e);
+      final response = await streamChat(message);
+
+      if (response.type == 'message') {
+        onMessage(response.messages);
+        if (response.recent.isNotEmpty) {
+          onRecent(response.recent);
+        }
+        if (response.transactions.isNotEmpty) {
+          onTransactions(response.transactions);
         }
       }
+
+      onDone?.call();
     } catch (e) {
-      print('listenToChatStream error: $e');
+      LoggerService.error('listenToChatStream error: $e');
       onError?.call(e);
     }
   }

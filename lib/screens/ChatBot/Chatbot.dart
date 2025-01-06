@@ -1,7 +1,10 @@
 import 'dart:ui';
+import 'dart:math' show sin, pi;
 
 import 'package:flutter/material.dart';
 import 'package:uniko/config/app_config.dart';
+import 'package:uniko/services/core/logger_service.dart';
+import 'package:uniko/services/core/storage_service.dart';
 import '../../config/theme.config.dart';
 import '../../services/chat_service.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -37,11 +40,12 @@ class _ChatbotScreenState extends State<ChatbotScreen>
   late AnimationController _typeIndicatorController;
   late AnimationController _drawerController;
   bool _isDrawerOpen = false;
-  final ChatService _chatService = ChatService();
+  late final ChatService _chatService;
   bool _isTyping = false;
   late AnimationController _transactionsDrawerController;
   bool _isTransactionsDrawerOpen = false;
   List<Transaction> _currentTransactions = [];
+  bool _isInitialized = false;
 
   final List<QuickAction> _quickActions = [
     QuickAction(
@@ -79,7 +83,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
     );
     _typeIndicatorController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 1500),
     )..repeat();
 
     // Tin nhắn chào mừng
@@ -103,10 +107,35 @@ class _ChatbotScreenState extends State<ChatbotScreen>
     );
 
     // Debug log
-    print('ChatBot URL: ${AppConfig.chatbotUrl}/chat/stream');
+    print('ChatBot URL: ${AppConfig.chatbotUrl}/chat');
+
+    _initializeChatService();
+  }
+
+  Future<void> _initializeChatService() async {
+    final token = await StorageService.getAccessToken();
+    if (token == null || token.isEmpty) {
+      LoggerService.error('No access token found');
+      Navigator.of(context).pushReplacementNamed('/login');
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _chatService = ChatService(token: token);
+        _isInitialized = true;
+      });
+    }
   }
 
   void _handleSubmit(String text) {
+    if (!_isInitialized) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đang khởi tạo, vui lòng thử lại sau')),
+      );
+      return;
+    }
+
     if (text.trim().isEmpty) return;
 
     setState(() {
@@ -118,6 +147,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
         ),
       );
       _isTyping = true;
+      _currentTransactions = [];
     });
 
     _messageController.clear();
@@ -128,14 +158,17 @@ class _ChatbotScreenState extends State<ChatbotScreen>
       text,
       onMessage: (response) {
         if (mounted) {
+          LoggerService.debug('Bot response: $response'); // Debug log
           setState(() {
             _messages.add(
               ChatMessage(
-                text: response,
+                text: response, // Thay đổi từ '' sang response
+                html: response, // Giữ nguyên HTML content
                 isUser: false,
                 timestamp: DateTime.now(),
               ),
             );
+            _isTyping = false; // Tắt typing indicator
           });
           _scrollToBottom();
         }
@@ -145,7 +178,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
           setState(() {
             _messages.add(
               ChatMessage(
-                text: '',
+                text: recent,
                 html: recent,
                 isUser: false,
                 timestamp: DateTime.now(),
@@ -653,7 +686,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    transaction.item,
+                                    transaction.description,
                                     style: TextStyle(
                                       color: AppTheme.textPrimary,
                                       fontSize: 16,
@@ -670,7 +703,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        transaction.category.name,
+                                        transaction.categoryName,
                                         style: TextStyle(
                                           color: AppTheme.textSecondary,
                                           fontSize: 13,
@@ -704,7 +737,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      transaction.wallet.name,
+                                      transaction.walletName,
                                       style: TextStyle(
                                         color: AppTheme.textSecondary,
                                         fontSize: 13,
@@ -891,7 +924,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        transaction.item,
+                                        transaction.description,
                                         style: TextStyle(
                                           color: AppTheme.textPrimary,
                                           fontSize: 16,
@@ -908,7 +941,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            transaction.category.name,
+                                            transaction.categoryName,
                                             style: TextStyle(
                                               color: AppTheme.textSecondary,
                                               fontSize: 13,
@@ -942,7 +975,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          transaction.wallet.name,
+                                          transaction.walletName,
                                           style: TextStyle(
                                             color: AppTheme.textSecondary,
                                             fontSize: 13,
@@ -970,6 +1003,14 @@ class _ChatbotScreenState extends State<ChatbotScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -1185,75 +1226,37 @@ class _ChatbotScreenState extends State<ChatbotScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.text,
-                    style: TextStyle(
-                      color:
-                          message.isUser ? Colors.white : AppTheme.textPrimary,
-                      fontSize: 15,
-                    ),
-                  ),
-                  if (message.html != null) ...[
-                    const SizedBox(height: 0),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppTheme.isDarkMode
-                                ? Color(0xFF2C2C2E).withOpacity(0.95)
-                                : Color(0xFFF8F9FE).withOpacity(0.95),
-                            AppTheme.isDarkMode
-                                ? Color(0xFF1C1C1E).withOpacity(0.95)
-                                : Color(0xFFEDF0F7).withOpacity(0.95),
-                          ],
-                          stops: [0.0, 1.0],
+                  if (message.html != null && message.html!.isNotEmpty)
+                    Html(
+                      data: message.html!,
+                      style: {
+                        "div": Style(
+                          margin: Margins.zero,
+                          padding: HtmlPaddings.zero,
                         ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppTheme.isDarkMode
-                              ? Colors.white.withOpacity(0.05)
-                              : AppTheme.primary.withOpacity(0.08),
-                          width: 1,
+                        ".message": Style(
+                          margin: Margins.only(bottom: 8),
+                          color: AppTheme.textPrimary,
+                          fontSize: FontSize(14),
+                          fontWeight: FontWeight.w600,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.shadowColor.withOpacity(0.05),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Html(
-                        data: message.html!,
-                        style: {
-                          "div": Style(
-                            margin: Margins.zero,
-                            padding: HtmlPaddings.zero,
-                          ),
-                          "p": Style(
-                            margin: Margins.only(bottom: 8),
-                            fontSize: FontSize(14),
-                            color: AppTheme.textPrimary,
-                          ),
-                          "strong": Style(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          "span": Style(
-                            color: AppTheme.textPrimary,
-                            fontSize: FontSize(14),
-                          ),
-                        },
+                      },
+                    )
+                  else
+                    Text(
+                      message.text,
+                      style: TextStyle(
+                        color: message.isUser
+                            ? Colors.white
+                            : AppTheme.textPrimary,
+                        fontSize: 15,
                       ),
                     ),
-                  ],
-                  // Chỉ hiển thị button ở message cuối cùng
+                  // Sửa điều kiện hiển thị button transactions
                   if (!message.isUser &&
                       isLastMessage &&
-                      _currentTransactions.length > 1) ...[
+                      _currentTransactions.isNotEmpty) ...[
+                    // Thay đổi điều kiện này
                     const SizedBox(height: 12),
                     InkWell(
                       onTap: _showTransactionsBottomSheet,
@@ -1420,45 +1423,126 @@ class _ChatbotScreenState extends State<ChatbotScreen>
 
   Widget _buildTypingIndicator() {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.isDarkMode ? Colors.grey[850] : Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.primary.withOpacity(0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.shadowColor.withOpacity(0.1),
-            blurRadius: 8,
+            color: AppTheme.primary.withOpacity(0.05),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: List.generate(3, (index) {
-          return TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: 1),
-            duration: Duration(milliseconds: 400),
-            curve: Interval(
-              index * 0.2,
-              0.6 + index * 0.2,
-              curve: Curves.easeInOut,
-            ),
-            builder: (context, value, child) {
+        children: [
+          // Bot Avatar với hiệu ứng pulse và ripple
+          AnimatedBuilder(
+            animation: _typeIndicatorController,
+            builder: (context, child) {
               return Container(
-                margin: EdgeInsets.symmetric(horizontal: 2),
-                width: 8,
-                height: 8,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.4 * value),
-                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primary.withOpacity(0.8),
+                      AppTheme.primary.withOpacity(0.6 + 0.2 * sin(_typeIndicatorController.value * pi)),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withOpacity(0.2 + 0.1 * sin(_typeIndicatorController.value * pi)),
+                      blurRadius: 8 + 4 * sin(_typeIndicatorController.value * pi),
+                      spreadRadius: 1 + sin(_typeIndicatorController.value * pi),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    Icon(
+                      Icons.smart_toy_outlined,
+                      color: Colors.white.withOpacity(0.9 + 0.1 * sin(_typeIndicatorController.value * pi)),
+                      size: 20,
+                    ),
+                    // Ripple effect
+                    ...List.generate(2, (index) {
+                      final delay = index * pi / 2;
+                      return Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(
+                                0.2 * (1 - sin((_typeIndicatorController.value * pi * 2) + delay)),
+                              ),
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                 ),
               );
             },
-          );
-        }),
+          ),
+          const SizedBox(width: 12),
+          // Animated dots với hiệu ứng wave
+          Row(
+            children: List.generate(3, (index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: AnimatedBuilder(
+                  animation: _typeIndicatorController,
+                  builder: (context, child) {
+                    final delay = index * 0.3;
+                    final wave = sin((_typeIndicatorController.value * pi * 2) - delay);
+                    final scale = 0.8 + (0.4 * wave);
+                    final yOffset = wave * 4;
+                    
+                    return Transform.translate(
+                      offset: Offset(0, yOffset),
+                      child: Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.primary,
+                                AppTheme.primary.withOpacity(0.7),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primary.withOpacity(0.3 * scale),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
