@@ -47,6 +47,43 @@ class Pagination {
   }
 }
 
+class AccountBank {
+  final String id;
+  final String type;
+  final String loginId;
+  final List<BankAccount> accounts;
+
+  AccountBank({
+    required this.id,
+    required this.type,
+    required this.loginId,
+    required this.accounts,
+  });
+
+  factory AccountBank.fromJson(Map<String, dynamic> json) {
+    return AccountBank(
+      id: json['id'] ?? '',
+      type: json['type'] ?? '',
+      loginId: json['login_id'] ?? '',
+      accounts: (json['accounts'] as List?)
+          ?.map((acc) => BankAccount.fromJson(acc))
+          .toList() ?? [],
+    );
+  }
+}
+
+class BankAccount {
+  final String accountNo;
+
+  BankAccount({required this.accountNo});
+
+  factory BankAccount.fromJson(Map<String, dynamic> json) {
+    return BankAccount(
+      accountNo: json['accountNo'] ?? '',
+    );
+  }
+}
+
 class AccountSource {
   final String id;
   final String name;
@@ -58,7 +95,7 @@ class AccountSource {
   final String userId;
   final String fundId;
   final String? participantId;
-  final dynamic accountBank;
+  final Map<String, dynamic>? accountBank;
   final List<String>? accounts;
 
   AccountSource({
@@ -88,7 +125,7 @@ class AccountSource {
       userId: json['userId'] as String,
       fundId: json['fundId'] as String,
       participantId: json['participantId'] as String?,
-      accountBank: json['accountBank'],
+      accountBank: json['accountBank'] as Map<String, dynamic>?,
       accounts: json['accounts'] != null 
           ? List<String>.from(json['accounts'] as List)
           : null,

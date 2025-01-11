@@ -164,21 +164,60 @@ class _FundDetailState extends State<FundDetail> {
     }
 
     if (_accountSources.isEmpty) {
-      return Center(
+      return Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.borderColor,
+            width: 1,
+          ),
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 64,
-              color: AppTheme.textSecondary.withOpacity(0.5),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 64,
+                    color: AppTheme.textSecondary.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Chưa có nguồn tiền nào',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Chưa có nguồn tiền nào',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 16,
+            Divider(color: AppTheme.borderColor, height: 1),
+            ListTile(
+              onTap: () => _showAddWalletDrawer(context),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: widget.color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: widget.color,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'Thêm nguồn tiền',
+                style: TextStyle(
+                  color: widget.color,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -346,34 +385,34 @@ class _FundDetailState extends State<FundDetail> {
                     const SizedBox(height: 24),
 
                     // Recent Transactions
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Giao dịch gần đây',
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            // TODO: Navigate to all transactions
-                          },
-                          child: Text(
-                            'Xem tất cả',
-                            style: TextStyle(
-                              color: widget.color,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //     Text(
+                    //       'Giao dịch gần đây',
+                    //       style: TextStyle(
+                    //         color: AppTheme.textPrimary,
+                    //         fontSize: 17,
+                    //         fontWeight: FontWeight.w600,
+                    //       ),
+                    //     ),
+                    //     TextButton(
+                    //       onPressed: () {
+                    //         // TODO: Navigate to all transactions
+                    //       },
+                    //       child: Text(
+                    //         'Xem tất cả',
+                    //         style: TextStyle(
+                    //           color: widget.color,
+                    //           fontSize: 14,
+                    //           fontWeight: FontWeight.w500,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
                     const SizedBox(height: 12),
-                    _buildRecentTransactions(),
+                    // _buildRecentTransactions(),
                   ],
                 ),
               ),
@@ -648,21 +687,60 @@ class _FundDetailState extends State<FundDetail> {
     }
 
     if (_accountSources.isEmpty) {
-      return Center(
+      return Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.borderColor,
+            width: 1,
+          ),
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 64,
-              color: AppTheme.textSecondary.withOpacity(0.5),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 64,
+                    color: AppTheme.textSecondary.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Chưa có nguồn tiền nào',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Chưa có nguồn tiền nào',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 16,
+            Divider(color: AppTheme.borderColor, height: 1),
+            ListTile(
+              onTap: () => _showAddWalletDrawer(context),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: widget.color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: widget.color,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'Thêm nguồn tiền',
+                style: TextStyle(
+                  color: widget.color,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],

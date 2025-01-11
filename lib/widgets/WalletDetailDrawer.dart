@@ -23,20 +23,6 @@ class WalletDetailDrawer extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Thay thế gradient background bằng màu đơn giản
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 280,
-            child: Container(
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.05),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-            ),
-          ),
-
           // Content
           Column(
             children: [
@@ -61,8 +47,6 @@ class WalletDetailDrawer extends StatelessWidget {
                       _buildHeader(),
                       const SizedBox(height: 32),
                       _buildBalanceCard(),
-                      const SizedBox(height: 32),
-                      _buildQuickActions(),
                       const SizedBox(height: 32),
                       _buildWalletInfo(),
                       if (wallet.type == 'BANKING') ...[
@@ -106,7 +90,9 @@ class WalletDetailDrawer extends StatelessWidget {
             ],
           ),
           child: Icon(
-            wallet.type == 'WALLET' ? Icons.account_balance_wallet : Icons.account_balance,
+            wallet.type == 'WALLET'
+                ? Icons.account_balance_wallet
+                : Icons.account_balance,
             color: Colors.white,
             size: 32,
           ),
@@ -126,7 +112,8 @@ class WalletDetailDrawer extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -139,13 +126,17 @@ class WalletDetailDrawer extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      wallet.type == 'WALLET' ? Icons.wallet : Icons.credit_card,
+                      wallet.type == 'WALLET'
+                          ? Icons.wallet
+                          : Icons.credit_card,
                       color: color,
                       size: 16,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      wallet.type == 'WALLET' ? 'Tiền mặt' : 'Tài khoản ngân hàng',
+                      wallet.type == 'WALLET'
+                          ? 'Tiền mặt'
+                          : 'Tài khoản ngân hàng',
                       style: TextStyle(
                         color: color,
                         fontSize: 14,
@@ -227,7 +218,9 @@ class WalletDetailDrawer extends StatelessWidget {
             child: IntrinsicHeight(
               child: Row(
                 children: [
-                  Expanded(child: _buildBalanceInfoItem('Số dư ban đầu', wallet.initAmount)),
+                  Expanded(
+                      child: _buildBalanceInfoItem(
+                          'Số dư ban đầu', wallet.initAmount)),
                   VerticalDivider(
                     color: Colors.white.withOpacity(0.2),
                     thickness: 1,
@@ -246,18 +239,6 @@ class WalletDetailDrawer extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildQuickActionItem(Icons.add_circle_outline, 'Thu', Colors.green),
-        _buildQuickActionItem(Icons.remove_circle_outline, 'Chi', Colors.red),
-        _buildQuickActionItem(Icons.sync, 'Chuyển khoản', Colors.blue),
-        _buildQuickActionItem(Icons.history, 'Lịch sử', Colors.orange),
-      ],
     );
   }
 
@@ -347,27 +328,129 @@ class WalletDetailDrawer extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : Colors.grey.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              ...(wallet.accounts ?? []).map((account) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _buildInfoRow(
-                  'Số tài khoản',
-                  account,
-                  Icons.credit_card,
+        if (wallet.accountBank != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            decoration: BoxDecoration(
+              color: AppTheme.isDarkMode
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.grey.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                // Phần thông tin đăng nhập
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.account_balance,
+                        color: color,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tên đăng nhập',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            wallet.accountBank!['login_id']?.toString() ?? '',
+                            style: TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              )),
-            ],
+
+                // Divider với padding
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Divider(
+                    color: AppTheme.borderColor.withOpacity(0.1),
+                    height: 1,
+                  ),
+                ),
+
+                // Danh sách tài khoản
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.credit_card_outlined,
+                          size: 18,
+                          color: AppTheme.textSecondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Số tài khoản',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        ...(wallet.accountBank!['accounts'] as List?)?.map(
+                              (account) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: color.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: color.withOpacity(0.15),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  (account as Map)['accountNo']?.toString() ??
+                                      '',
+                                  style: TextStyle(
+                                    color: color,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ) ??
+                            [],
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -453,7 +536,8 @@ class WalletDetailDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceInfoItem(String label, int amount, {bool showSign = false}) {
+  Widget _buildBalanceInfoItem(String label, int amount,
+      {bool showSign = false}) {
     final isPositive = amount >= 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,4 +565,4 @@ class WalletDetailDrawer extends StatelessWidget {
       ],
     );
   }
-} 
+}
