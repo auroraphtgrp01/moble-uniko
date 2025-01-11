@@ -1,12 +1,17 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:uniko/models/account_source.dart';
+import 'package:uniko/services/core/logger_service.dart';
+import 'package:uniko/services/core/toast_service.dart';
 import '../../config/theme.config.dart';
 import 'package:flutter/rendering.dart';
 import '../../widgets/WalletsList.dart';
 import '../../widgets/AddWalletDrawer.dart';
+import '../../services/account_source_service.dart';
+import 'package:intl/intl.dart';
 
-class FundDetail extends StatelessWidget {
+class FundDetail extends StatefulWidget {
   final String fundId;
   final String name;
   final String amount;
@@ -25,6 +30,157 @@ class FundDetail extends StatelessWidget {
     required this.members,
     required this.wallets,
   });
+
+  @override
+  State<FundDetail> createState() => _FundDetailState();
+}
+
+class _FundDetailState extends State<FundDetail> {
+  final _accountSourceService = AccountSourceService();
+  List<AccountSource> _accountSources = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccountSources();
+  }
+
+  Future<void> _loadAccountSources() async {
+    try {
+      final response =
+          await _accountSourceService.getAdvancedAccountSources(widget.fundId);
+      setState(() {
+        _accountSources = response.data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      LoggerService.error('Error loading account sources: $e');
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ToastService.showError('Không thể tải nguồn tiền');
+      }
+    }
+  }
+
+  Widget _buildAccountSourceItem(AccountSource source) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.borderColor,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getSourceColor(source.type).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              _getSourceIcon(source.type),
+              color: _getSourceColor(source.type),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  source.name,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: source.currency,
+                    decimalDigits: 0,
+                  ).format(source.currentAmount),
+                  style: TextStyle(
+                    color: _getSourceColor(source.type),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getSourceColor(String type) {
+    switch (type.toUpperCase()) {
+      case 'WALLET':
+        return const Color(0xFF00C48C);
+      case 'BANKING':
+        return const Color(0xFF4E73F8);
+      default:
+        return const Color(0xFF7F3DFF);
+    }
+  }
+
+  IconData _getSourceIcon(String type) {
+    switch (type.toUpperCase()) {
+      case 'WALLET':
+        return Icons.account_balance_wallet;
+      case 'BANKING':
+        return Icons.account_balance;
+      default:
+        return Icons.attach_money;
+    }
+  }
+
+  // Trong TabBarView, thêm tab Nguồn Tiền
+  Widget _buildSourcesTab() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_accountSources.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 64,
+              color: AppTheme.textSecondary.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Chưa có nguồn tiền nào',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _accountSources.length,
+      itemBuilder: (context, index) =>
+          _buildAccountSourceItem(_accountSources[index]),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +218,7 @@ class FundDetail extends StatelessWidget {
           ),
           centerTitle: true,
           title: Text(
-            name,
+            widget.name,
             style: TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 17,
@@ -99,7 +255,7 @@ class FundDetail extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: widget.color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -113,9 +269,9 @@ class FundDetail extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '$amount đ',
+                            '${widget.amount} đ',
                             style: TextStyle(
-                              color: color,
+                              color: widget.color,
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
                             ),
@@ -173,7 +329,7 @@ class FundDetail extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildMembersList(context, members),
+                    _buildMembersList(context, widget.members),
 
                     const SizedBox(height: 24),
 
@@ -196,7 +352,7 @@ class FundDetail extends StatelessWidget {
                           child: Text(
                             'Xem tất cả',
                             style: TextStyle(
-                              color: color,
+                              color: widget.color,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -283,19 +439,19 @@ class FundDetail extends StatelessWidget {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: widget.color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.person_add,
-                color: color,
+                color: widget.color,
                 size: 24,
               ),
             ),
             title: Text(
               'Mời thành viên',
               style: TextStyle(
-                color: color,
+                color: widget.color,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
@@ -356,7 +512,7 @@ class FundDetail extends StatelessWidget {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: color,
+                      color: widget.color,
                       width: 1.5,
                     ),
                   ),
@@ -384,7 +540,7 @@ class FundDetail extends StatelessWidget {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: color,
+                      backgroundColor: widget.color,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -475,9 +631,50 @@ class FundDetail extends StatelessWidget {
   }
 
   Widget _buildWalletsList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_accountSources.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 64,
+              color: AppTheme.textSecondary.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Chưa có nguồn tiền nào',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final wallets = _accountSources
+        .map((source) => Wallet(
+              name: source.name,
+              amount: NumberFormat.currency(
+                locale: 'vi_VN',
+                symbol: source.currency,
+                decimalDigits: 0,
+              ).format(source.currentAmount),
+              icon: _getSourceIcon(source.type),
+              color: _getSourceColor(source.type),
+              description: source.type,
+            ))
+        .toList();
+
     return WalletsList(
       wallets: wallets,
-      color: color,
+      color: widget.color,
       onAddWallet: _showAddWalletDrawer,
     );
   }
@@ -487,7 +684,14 @@ class FundDetail extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddWalletDrawer(color: AppTheme.primary, fundId: fundId,),
+      builder: (context) => AddWalletDrawer(
+        color: AppTheme.primary,
+        fundId: widget.fundId,
+        onSuccess: () {
+          Navigator.pop(context);
+          _loadAccountSources();
+        },
+      ),
     );
   }
 }

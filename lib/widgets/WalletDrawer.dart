@@ -100,7 +100,13 @@ class _WalletDrawerState extends State<WalletDrawer> {
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
                             builder: (context) =>
-                                AddWalletDrawer(color: AppTheme.primary, fundId: '01',),
+                                AddWalletDrawer(
+                                  color: AppTheme.primary, 
+                                  fundId: '01',
+                                  onSuccess: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
                           );
                         },
                         icon: Icon(

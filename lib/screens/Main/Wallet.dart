@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
+import 'package:uniko/services/core/logger_service.dart';
 import '../../config/theme.config.dart';
 import '../SubScreen/FundDetail.dart';
 import 'package:uniko/widgets/FundSelector.dart';
@@ -369,13 +370,14 @@ class _WalletPageState extends State<WalletPage> {
               decimalDigits: 0,
             ).format(fund.currentAmount),
             color: color,
-            description: fund.description,
+            description: fund.description ?? 'Không có mô tả',
             members: fund.participants
                 .map((p) => Member(
                       name: p.user.fullName,
                       email: p.user.email,
-                      avatar:
-                          p.user.avatarId ?? 'https://i.pravatar.cc/150?img=1',
+                      avatar: p.user.avatarId != null
+                          ? p.user.avatarId!
+                          : 'https://i.pravatar.cc/150?img=1',
                       status: p.status,
                       history: ['Tham gia quỹ với vai trò ${p.role}'],
                     ))

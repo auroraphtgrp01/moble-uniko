@@ -1,3 +1,4 @@
+import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
 
 import '../models/expenditure_fund.dart';
@@ -12,7 +13,7 @@ class ExpenditureService {
   Future<ExpenditureFundResponse> getFunds() async {
     try {
       final response = await ApiService.call('/expenditure-funds');
-
+      LoggerService.debug('response: ${response.body}');
       if (response.statusCode == 200) {
         return ExpenditureFundResponse.fromJson(jsonDecode(response.body));
       } else {

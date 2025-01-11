@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 import '../services/account_source_service.dart';
-import '../models/account_source.dart';
 
 enum WalletType {
   cash,
@@ -12,12 +11,14 @@ enum WalletType {
 
 class AddWalletDrawer extends StatefulWidget {
   final Color color;
-  final String fundId; // Thêm tham số fundId
+  final String fundId;
+  final VoidCallback onSuccess;
 
   const AddWalletDrawer({
     super.key,
     required this.color,
-    required this.fundId, // Yêu cầu fundId
+    required this.fundId,
+    required this.onSuccess,
   });
 
   @override
@@ -483,14 +484,12 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
   }
 
   void _handleSubmit() async {
-    // Xử lý các số tài khoản còn lại trong trường nhập liệu
     _processFinalAccountInput();
 
     if (_formKey.currentState?.validate() ?? false) {
       if (_selectedType == WalletType.bank && _accounts.isEmpty) {
-        // Nếu là ngân hàng nhưng không có số tài khoản, hiển thị lỗi
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Vui lòng nhập ít nhất một số tài khoản'),
             backgroundColor: Colors.red,
           ),
@@ -498,45 +497,29 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
         return;
       }
 
-      setState(() {
-        _isLoading = true;
-      });
-
-      final name = _nameController.text.trim();
-      final amount = int.parse(_amountController.text.trim());
-      final description = _descriptionController.text.trim();
-      final fundId = widget.fundId;
-
-      final accountSourceType =
-          _selectedType == WalletType.bank ? 'BANKING' : 'WALLET';
-
-      final service = AccountSourceService();
+      setState(() => _isLoading = true);
 
       try {
-        final accountSource = await service.createAccountSource(
-          name: name,
-          accountSourceType: accountSourceType,
-          initAmount: amount,
-          fundId: fundId,
-          accounts: _selectedType == WalletType.bank ? _accounts : null, // Truyền accounts nếu là BANKING
-          password: _selectedType == WalletType.bank
-              ? _passwordController.text.trim()
-              : null,
-          loginId: _selectedType == WalletType.bank
-              ? _usernameController.text.trim()
-              : null,
-          type: _selectedType == WalletType.bank ? 'MB_BANK' : null,
+        await AccountSourceService().createAccountSource(
+          name: _nameController.text.trim(),
+          accountSourceType: _selectedType == WalletType.bank ? 'BANKING' : 'WALLET',
+          initAmount: int.parse(_amountController.text.trim()),
+          fundId: widget.fundId,
+          accounts: _selectedType == WalletType.bank ? _accounts : [],
+          password: _selectedType == WalletType.bank ? _passwordController.text.trim() : '',
+          loginId: _selectedType == WalletType.bank ? _usernameController.text.trim() : '',
+          type: _selectedType == WalletType.bank ? 'MB_BANK' : 'WALLET',
         );
-
-        // Thực hiện thêm hành động sau khi tạo thành công, ví dụ:
-        Navigator.pop(context, accountSource);
+        
+        if (mounted) {
+          Navigator.pop(context);
+          widget.onSuccess();
+        }
       } catch (e) {
-        // Lỗi đã được xử lý trong service bằng ToastService
+        // Lỗi đã được xử lý trong service
       } finally {
         if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
+          setState(() => _isLoading = false);
         }
       }
     }

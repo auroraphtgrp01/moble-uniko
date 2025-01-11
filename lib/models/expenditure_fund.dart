@@ -21,7 +21,7 @@ class User {
   final String id;
   final String fullName;
   final String email;
-  final String phoneNumber;
+  final String? phoneNumber;
   final String? avatarId;
   final String? gender;
   final String? address;
@@ -31,7 +31,7 @@ class User {
     required this.id,
     required this.fullName,
     required this.email,
-    required this.phoneNumber,
+    this.phoneNumber,
     this.avatarId,
     this.gender,
     this.address,
@@ -40,14 +40,14 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      fullName: json['fullName'],
-      email: json['email'],
-      phoneNumber: json['phone_number'],
-      avatarId: json['avatarId'],
-      gender: json['gender'],
-      address: json['address'],
-      workplace: json['workplace'],
+      id: json['id'] as String,
+      fullName: json['fullName'] as String,
+      email: json['email'] as String,
+      phoneNumber: json['phone_number'] as String?,
+      avatarId: json['avatarId'] as String?,
+      gender: json['gender'] as String?,
+      address: json['address'] as String?,
+      workplace: json['workplace'] as String?,
     );
   }
 }
@@ -55,28 +55,22 @@ class User {
 class Participant {
   final String id;
   final String role;
-  final User user;
-  final String? subEmail;
-  final String? tokenAcceped;
   final String status;
+  final User user;
 
   Participant({
     required this.id,
     required this.role,
-    required this.user,
-    this.subEmail,
-    this.tokenAcceped,
     required this.status,
+    required this.user,
   });
 
   factory Participant.fromJson(Map<String, dynamic> json) {
     return Participant(
-      id: json['id'],
-      role: json['role'],
-      user: User.fromJson(json['user']),
-      subEmail: json['subEmail'],
-      tokenAcceped: json['tokenAcceped'],
-      status: json['status'],
+      id: json['id'] as String,
+      role: json['role'] as String,
+      status: json['status'] ?? 'PENDING',
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
     );
   }
 }
@@ -84,12 +78,16 @@ class Participant {
 class ExpenditureFund {
   final String id;
   final String name;
-  final String description;
+  final String? description;
   final String status;
   final double currentAmount;
   final String currency;
   final DateTime createdAt;
-  final String createdBy;
+  final String? createdBy;
+  final DateTime? updatedAt;
+  final String? updatedBy;
+  final DateTime? deletedAt;
+  final String? deletedBy;
   final User? defaultForUser;
   final User owner;
   final List<Participant> participants;
@@ -98,12 +96,16 @@ class ExpenditureFund {
   ExpenditureFund({
     required this.id,
     required this.name,
-    required this.description,
+    this.description,
     required this.status,
     required this.currentAmount,
     required this.currency,
     required this.createdAt,
-    required this.createdBy,
+    this.createdBy,
+    this.updatedAt,
+    this.updatedBy,
+    this.deletedAt,
+    this.deletedBy,
     this.defaultForUser,
     required this.owner,
     required this.participants,
@@ -112,22 +114,24 @@ class ExpenditureFund {
 
   factory ExpenditureFund.fromJson(Map<String, dynamic> json) {
     return ExpenditureFund(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'] ?? '',
-      status: json['status'],
-      currentAmount: (json['currentAmount'] ?? 0).toDouble(),
-      currency: json['currency'],
-      createdAt: DateTime.parse(json['createdAt']),
-      createdBy: json['createdBy'],
-      defaultForUser: json['defaultForUser'] != null 
-          ? User.fromJson(json['defaultForUser'])
-          : null,
-      owner: User.fromJson(json['owner']),
-      participants: (json['participants'] as List)
-          .map((p) => Participant.fromJson(p))
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      status: json['status'] as String,
+      currentAmount: (json['currentAmount'] as num).toDouble(),
+      currency: json['currency'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdBy: json['createdBy'] as String?,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
+      updatedBy: json['updatedBy'] as String?,
+      deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt'] as String) : null,
+      deletedBy: json['deletedBy'] as String?,
+      defaultForUser: json['defaultForUser'] != null ? User.fromJson(json['defaultForUser'] as Map<String, dynamic>) : null,
+      owner: User.fromJson(json['owner'] as Map<String, dynamic>),
+      participants: (json['participants'] as List<dynamic>)
+          .map((e) => Participant.fromJson(e as Map<String, dynamic>))
           .toList(),
-      countParticipants: json['countParticipants'],
+      countParticipants: json['participants']?.length ?? 0,
     );
   }
 }

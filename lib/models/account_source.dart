@@ -2,51 +2,91 @@
 
 import 'dart:convert';
 
-class AccountSource {
-  final String name;
-  final String accountSourceType;
-  final int initAmount;
-  final String? password;
-  final String? loginId;
-  final String? type;
-  final List<String>? accounts;
-  final String fundId;
+class AccountSourceResponse {
+  final Pagination pagination;
+  final List<AccountSource> data;
+  final int statusCode;
 
-  AccountSource({
-    required this.name,
-    required this.accountSourceType,
-    required this.initAmount,
-    this.password,
-    this.loginId,
-    this.type,
-    required this.accounts,
-    required this.fundId,
+  AccountSourceResponse({
+    required this.pagination,
+    required this.data,
+    required this.statusCode,
   });
 
-  Map<String, dynamic> toJson() {
-    final data = {
-      'name': name,
-      'accountSourceType': accountSourceType,
-      'initAmount': initAmount,
-      'fundId': fundId,
-    };
-    if (password != null) data['password'] = password!;
-    if (loginId != null) data['login_id'] = loginId!;
-    if (type != null) data['type'] = type!;
-    if(accounts != null) data['account'] = accounts!;
-    return data;
+  factory AccountSourceResponse.fromJson(Map<String, dynamic> json) {
+    return AccountSourceResponse(
+      pagination: Pagination.fromJson(json['pagination']),
+      data: (json['data'] as List<dynamic>)
+          .map((e) => AccountSource.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      statusCode: json['statusCode'] as int,
+    );
   }
+}
+
+class Pagination {
+  final int totalPage;
+  final int currentPage;
+  final int limit;
+  final int skip;
+
+  Pagination({
+    required this.totalPage,
+    required this.currentPage,
+    required this.limit,
+    required this.skip,
+  });
+
+  factory Pagination.fromJson(Map<String, dynamic> json) {
+    return Pagination(
+      totalPage: json['totalPage'] as int,
+      currentPage: json['currentPage'] as int,
+      limit: json['limit'] as int,
+      skip: json['skip'] as int,
+    );
+  }
+}
+
+class AccountSource {
+  final String id;
+  final String name;
+  final String type;
+  final int initAmount;
+  final String? accountBankId;
+  final String currency;
+  final int currentAmount;
+  final String userId;
+  final String fundId;
+  final String? participantId;
+  final dynamic accountBank;
+
+  AccountSource({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.initAmount,
+    this.accountBankId,
+    required this.currency,
+    required this.currentAmount,
+    required this.userId,
+    required this.fundId,
+    this.participantId,
+    this.accountBank,
+  });
 
   factory AccountSource.fromJson(Map<String, dynamic> json) {
-  return AccountSource(
-    name: json['name'] ?? '',
-    accountSourceType: json['accountSourceType'] ?? '',
-    initAmount: json['initAmount'] ?? 0,
-    password: json['password'],
-    loginId: json['login_id'],
-    type: json['type'],
-    accounts: json['accounts'],
-    fundId: json['fundId'] ?? '',
-  );
-}
+    return AccountSource(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      type: json['type'] as String,
+      initAmount: json['initAmount'] as int,
+      accountBankId: json['accountBankId'] as String?,
+      currency: json['currency'] as String,
+      currentAmount: json['currentAmount'] as int,
+      userId: json['userId'] as String,
+      fundId: json['fundId'] as String,
+      participantId: json['participantId'] as String?,
+      accountBank: json['accountBank'],
+    );
+  }
 }

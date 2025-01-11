@@ -6,7 +6,6 @@ import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
 import '../models/account_source.dart';
 
-
 class AccountSourceService {
   Future<AccountSource> createAccountSource({
     required String name,
@@ -27,25 +26,19 @@ class AccountSourceService {
       };
 
       if (accountSourceType == 'BANKING') {
-        body['password'] = password!;
-        body['login_id'] = loginId!;
+        body['password'] = password ?? '';
+        body['login_id'] = loginId ?? '';
         body['type'] = type ?? 'MB_BANK';
-        body['accounts'] = accounts ?? [" "];
+        body['accounts'] = accounts ?? [];
       }
 
-      LoggerService.info('UPDATE_USER_INFO Request: ${json.encode({
-            'fundId': fundId,
-            'endpoint': '/account-sources',
-            'method': 'POST',
-            'body': body,
-          })}');
+      LoggerService.info('UPDATE_USER_INFO Request: ${json.encode(body)}');
 
       final response = await ApiService.call(
-        '/account-sources', // Thay đổi đường dẫn API nếu cần
+        '/account-sources',
         method: 'POST',
         body: body,
       );
-      print('Post Source Response: ${response.body}');
 
       if (response.statusCode == 201) {
         ToastService.showSuccess('Tạo nguồn tiền thành công');
@@ -57,6 +50,25 @@ class AccountSourceService {
     } catch (e) {
       ToastService.showError('Có lỗi xảy ra: $e');
       throw Exception('Failed to create account source: $e');
+    }
+  }
+
+  Future<AccountSourceResponse> getAdvancedAccountSources(String fundId) async {
+    try {
+      final response =
+          await ApiService.call('/account-sources/advanced/$fundId');
+
+      LoggerService.info('GET_ACCOUNT_SOURCES Response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return AccountSourceResponse.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception(
+            'Failed to get account sources: ${response.statusCode}');
+      }
+    } catch (e) {
+      LoggerService.error('Error getting account sources: $e');
+      throw Exception('Failed to get account sources: $e');
     }
   }
 }

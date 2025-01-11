@@ -16,10 +16,9 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController =
-      TextEditingController(text: 'minhtuanledng@gmail.com');
+  final TextEditingController _emailController =TextEditingController(text: 'minhtuanledng@gmail.com');
   final TextEditingController _passwordController =
-      TextEditingController(text: '1234');
+    TextEditingController(text: '123123');
   bool _obscurePassword = true;
   bool _isLoading = false;
   final _authService = AuthService();
@@ -68,7 +67,6 @@ class _LoginPageState extends State<LoginPage> {
         });
 
         if (response['success']) {
-          // Lưu token và thông tin user
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', 'mock_token');
           await prefs.setString('userName', 'Lê Minh Tuấn');
