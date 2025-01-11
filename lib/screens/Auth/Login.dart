@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/services/core/storage_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
+import 'package:uniko/widgets/Avatar.dart';
 import '../../config/theme.config.dart';
 import '../Main/Home.dart';
 import 'ForgotPassword.dart';
@@ -16,15 +18,17 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController =TextEditingController(text: 'minhtuanledng@gmail.com');
+  final TextEditingController _emailController =
+      TextEditingController(text: 'minhtuanledng@gmail.com');
   final TextEditingController _passwordController =
-    TextEditingController(text: '123123');
+      TextEditingController(text: '123123');
   bool _obscurePassword = true;
   bool _isLoading = false;
   final _authService = AuthService();
   bool _showPasswordLogin = false;
   String? _savedUserName;
   String? _savedUserEmail;
+  String? _savedAvatarId;
 
   // Validate email
   String? _validateEmail(String? value) {
@@ -69,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
         if (response['success']) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', 'mock_token');
-          await prefs.setString('userName', 'Lê Minh Tuấn');
+          await prefs.setString('userName', 'Lê Minh Tuấn 1');
           await prefs.setString('userEmail', 'minhtuanledng@gmail.com');
 
           if (!mounted) return;
@@ -154,14 +158,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loadSavedUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _savedUserName = prefs.getString('userName');
-      _savedUserEmail = prefs.getString('userEmail');
-      if (_savedUserEmail != null) {
-        _emailController.text = _savedUserEmail!;
-      }
-    });
+    final userInfo = await StorageService.getUserInfo();
+    
+    if (userInfo != null) {
+      setState(() {
+        _savedUserName = userInfo['fullName'];
+        _savedUserEmail = userInfo['email'];
+        _savedAvatarId = userInfo['avatarId'];
+        
+        if (_savedUserEmail != null) {
+          _emailController.text = _savedUserEmail!;
+        }
+      });
+    }
   }
 
   Future<void> _handleBiometricLogin() async {
@@ -214,25 +223,10 @@ class _LoginPageState extends State<LoginPage> {
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primary.withOpacity(0.7),
-                    AppTheme.primary.withOpacity(0.3),
-                  ],
-                ),
               ),
-              child: CircleAvatar(
-                radius: 45,
-                backgroundColor: AppTheme.primary.withOpacity(0.1),
-                child: Text(
-                  _savedUserName![0].toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 36,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              child: Avatar(
+                avatarId: _savedAvatarId,
+                size: 90,
               ),
             ),
             const SizedBox(height: 24),
@@ -524,71 +518,77 @@ class _LoginPageState extends State<LoginPage> {
                       // Login and Fingerprint buttons row
                       Row(
                         children: [
-                          // Login button
-                          Expanded(
-                            flex: 5,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primary,
-                                minimumSize: const Size(double.infinity, 56),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                elevation: isDarkMode ? 4 : 0,
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Đăng nhập',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Fingerprint button
-                          FutureBuilder<bool>(
-                            future: AuthService.isBiometricEnabled(),
-                            builder: (context, snapshot) {
-                              if (snapshot.data == true) {
-                                return Expanded(
-                                  flex: 1,
-                                  child: Container(
-                                    height: 56,
+                          if (_savedUserName != null && !_showPasswordLogin) 
+                            // Chỉ hiển thị button vân tay khi có thông tin user đã lưu
+                            FutureBuilder<bool>(
+                              future: AuthService.isBiometricEnabled(),
+                              builder: (context, snapshot) {
+                                if (snapshot.data == true) {
+                                  return Expanded(
                                     child: ElevatedButton(
                                       onPressed: _handleBiometricLogin,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppTheme.primary,
+                                        minimumSize: const Size(double.infinity, 56),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15),
+                                          borderRadius: BorderRadius.circular(15),
                                         ),
                                         elevation: isDarkMode ? 4 : 0,
-                                        padding: EdgeInsets.zero,
                                       ),
-                                      child: Icon(
-                                        Icons.fingerprint_rounded,
-                                        size: 28,
-                                        color: Colors.white,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.fingerprint_rounded, size: 28, color: Colors.white),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Đăng nhập bằng vân tay',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            )
+                          else
+                            // Hiển thị button đăng nhập bình thường cho lần đầu
+                            Expanded(
+                              flex: 5,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _handleLogin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primary,
+                                  minimumSize: const Size(double.infinity, 56),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
                                   ),
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
+                                  elevation: isDarkMode ? 4 : 0,
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Đăng nhập',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
                         ],
                       ),
 
