@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 import '../models/account_source.dart';
 import 'package:intl/intl.dart';
+import './EditWalletDrawer.dart';
 
 class WalletDetailDrawer extends StatelessWidget {
   final AccountSource wallet;
@@ -15,53 +16,57 @@ class WalletDetailDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Stack(
-        children: [
-          // Content
-          Column(
-            children: [
-              // Drawer Handle
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: AppTheme.textSecondary.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // Main Content
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 32),
-                      _buildBalanceCard(),
-                      const SizedBox(height: 32),
-                      _buildWalletInfo(),
-                      if (wallet.type == 'BANKING') ...[
-                        const SizedBox(height: 32),
-                        _buildBankAccounts(),
-                      ],
-                      const SizedBox(height: 32),
-                      _buildActions(),
-                    ],
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.5,
+      maxChildSize: 0.8,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                // Drawer Handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.textSecondary.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+
+                // Main Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(),
+                        const SizedBox(height: 32),
+                        _buildBalanceCard(),
+                        const SizedBox(height: 32),
+                        _buildWalletInfo(),
+                        if (wallet.type == 'BANKING') ...[
+                          const SizedBox(height: 32),
+                          _buildBankAccounts(),
+                        ],
+                        const SizedBox(height: 32),
+                        _buildActions(context),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -496,13 +501,25 @@ class WalletDetailDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildActions() {
+  Widget _buildActions(BuildContext context) {
     return Row(
       children: [
         Expanded(
           child: OutlinedButton(
             onPressed: () {
-              // TODO: Implement edit
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => EditWalletDrawer(
+                  wallet: wallet,
+                  color: color,
+                  onSave: (updatedWallet) {
+                    // TODO: Implement save logic
+                    print('Wallet updated: ${updatedWallet.name}');
+                  },
+                ),
+              );
             },
             style: OutlinedButton.styleFrom(
               foregroundColor: color,

@@ -95,7 +95,7 @@ class AccountSource {
   final String userId;
   final String fundId;
   final String? participantId;
-  final Map<String, dynamic>? accountBank;
+  Map<String, dynamic>? accountBank;
   final List<String>? accounts;
 
   AccountSource({
