@@ -59,6 +59,7 @@ class AccountSource {
   final String fundId;
   final String? participantId;
   final dynamic accountBank;
+  final List<String>? accounts;
 
   AccountSource({
     required this.id,
@@ -72,6 +73,7 @@ class AccountSource {
     required this.fundId,
     this.participantId,
     this.accountBank,
+    this.accounts,
   });
 
   factory AccountSource.fromJson(Map<String, dynamic> json) {
@@ -87,6 +89,9 @@ class AccountSource {
       fundId: json['fundId'] as String,
       participantId: json['participantId'] as String?,
       accountBank: json['accountBank'],
+      accounts: json['accounts'] != null 
+          ? List<String>.from(json['accounts'] as List)
+          : null,
     );
   }
 }

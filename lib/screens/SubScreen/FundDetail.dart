@@ -10,6 +10,8 @@ import '../../widgets/WalletsList.dart';
 import '../../widgets/AddWalletDrawer.dart';
 import '../../services/account_source_service.dart';
 import 'package:intl/intl.dart';
+import 'package:uniko/screens/SubScreen/WalletDetail.dart';
+import 'package:uniko/widgets/WalletDetailDrawer.dart';
 
 class FundDetail extends StatefulWidget {
   final String fundId;
@@ -64,61 +66,71 @@ class _FundDetailState extends State<FundDetail> {
   }
 
   Widget _buildAccountSourceItem(AccountSource source) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppTheme.borderColor,
-          width: 1,
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WalletDetail(wallet: source),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppTheme.borderColor,
+            width: 1,
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _getSourceColor(source.type).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _getSourceColor(source.type).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _getSourceIcon(source.type),
+                color: _getSourceColor(source.type),
+                size: 24,
+              ),
             ),
-            child: Icon(
-              _getSourceIcon(source.type),
-              color: _getSourceColor(source.type),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  source.name,
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    source.name,
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  NumberFormat.currency(
-                    locale: 'vi_VN',
-                    symbol: source.currency,
-                    decimalDigits: 0,
-                  ).format(source.currentAmount),
-                  style: TextStyle(
-                    color: _getSourceColor(source.type),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 4),
+                  Text(
+                    NumberFormat.currency(
+                      locale: 'vi_VN',
+                      symbol: source.currency,
+                      decimalDigits: 0,
+                    ).format(source.currentAmount),
+                    style: TextStyle(
+                      color: _getSourceColor(source.type),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -658,24 +670,21 @@ class _FundDetailState extends State<FundDetail> {
       );
     }
 
-    final wallets = _accountSources
-        .map((source) => Wallet(
-              name: source.name,
-              amount: NumberFormat.currency(
-                locale: 'vi_VN',
-                symbol: source.currency,
-                decimalDigits: 0,
-              ).format(source.currentAmount),
-              icon: _getSourceIcon(source.type),
-              color: _getSourceColor(source.type),
-              description: source.type,
-            ))
-        .toList();
-
     return WalletsList(
-      wallets: wallets,
+      wallets: _accountSources,
       color: widget.color,
-      onAddWallet: _showAddWalletDrawer,
+      onAddWallet: () => _showAddWalletDrawer(context),
+      onTapWallet: (accountSource) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => WalletDetailDrawer(
+            wallet: accountSource,
+            color: _getSourceColor(accountSource.type),
+          ),
+        );
+      },
     );
   }
 
@@ -952,6 +961,7 @@ class Wallet {
   final String amount;
   final IconData icon;
   final Color color;
+  final String type;
   final String description;
 
   const Wallet({
@@ -959,6 +969,7 @@ class Wallet {
     required this.amount,
     required this.icon,
     required this.color,
+    required this.type,
     required this.description,
   });
 }

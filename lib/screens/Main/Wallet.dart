@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/services/core/logger_service.dart';
 import '../../config/theme.config.dart';
-import '../SubScreen/FundDetail.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +12,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:uniko/models/expenditure_fund.dart';
 import '../../services/expenditure_service.dart';
+import '../SubScreen/FundDetail.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
