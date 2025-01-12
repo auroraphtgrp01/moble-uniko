@@ -55,6 +55,48 @@ class AccountSourceService {
     }
   }
 
+  Future<AccountSource> updateAccountSource({
+    required String accountSourceId,
+    required String accountSourceType,
+    String? name,
+    String? password,
+    String? loginId,
+    List<String>? accounts,
+  }) async {
+    try {
+      // Xây dựng body cho request
+      final body = {
+        if (name != null) 'name': name,
+        'accountSourceType': accountSourceType,
+        if (password != null) 'password': password,
+        if (loginId != null) 'login_id': loginId,
+        if (accounts != null) 'accounts': accounts,
+      };
+
+      LoggerService.info('UPDATE_ACCOUNT_SOURCE Request: ${json.encode(body)}');
+
+      final response = await ApiService.call(
+        '/account-sources/$accountSourceId',
+        method: 'PATCH',
+        body: body,
+      );
+
+      LoggerService.info('UPDATE_ACCOUNT_SOURCE Response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        ToastService.showSuccess('Cập nhật ví thành công');
+        return AccountSource.fromJson(jsonDecode(response.body)['data']);
+      } else {
+        ToastService.showError('Cập nhật ví thất bại - Vui lòng thử lại');
+        throw Exception(
+            'Failed to update account source: ${response.statusCode}');
+      }
+    } catch (e) {
+      ToastService.showError('Có lỗi xảy ra: $e');
+      throw Exception('Failed to update account source: $e');
+    }
+  }
+
   Future<AccountSourceResponse> getAdvancedAccountSources(String fundId) async {
     try {
       final response =

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/widgets/EditWalletDrawer.dart';
 import '../config/theme.config.dart';
 import '../models/account_source.dart';
 import 'package:intl/intl.dart';
-import './EditWalletDrawer.dart';
 
-class WalletDetailDrawer extends StatelessWidget {
+class WalletDetailDrawer extends StatefulWidget {
   final AccountSource wallet;
   final Color color;
 
@@ -13,6 +13,19 @@ class WalletDetailDrawer extends StatelessWidget {
     required this.wallet,
     required this.color,
   });
+
+  @override
+  State<WalletDetailDrawer> createState() => _WalletDetailDrawerState();
+}
+
+class _WalletDetailDrawerState extends State<WalletDetailDrawer> {
+  late AccountSource wallet;
+
+  @override
+  void initState() {
+    super.initState();
+    wallet = widget.wallet;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,8 +92,8 @@ class WalletDetailDrawer extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                color.withOpacity(0.8),
-                color.withOpacity(0.6),
+                widget.color.withOpacity(0.8),
+                widget.color.withOpacity(0.6),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -88,7 +101,7 @@ class WalletDetailDrawer extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: widget.color.withOpacity(0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -120,10 +133,10 @@ class WalletDetailDrawer extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: widget.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: color.withOpacity(0.2),
+                    color: widget.color.withOpacity(0.2),
                     width: 1,
                   ),
                 ),
@@ -134,7 +147,7 @@ class WalletDetailDrawer extends StatelessWidget {
                       wallet.type == 'WALLET'
                           ? Icons.wallet
                           : Icons.credit_card,
-                      color: color,
+                      color: widget.color,
                       size: 16,
                     ),
                     const SizedBox(width: 6),
@@ -143,7 +156,7 @@ class WalletDetailDrawer extends StatelessWidget {
                           ? 'Tiền mặt'
                           : 'Tài khoản ngân hàng',
                       style: TextStyle(
-                        color: color,
+                        color: widget.color,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -162,11 +175,11 @@ class WalletDetailDrawer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.8),
+        color: widget.color.withOpacity(0.8),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.2),
+            color: widget.color.withOpacity(0.2),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -247,34 +260,6 @@ class WalletDetailDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionItem(IconData icon, String label, Color iconColor) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 24,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: AppTheme.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildWalletInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,12 +335,12 @@ class WalletDetailDrawer extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: widget.color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(
                         Icons.account_balance,
-                        color: color,
+                        color: widget.color,
                         size: 24,
                       ),
                     ),
@@ -428,10 +413,10 @@ class WalletDetailDrawer extends StatelessWidget {
                                   vertical: 10,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: color.withOpacity(0.08),
+                                  color: widget.color.withOpacity(0.08),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: color.withOpacity(0.15),
+                                    color: widget.color.withOpacity(0.15),
                                     width: 1,
                                   ),
                                 ),
@@ -439,7 +424,7 @@ class WalletDetailDrawer extends StatelessWidget {
                                   (account as Map)['accountNo']?.toString() ??
                                       '',
                                   style: TextStyle(
-                                    color: color,
+                                    color: widget.color,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
                                     letterSpacing: 0.5,
@@ -460,47 +445,6 @@ class WalletDetailDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: color,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildActions(BuildContext context) {
     return Row(
       children: [
@@ -513,17 +457,18 @@ class WalletDetailDrawer extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 builder: (context) => EditWalletDrawer(
                   wallet: wallet,
-                  color: color,
+                  color: widget.color,
                   onSave: (updatedWallet) {
-                    // TODO: Implement save logic
-                    print('Wallet updated: ${updatedWallet.name}');
+                    setState(() {
+                      wallet = updatedWallet;
+                    });
                   },
                 ),
               );
             },
             style: OutlinedButton.styleFrom(
-              foregroundColor: color,
-              side: BorderSide(color: color),
+              foregroundColor: widget.color,
+              side: BorderSide(color: widget.color),
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -578,6 +523,47 @@ class WalletDetailDrawer extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: widget.color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: widget.color,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ],
     );
