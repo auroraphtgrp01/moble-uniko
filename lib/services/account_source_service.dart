@@ -40,6 +40,8 @@ class AccountSourceService {
         body: body,
       );
 
+      LoggerService.info('CREATE_ACCOUNT_SOURCE Response: ${response.body}');
+
       if (response.statusCode == 201) {
         ToastService.showSuccess('Tạo nguồn tiền thành công');
         return AccountSource.fromJson(jsonDecode(response.body));

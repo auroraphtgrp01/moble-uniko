@@ -114,21 +114,24 @@ class AccountSource {
   });
 
   factory AccountSource.fromJson(Map<String, dynamic> json) {
-    return AccountSource(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      type: json['type'] as String,
-      initAmount: json['initAmount'] as int,
-      accountBankId: json['accountBankId'] as String?,
-      currency: json['currency'] as String,
-      currentAmount: json['currentAmount'] as int,
-      userId: json['userId'] as String,
-      fundId: json['fundId'] as String,
-      participantId: json['participantId'] as String?,
-      accountBank: json['accountBank'] as Map<String, dynamic>?,
-      accounts: json['accounts'] != null 
-          ? List<String>.from(json['accounts'] as List)
-          : null,
-    );
-  }
+  return AccountSource(
+    id: json['id'] ?? '', 
+    name: json['name'] ?? '',
+    type: json['type'] ?? '',
+    initAmount: json['initAmount'] ?? 0, 
+    accountBankId: json['accountBankId'] != null ? json['accountBankId'] as String : null,
+    currency: json['currency'] ?? '',
+    currentAmount: json['currentAmount'] ?? 0,
+    userId: json['userId'] ?? '',
+    fundId: json['fundId'] ?? '',
+    participantId: json['participantId'] != null ? json['participantId'] as String : null,
+    accountBank: json['accountBank'] != null
+        ? Map<String, dynamic>.from(json['accountBank'])
+        : null,
+    accounts: json['accounts'] != null
+        ? List<String>.from(json['accounts'] as List)
+        : null,
+  );
+}
+
 }
