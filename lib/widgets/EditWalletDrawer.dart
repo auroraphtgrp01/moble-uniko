@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/services/account_source_service.dart';
+import 'package:uniko/services/core/toast_service.dart';
 import '../config/theme.config.dart';
 import '../models/account_source.dart';
 import 'package:intl/intl.dart';
@@ -23,9 +25,9 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
   late TextEditingController nameController;
   late TextEditingController initAmountController;
   late TextEditingController currentAmountController;
-  late TextEditingController loginIdController;
-  late TextEditingController passwordController;
-  late TextEditingController accountNoController;
+  TextEditingController? loginIdController;
+  TextEditingController? passwordController;
+  TextEditingController? accountNoController;
 
   @override
   void initState() {
@@ -35,16 +37,22 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
         text: widget.wallet.initAmount.toString());
     currentAmountController = TextEditingController(
         text: widget.wallet.currentAmount.toString());
-    
+
     if (widget.wallet.type == 'BANKING') {
       loginIdController = TextEditingController(
           text: widget.wallet.accountBank?['login_id']?.toString() ?? '');
       passwordController = TextEditingController(
           text: widget.wallet.accountBank?['pass']?.toString() ?? '');
+
+      final accountList = (widget.wallet.accountBank?['accounts'] as List?)
+              ?.map((acc) => acc['accountNo']?.toString())
+              .where((acc) => acc != null)
+              .toList() ??
+          [];
+
       accountNoController = TextEditingController(
-          text: (widget.wallet.accountBank?['accounts'] as List?)
-              ?.firstWhere((acc) => true, orElse: () => {'accountNo': ''})['accountNo']
-              ?.toString() ?? '');
+        text: accountList.isNotEmpty ? accountList.join(' ') : '',
+      );
     }
   }
 
@@ -53,11 +61,9 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
     nameController.dispose();
     initAmountController.dispose();
     currentAmountController.dispose();
-    if (widget.wallet.type == 'BANKING') {
-      loginIdController.dispose();
-      passwordController.dispose();
-      accountNoController.dispose();
-    }
+    loginIdController?.dispose();
+    passwordController?.dispose();
+    accountNoController?.dispose();
     super.dispose();
   }
 
@@ -94,8 +100,8 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    widget.wallet.type == 'WALLET' 
-                        ? Icons.account_balance_wallet 
+                    widget.wallet.type == 'WALLET'
+                        ? Icons.account_balance_wallet
                         : Icons.account_balance,
                     color: widget.color,
                     size: 22,
@@ -213,14 +219,14 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
                           const SizedBox(height: 16),
                           _buildTextField(
                             'Tên đăng nhập',
-                            loginIdController,
+                            loginIdController!,
                             widget.color,
                             prefixIcon: Icons.person_outline,
                           ),
                           const SizedBox(height: 16),
                           _buildTextField(
                             'Mật khẩu',
-                            passwordController,
+                            passwordController!,
                             widget.color,
                             isPassword: true,
                             prefixIcon: Icons.lock_outline,
@@ -228,7 +234,7 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
                           const SizedBox(height: 16),
                           _buildTextField(
                             'Số tài khoản',
-                            accountNoController,
+                            accountNoController!,
                             widget.color,
                             prefixIcon: Icons.credit_card_outlined,
                           ),
@@ -351,34 +357,48 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
     );
   }
 
-  void _handleSave() {
-    // Tạo bản sao của wallet hiện tại
-    final updatedWallet = AccountSource(
-      id: widget.wallet.id,
-      name: nameController.text,
-      type: widget.wallet.type,
-      initAmount: int.tryParse(initAmountController.text) ?? widget.wallet.initAmount,
-      currentAmount: int.tryParse(currentAmountController.text) ?? widget.wallet.currentAmount,
-      currency: widget.wallet.currency,
-      userId: widget.wallet.userId,
-      fundId: widget.wallet.fundId,
-      participantId: widget.wallet.participantId,
-      accountBankId: widget.wallet.accountBankId,
-    );
+  void _handleSave() async {
+    final accountSourceService = AccountSourceService();
 
-    // Nếu là tài khoản ngân hàng, cập nhật thông tin ngân hàng
-    if (widget.wallet.type == 'BANKING') {
-      updatedWallet.accountBank = {
-        ...widget.wallet.accountBank ?? {},
-        'login_id': loginIdController.text,
-        'pass': passwordController.text,
-        'accounts': [
-          {'accountNo': accountNoController.text}
-        ],
+    try {
+      final name = nameController.text;
+      final initAmount = int.tryParse(initAmountController.text) ?? widget.wallet.initAmount;
+      final accountSourceType = widget.wallet.type;
+
+      // Tách chuỗi số tài khoản thành danh sách
+      final accountNumbers = accountNoController?.text
+          .split(' ') // Tách bằng dấu cách
+          .where((number) => number.isNotEmpty) // Bỏ qua các chuỗi rỗng
+          .toList();
+
+      // Xây dựng body
+      final Map<String, dynamic> params = {
+        'accountSourceId': widget.wallet.id,
+        'accountSourceType': accountSourceType,
+        if (name.isNotEmpty) 'name': name,
       };
-    }
 
-    widget.onSave(updatedWallet);
-    Navigator.pop(context);
+      if (accountSourceType == 'BANKING') {
+        params['loginId'] = loginIdController?.text;
+        params['password'] = passwordController?.text;
+        params['accounts'] = accountNumbers; // Gán danh sách số tài khoản
+      }
+
+      // Gọi API để cập nhật
+      final updatedWallet = await accountSourceService.updateAccountSource(
+        accountSourceId: widget.wallet.id,
+        accountSourceType: accountSourceType,
+        name: params['name'] as String?,
+        password: params['password'] as String?,
+        loginId: params['loginId'] as String?,
+        accounts: params['accounts'] as List<String>?, // Ép kiểu danh sách
+      );
+
+      // Thông báo và cập nhật UI
+      widget.onSave(updatedWallet);
+      Navigator.pop(context);
+    } catch (e) {
+      ToastService.showError('Có lỗi xảy ra khi lưu: $e');
+    }
   }
-} 
+}

@@ -58,7 +58,7 @@ class _FundDetailState extends State<FundDetail> {
       });
     } catch (e) {
       LoggerService.error('Error loading account sources: $e');
-      setState(() => _isLoading = false);
+      if(mounted) setState(() => _isLoading = false);
       if (mounted) {
         ToastService.showError('Không thể tải nguồn tiền');
       }
