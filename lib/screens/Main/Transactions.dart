@@ -11,6 +11,7 @@ import 'package:uniko/models/tracker_transaction.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/fund_provider.dart';
 import 'package:uniko/providers/statistics_provider.dart';
+import 'package:uniko/providers/category_provider.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -21,9 +22,9 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   String _selectedCategory = 'Tất cả';
-  DateTime? _filterStartDate;
-  DateTime? _filterEndDate;
-  FilterType? _filterType;
+  // DateTime? _filterStartDate;
+  // DateTime? _filterEndDate;
+  // FilterType? _filterType;
   final _trackerTransactionService = TrackerTransactionService();
   List<TrackerTransaction> _transactions = [];
   bool _isLoading = false;
@@ -32,10 +33,18 @@ class _TransactionsPageState extends State<TransactionsPage> {
   bool _isLoadingMore = false;
   final ScrollController _scrollController = ScrollController();
   String? _previousFundId;
+  List<CategoryItem> _categories = [];
 
   @override
   void initState() {
     super.initState();
+    _selectedCategory = 'Tất cả';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final fundId = context.read<FundProvider>().selectedFundId;
+      if (fundId != null) {
+        context.read<CategoryProvider>().fetchCategories(fundId);
+      }
+    });
     _loadTransactions();
     _scrollController.addListener(_scrollListener);
   }
@@ -47,7 +56,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       if (!_isLoadingMore && _hasMoreData) {
         _loadMoreTransactions();
       }
@@ -61,7 +71,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response =
+          await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: 1,
         limit: 8,
@@ -87,7 +98,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response =
+          await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: _currentPage + 1,
         limit: 5,
@@ -112,16 +124,34 @@ class _TransactionsPageState extends State<TransactionsPage> {
     await _loadTransactions();
   }
 
-  final List<CategoryItem> _categories = [
-    CategoryItem(emoji: '🌟', name: 'Tất cả', color: const Color(0xFF5856D6)),
-    CategoryItem(emoji: '🍲', name: 'Ăn uống', color: const Color(0xFFFF6B6B)),
-    CategoryItem(
-        emoji: '🚌', name: 'Di chuyển', color: const Color(0xFF4DABF7)),
-    CategoryItem(emoji: '🛒', name: 'Mua sắm', color: const Color(0xFFE599F7)),
-    CategoryItem(emoji: '🏥', name: 'Sức khỏe', color: const Color(0xFF34C759)),
-    CategoryItem(emoji: '🎬', name: 'Giải trí', color: const Color(0xFFFFB86C)),
-    CategoryItem(emoji: '💰', name: 'Thu nhập', color: const Color(0xFF34C759)),
-  ];
+  List<CategoryItem> _getCategories() {
+    final Set<String> uniqueCategories = {'Tất cả', 'Thu nhập', 'Chi tiêu'};
+
+    // Thêm các category từ transactions
+    for (var transaction in _transactions) {
+      uniqueCategories.add(transaction.trackerType.name);
+    }
+
+    return uniqueCategories.map((name) {
+      if (name == 'Tất cả') {
+        return CategoryItem(name: name, emoji: '🏠', color: AppTheme.primary);
+      }
+      if (name == 'Thu nhập') {
+        return CategoryItem(
+            name: name, emoji: '💰', color: const Color(0xFF34C759));
+      }
+      if (name == 'Chi tiêu') {
+        return CategoryItem(
+            name: name, emoji: '💸', color: const Color(0xFFD32F2F));
+      }
+      // Các category khác
+      return CategoryItem(
+        name: name,
+        emoji: '📝', // Emoji mặc định
+        color: AppTheme.primary, // Màu mặc định
+      );
+    }).toList();
+  }
 
   String _formatAmount(int amount) {
     final format = NumberFormat("#,###", "vi_VN");
@@ -131,7 +161,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     final newFundId = context.watch<FundProvider>().selectedFundId;
     if (newFundId != null && newFundId != _previousFundId) {
       _previousFundId = newFundId;
@@ -150,6 +180,46 @@ class _TransactionsPageState extends State<TransactionsPage> {
       appBar: const CommonHeader(title: 'Giao dịch'),
       backgroundColor: AppTheme.background,
       extendBodyBehindAppBar: true,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'filter',
+            onPressed: _showFilterDrawer,
+            backgroundColor: const Color(0xFF5856D6),
+            child: const Icon(
+              Icons.filter_list_rounded,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
+            heroTag: 'reload',
+            onPressed: _onRefresh,
+            backgroundColor: const Color(0xFFAF52DE),
+            child: const Icon(
+              Icons.refresh_rounded,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
+            heroTag: 'chatbot',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+              );
+            },
+            backgroundColor: AppTheme.primary,
+            child: const Icon(
+              Icons.chat_rounded,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         color: AppTheme.primary,
@@ -199,18 +269,20 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: balance >= 0 ? [
-                                const Color(0xFF34C759).withOpacity(0.8),
-                                const Color(0xFF34C759),
-                              ] : [
-                                const Color(0xFFE53935).withOpacity(0.8),
-                                const Color(0xFFD32F2F),
-                              ],
+                              colors: balance >= 0
+                                  ? [
+                                      const Color(0xFF34C759).withOpacity(0.8),
+                                      const Color(0xFF34C759),
+                                    ]
+                                  : [
+                                      const Color(0xFFE53935).withOpacity(0.8),
+                                      const Color(0xFFD32F2F),
+                                    ],
                             ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: balance >= 0 
+                                color: balance >= 0
                                     ? const Color(0xFF34C759).withOpacity(0.2)
                                     : const Color(0xFFD32F2F).withOpacity(0.2),
                                 blurRadius: 12,
@@ -222,7 +294,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
@@ -230,7 +303,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                         padding: const EdgeInsets.all(6),
                                         decoration: BoxDecoration(
                                           color: Colors.white.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                         child: const Icon(
                                           Icons.account_balance_wallet_outlined,
@@ -298,7 +372,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
                               ),
                               const SizedBox(height: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(8),
@@ -334,7 +409,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             Container(
                               width: 1,
                               height: 50,
-                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               color: AppTheme.divider.withOpacity(0.5),
                             ),
                             Expanded(
@@ -357,42 +433,95 @@ class _TransactionsPageState extends State<TransactionsPage> {
             SliverToBoxAdapter(
               child: Container(
                 height: 50,
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _categories.length,
-                  itemBuilder: (context, index) {
-                    final category = _categories[index];
-                    final isSelected = category.name == _selectedCategory;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: FilterChip(
-                        selected: isSelected,
-                        showCheckmark: false,
-                        avatar: Text(category.emoji),
-                        label: Text(category.name),
-                        labelStyle: TextStyle(
-                          color:
-                              isSelected ? Colors.white : AppTheme.textPrimary,
-                          fontSize: 13,
-                          fontWeight:
-                              isSelected ? FontWeight.w500 : FontWeight.normal,
-                        ),
-                        backgroundColor: AppTheme.cardBackground,
-                        selectedColor: category.color,
-                        side: BorderSide(
-                          color: isSelected
-                              ? category.color
-                              : AppTheme.isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : AppTheme.borderColor,
-                          width: 0.5,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        onSelected: (bool selected) {
-                          setState(() => _selectedCategory = category.name);
-                        },
-                      ),
+                margin: const EdgeInsets.only(top: 8, bottom: 8),
+                child: Consumer<CategoryProvider>(
+                  builder: (context, provider, child) {
+                    // Cập nhật _categories từ provider
+                    final expenseCategories = provider
+                        .getCategoriesByType('EXPENSE')
+                        .map((cat) => CategoryItem(
+                              emoji: cat.name.split(' ')[0],
+                              name: cat.name,
+                              color: const Color(0xFFD32F2F),
+                            ))
+                        .toList();
+
+                    final incomeCategories = provider
+                        .getCategoriesByType('INCOMING')
+                        .map((cat) => CategoryItem(
+                              emoji: cat.name.split(' ')[0],
+                              name: cat.name,
+                              color: const Color(0xFF34C759),
+                            ))
+                        .toList();
+
+                    _categories = [
+                      CategoryItem(name: 'Tất cả', emoji: '🏠', color: AppTheme.primary),
+                      CategoryItem(name: 'Thu nhập', emoji: '💰', color: const Color(0xFF34C759)),
+                      CategoryItem(name: 'Chi tiêu', emoji: '💸', color: const Color(0xFFD32F2F)),
+                      ...incomeCategories,
+                      ...expenseCategories,
+                    ];
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _categories.length,
+                      itemBuilder: (context, index) {
+                        final category = _categories[index];
+                        final isSelected = category.name == _selectedCategory;
+
+                        // Xử lý hiển thị tên category
+                        String displayName = category.name;
+                        if (!['Tất cả', 'Thu nhập', 'Chi tiêu'].contains(category.name)) {
+                          displayName = category.name.split(' ').sublist(1).join(' ');
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            selected: isSelected,
+                            showCheckmark: false,
+                            avatar: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.white.withOpacity(0.2)
+                                    : category.color.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(category.emoji),
+                            ),
+                            label: Text(displayName),
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.white : AppTheme.textPrimary,
+                              fontSize: 13,
+                              fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                              letterSpacing: 0.3,
+                            ),
+                            backgroundColor: AppTheme.cardBackground,
+                            selectedColor: category.color,
+                            elevation: 0,
+                            pressElevation: 0,
+                            shadowColor: Colors.transparent,
+                            side: BorderSide(
+                              color: isSelected
+                                  ? category.color
+                                  : AppTheme.isDarkMode
+                                      ? Colors.white.withOpacity(0.05)
+                                      : AppTheme.borderColor,
+                              width: 0.5,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            onSelected: (bool selected) {
+                              setState(() => _selectedCategory = category.name);
+                            },
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -401,36 +530,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
             _buildTransactionsList(),
           ],
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: "reload",
-            onPressed: () {
-              // TODO: Implement reload logic
-            },
-            backgroundColor: AppTheme.primary,
-            child: const Icon(
-              Icons.refresh_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 8),
-          FloatingActionButton(
-            heroTag: "chatbot",
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ChatbotScreen()),
-              );
-            },
-            backgroundColor: AppTheme.primary,
-            child: const Icon(Icons.chat_outlined, color: Colors.white),
-          ),
-        ],
       ),
     );
   }
@@ -443,12 +542,14 @@ class _TransactionsPageState extends State<TransactionsPage> {
     String? rate,
   }) {
     final color = isIncome ? const Color(0xFF34C759) : AppTheme.error;
-    
+
     return Column(
-      crossAxisAlignment: isIncome ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      crossAxisAlignment:
+          isIncome ? CrossAxisAlignment.start : CrossAxisAlignment.end,
       children: [
         Row(
-          mainAxisAlignment: isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
+          mainAxisAlignment:
+              isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
           children: [
             if (!isIncome) ...[
               Text(
@@ -517,7 +618,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  double.parse(rate) > 0 
+                  double.parse(rate) > 0
                       ? Icons.trending_up_rounded
                       : Icons.trending_down_rounded,
                   color: color,
@@ -547,9 +648,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }) {
     final DateTime transactionDate = DateFormat('dd/MM/yyyy').parse(date);
     final DateTime now = DateTime.now();
-    final bool isToday = transactionDate.year == now.year && 
-                        transactionDate.month == now.month && 
-                        transactionDate.day == now.day;
+    final bool isToday = transactionDate.year == now.year &&
+        transactionDate.month == now.month &&
+        transactionDate.day == now.day;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -570,18 +671,71 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
-  void _showCategoryDrawer(BuildContext context, String currentCategory) {
+  void _showFilterDrawer() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => CategoryDrawer(
-        currentCategory: currentCategory,
-        categories: _categories,
-        onCategorySelected: (category) {
-          Navigator.pop(context);
+      builder: (context) => Consumer<CategoryProvider>(
+        builder: (context, provider, child) {
+          // Đảm bảo categories đã được load
+          if (provider.categories.isEmpty) {
+            final fundId = context.read<FundProvider>().selectedFundId;
+            if (fundId != null) {
+              provider.fetchCategories(fundId);
+            }
+            return Container(
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          }
+
+          // Lấy categories theo type
+          final expenseCategories = provider
+              .getCategoriesByType('EXPENSE')
+              .map((cat) => CategoryItem(
+                    emoji: cat.name.split(' ')[0],
+                    name: cat.name.split(' ').sublist(1).join(' '),
+                    color: const Color(0xFFD32F2F),
+                  ))
+              .toList();
+
+          final incomeCategories = provider
+              .getCategoriesByType('INCOMING')
+              .map((cat) => CategoryItem(
+                    emoji: cat.name.split(' ')[0],
+                    name: cat.name.split(' ').sublist(1).join(' '),
+                    color: const Color(0xFF34C759),
+                  ))
+              .toList();
+
+          // Tạo danh sách category cuối cùng
+          final allCategories = [
+            CategoryItem(name: 'Tất cả', emoji: '🏠', color: AppTheme.primary),
+            CategoryItem(name: 'Thu nhập', emoji: '💰', color: const Color(0xFF34C759)),
+            CategoryItem(name: 'Chi tiêu', emoji: '💸', color: const Color(0xFFD32F2F)),
+            ...incomeCategories,
+            ...expenseCategories,
+          ];
+
+          return CategoryDrawer(
+            currentCategory: _selectedCategory,
+            categories: allCategories,
+            onCategorySelected: (categoryName) {
+              setState(() => _selectedCategory = categoryName);
+              Navigator.pop(context);
+            },
+            isExpense: false,
+          );
         },
-        isExpense: true,
       ),
     );
   }
@@ -647,7 +801,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -700,7 +853,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 ],
               ),
             ),
-
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -732,23 +884,18 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
-  void _showFilterDrawer() {
+  void _showCategoryDrawer(BuildContext context, String currentCategory) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => DateFilterDrawer(
-        startDate: _filterStartDate,
-        endDate: _filterEndDate,
-        currentFilter: _filterType,
-        onFilterChanged: (start, end, type) {
-          setState(() {
-            _filterStartDate = start;
-            _filterEndDate = end;
-            _filterType = type;
-          });
-          // TODO: Implement filter logic
+      builder: (context) => CategoryDrawer(
+        currentCategory: currentCategory,
+        categories: _categories,
+        onCategorySelected: (category) {
+          Navigator.pop(context);
         },
+        isExpense: true,
       ),
     );
   }
@@ -765,7 +912,23 @@ class _TransactionsPageState extends State<TransactionsPage> {
       );
     }
 
-    if (_transactions.isEmpty) {
+    // Lọc toàn bộ transactions theo category được chọn
+    final filteredTransactions = _transactions.where((transaction) {
+      if (_selectedCategory == 'Tất cả') return true;
+
+      // Lọc theo loại thu/chi
+      if (_selectedCategory == 'Thu nhập') {
+        return transaction.transaction.direction == 'INCOMING';
+      }
+      if (_selectedCategory == 'Chi tiêu') {
+        return transaction.transaction.direction == 'OUTGOING';
+      }
+
+      // Lọc theo category cụ thể
+      return transaction.trackerType.name == _selectedCategory;
+    }).toList();
+
+    if (filteredTransactions.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
           child: Column(
@@ -792,7 +955,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
     // Group transactions by date
     final groupedTransactions = <String, List<TrackerTransaction>>{};
-    for (var transaction in _transactions) {
+    for (var transaction in filteredTransactions) {
       final date = DateFormat('dd/MM/yyyy').format(transaction.time);
       groupedTransactions.putIfAbsent(date, () => []).add(transaction);
     }
@@ -800,41 +963,14 @@ class _TransactionsPageState extends State<TransactionsPage> {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          // Kiểm tra nếu đây là item cuối cùng dành cho loading
           if (index == groupedTransactions.length) {
-            if (!_hasMoreData) return null;
-            
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Center(
-                child: _isLoadingMore 
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppTheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Đang tải thêm...',
-                          style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox(height: 40),
-              ),
-            );
+            // Chỉ hiển thị loading more khi không có filter (hoặc filter = Tất cả)
+            if (_selectedCategory == 'Tất cả' && _hasMoreData) {
+              return _buildLoadingMore();
+            }
+            return null;
           }
 
-          // Hiển thị các giao dịch theo ngày
           final date = groupedTransactions.keys.elementAt(index);
           final transactions = groupedTransactions[date]!;
 
@@ -855,7 +991,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
             }).toList(),
           );
         },
-        // Thêm 1 vào childCount cho loading indicator
         childCount: groupedTransactions.length + 1,
       ),
     );
@@ -947,6 +1082,59 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingMore() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.cardBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.isDarkMode
+                    ? Colors.white.withOpacity(0.05)
+                    : AppTheme.borderColor,
+                width: 0.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Đang tải thêm...',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
