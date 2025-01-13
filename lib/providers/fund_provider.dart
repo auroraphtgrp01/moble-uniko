@@ -4,7 +4,7 @@ import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/expenditure_service.dart';
 
 class FundProvider with ChangeNotifier {
-  String _selectedFund = 'Tất cả';
+  String _selectedFund = '';
   List<ExpenditureFund> _funds = [];
   bool _isLoading = false;
 
@@ -19,7 +19,6 @@ class FundProvider with ChangeNotifier {
     try {
       final response = await ExpenditureService().getFunds();
       _funds = response.data;
-      // Nếu có quỹ, set quỹ đầu tiên làm mặc định
       if (_funds.isNotEmpty) {
         _selectedFund = _funds[0].name;
       }
@@ -31,8 +30,8 @@ class FundProvider with ChangeNotifier {
     }
   }
 
-  void setSelectedFund(String fund) {
-    _selectedFund = fund;
+  void setSelectedFund(String fundName) {
+    _selectedFund = fundName;
     notifyListeners();
   }
 }
