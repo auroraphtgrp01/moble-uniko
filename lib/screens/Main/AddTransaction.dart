@@ -15,6 +15,7 @@ import 'package:uniko/providers/fund_provider.dart';
 import 'package:uniko/providers/category_provider.dart';
 import 'package:uniko/models/category.dart';
 import 'package:uniko/widgets/CategoryDrawer.dart';
+import 'package:flutter/cupertino.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -26,7 +27,7 @@ class AddTransactionPage extends StatefulWidget {
 class _AddTransactionPageState extends State<AddTransactionPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late TabController _tabController;
+  int _currentIndex = 0;
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
@@ -38,12 +39,11 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   final _amountFocusNode = FocusNode();
 
-  bool get isExpense => _tabController.index == 0;
+  bool get isExpense => _currentIndex == 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
 
     // Fetch account sources với fundId từ FundProvider
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -59,7 +59,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _amountController.dispose();
     _noteController.dispose();
     _amountFocusNode.dispose();
@@ -70,7 +69,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Bỏ focus khi tap ra ngoài
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
@@ -85,511 +83,77 @@ class _AddTransactionPageState extends State<AddTransactionPage>
             key: _formKey,
             child: Column(
               children: [
-                // Tab content
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
+                const SizedBox(height: 20),
+                
+                // Custom Tab
+                Container(
+                  height: 40,
+                  margin: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDarkMode
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
                     children: [
-                      // Chi tiêu tab
-                      SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            // Số tiền
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardBackground,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppTheme.borderColor,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Số tiền',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  _buildAmountField(),
-                                ],
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _currentIndex = 0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: _currentIndex == 0
+                                  ? Colors.red
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Chi tiêu',
+                              style: TextStyle(
+                                color: _currentIndex == 0
+                                    ? Colors.white
+                                    : AppTheme.textSecondary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 16),
-
-                            // Lí do và phân loại
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardBackground,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppTheme.borderColor,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  // Lí do
-                                  Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: _buildReasonField(),
-                                  ),
-                                  Divider(color: AppTheme.borderColor, height: 1),
-
-                                  // Phân loại
-                                  ListTile(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      _showCategoryDrawer(_tabController.index == 0);
-                                    },
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.restaurant,
-                                        color: Colors.orange,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    title: Consumer<CategoryProvider>(
-                                      builder: (context, provider, child) {
-                                        final selectedCategory =
-                                            provider.categories.firstWhere(
-                                          (cat) => cat.id == _selectedCategory,
-                                          orElse: () => Category(
-                                            id: '',
-                                            name: 'Chọn phân loại',
-                                            type: isExpense
-                                                ? 'EXPENSE'
-                                                : 'INCOMING',
-                                            trackerType: 'DEFAULT',
-                                          ),
-                                        );
-                                        return Text(
-                                          selectedCategory.name,
-                                          style: TextStyle(
-                                            color: AppTheme.textPrimary,
-                                            fontSize: 15,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    trailing: Icon(
-                                      Icons.chevron_right,
-                                      color: AppTheme.textSecondary,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  Divider(color: AppTheme.borderColor, height: 1),
-
-                                  // Ngày giao dịch
-                                  ListTile(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      _showDatePicker();
-                                    },
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.purple.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.calendar_today,
-                                        color: Colors.purple,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      'Ngày giao dịch',
-                                      style: TextStyle(
-                                        color: AppTheme.textPrimary,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          DateFormat('dd/MM/yyyy')
-                                              .format(_selectedDate),
-                                          style: TextStyle(
-                                            color: AppTheme.textSecondary,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.chevron_right,
-                                          color: AppTheme.textSecondary,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Nguồn tiền
-                                  ListTile(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      _showWalletDrawer(context);
-                                    },
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.account_balance_wallet,
-                                        color: Colors.blue,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      'Nguồn tiền',
-                                      style: TextStyle(
-                                        color: AppTheme.textPrimary,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Consumer<AccountSourceProvider>(
-                                          builder: (context, provider, child) {
-                                            final selectedWallet = provider
-                                                .accountSources
-                                                .firstWhere(
-                                              (wallet) =>
-                                                  wallet.id == _selectedWallet,
-                                              orElse: () => AccountSource(
-                                                  id: '',
-                                                  name: 'Chọn ví',
-                                                  type: '',
-                                                  initAmount: 0,
-                                                  currency: '',
-                                                  currentAmount: 0,
-                                                  userId: '',
-                                                  fundId: ''),
-                                            );
-                                            return Text(
-                                              selectedWallet.name,
-                                              style: TextStyle(
-                                                color: AppTheme.textSecondary,
-                                                fontSize: 14,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.chevron_right,
-                                          color: AppTheme.textSecondary,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Mô tả
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardBackground,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppTheme.borderColor,
-                                  width: 1,
-                                ),
-                              ),
-                              child: TextField(
-                                maxLines: 3,
-                                style: TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 15,
-                                ),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Thêm mô tả (tùy chọn)',
-                                  hintStyle: TextStyle(
-                                    color:
-                                        AppTheme.textSecondary.withOpacity(0.5),
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Button Thêm mới
-                            _buildSubmitButton(),
-                          ],
+                          ),
                         ),
                       ),
-
-                      // Thu nhập tab
-                      SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            // Số tiền
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardBackground,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppTheme.borderColor,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Số tiền',
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  _buildAmountField(),
-                                ],
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _currentIndex = 1),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: _currentIndex == 1
+                                  ? Colors.green
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Thu nhập',
+                              style: TextStyle(
+                                color: _currentIndex == 1
+                                    ? Colors.white
+                                    : AppTheme.textSecondary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 16),
-
-                            // Lí do và phân loại
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardBackground,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppTheme.borderColor,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  // Lí do
-                                  Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: _buildReasonField(),
-                                  ),
-                                  Divider(color: AppTheme.borderColor, height: 1),
-
-                                  // Phân loại
-                                  ListTile(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      _showCategoryDrawer(_tabController.index == 0);
-                                    },
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.work,
-                                        color: Colors.green,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    title: Consumer<CategoryProvider>(
-                                      builder: (context, provider, child) {
-                                        final selectedCategory =
-                                            provider.categories.firstWhere(
-                                          (cat) => cat.id == _selectedCategory,
-                                          orElse: () => Category(
-                                            id: '',
-                                            name: 'Chọn phân loại',
-                                            type: 'INCOMING',
-                                            trackerType: 'DEFAULT',
-                                          ),
-                                        );
-                                        return Text(
-                                          selectedCategory.name,
-                                          style: TextStyle(
-                                            color: AppTheme.textPrimary,
-                                            fontSize: 15,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    trailing: Icon(
-                                      Icons.chevron_right,
-                                      color: AppTheme.textSecondary,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  Divider(color: AppTheme.borderColor, height: 1),
-
-                                  // Ngày giao dịch
-                                  ListTile(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      _showDatePicker();
-                                    },
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.purple.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.calendar_today,
-                                        color: Colors.purple,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      'Ngày giao dịch',
-                                      style: TextStyle(
-                                        color: AppTheme.textPrimary,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          DateFormat('dd/MM/yyyy')
-                                              .format(_selectedDate),
-                                          style: TextStyle(
-                                            color: AppTheme.textSecondary,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.chevron_right,
-                                          color: AppTheme.textSecondary,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Nguồn tiền
-                                  ListTile(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      _showWalletDrawer(context);
-                                    },
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.account_balance_wallet,
-                                        color: Colors.blue,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      'Nguồn tiền',
-                                      style: TextStyle(
-                                        color: AppTheme.textPrimary,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Consumer<AccountSourceProvider>(
-                                          builder: (context, provider, child) {
-                                            final selectedWallet = provider
-                                                .accountSources
-                                                .firstWhere(
-                                              (wallet) =>
-                                                  wallet.id == _selectedWallet,
-                                              orElse: () => AccountSource(
-                                                  id: '',
-                                                  name: 'Chọn ví',
-                                                  type: '',
-                                                  initAmount: 0,
-                                                  currency: '',
-                                                  currentAmount: 0,
-                                                  userId: '',
-                                                  fundId: ''),
-                                            );
-                                            return Text(
-                                              selectedWallet.name,
-                                              style: TextStyle(
-                                                color: AppTheme.textSecondary,
-                                                fontSize: 14,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.chevron_right,
-                                          color: AppTheme.textSecondary,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Mô tả
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardBackground,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppTheme.borderColor,
-                                  width: 1,
-                                ),
-                              ),
-                              child: TextField(
-                                maxLines: 3,
-                                style: TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 15,
-                                ),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Thêm mô tả (tùy chọn)',
-                                  hintStyle: TextStyle(
-                                    color:
-                                        AppTheme.textSecondary.withOpacity(0.5),
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Button Thêm mới
-                            _buildSubmitButton(),
-                          ],
+                          ),
                         ),
                       ),
                     ],
+                  ),
+                ),
+
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: _buildTransactionForm(),
                   ),
                 ),
               ],
@@ -609,6 +173,249 @@ class _AddTransactionPageState extends State<AddTransactionPage>
           child: const Icon(Icons.chat_outlined, color: Colors.white),
         ),
       ),
+    );
+  }
+
+  // Tách form thành widget riêng để tái sử dụng
+  Widget _buildTransactionForm() {
+    return Column(
+      children: [
+        // Số tiền
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppTheme.borderColor,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Số tiền',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+              _buildAmountField(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Lí do và phân loại
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppTheme.borderColor,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              // Lí do
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: _buildReasonField(),
+              ),
+              Divider(color: AppTheme.borderColor, height: 1),
+
+              // Phân loại
+              ListTile(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _showCategoryDrawer(_currentIndex == 0);
+                },
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.restaurant,
+                    color: Colors.orange,
+                    size: 20,
+                  ),
+                ),
+                title: Consumer<CategoryProvider>(
+                  builder: (context, provider, child) {
+                    final selectedCategory = provider.categories.firstWhere(
+                      (cat) => cat.id == _selectedCategory,
+                      orElse: () => Category(
+                        id: '',
+                        name: 'Chọn phân loại',
+                        type: isExpense ? 'EXPENSE' : 'INCOMING',
+                        trackerType: 'DEFAULT',
+                      ),
+                    );
+                    return Text(
+                      selectedCategory.name,
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 15,
+                      ),
+                    );
+                  },
+                ),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
+              ),
+              Divider(color: AppTheme.borderColor, height: 1),
+
+              // Ngày giao dịch
+              ListTile(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _showDatePicker();
+                },
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.calendar_today,
+                    color: Colors.purple,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  'Ngày giao dịch',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 15,
+                  ),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      DateFormat('dd/MM/yyyy').format(_selectedDate),
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.chevron_right,
+                      color: AppTheme.textSecondary,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Nguồn tiền
+              ListTile(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _showWalletDrawer(context);
+                },
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  'Nguồn tiền',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 15,
+                  ),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Consumer<AccountSourceProvider>(
+                      builder: (context, provider, child) {
+                        final selectedWallet =
+                            provider.accountSources.firstWhere(
+                          (wallet) => wallet.id == _selectedWallet,
+                          orElse: () => AccountSource(
+                              id: '',
+                              name: 'Chọn ví',
+                              type: '',
+                              initAmount: 0,
+                              currency: '',
+                              currentAmount: 0,
+                              userId: '',
+                              fundId: ''),
+                        );
+                        return Text(
+                          selectedWallet.name,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.chevron_right,
+                      color: AppTheme.textSecondary,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Mô tả
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppTheme.borderColor,
+              width: 1,
+            ),
+          ),
+          child: TextField(
+            maxLines: 3,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 15,
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Thêm mô tả (tùy chọn)',
+              hintStyle: TextStyle(
+                color: AppTheme.textSecondary.withOpacity(0.5),
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Button Thêm mới
+        _buildSubmitButton(),
+      ],
     );
   }
 
@@ -681,7 +488,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         ),
         child: Text(
           isExpense ? 'Thêm chi tiêu' : 'Thêm thu nhập',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -693,7 +500,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   void _showWalletDrawer(BuildContext context) {
     FocusScope.of(context).unfocus();
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -818,7 +625,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   void _showCategoryDrawer(bool isExpense) {
     FocusScope.of(context).unfocus();
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -853,7 +660,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   void _showDatePicker() {
     FocusScope.of(context).unfocus();
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
