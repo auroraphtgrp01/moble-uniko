@@ -33,10 +33,10 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.wallet.name);
-    initAmountController = TextEditingController(
-        text: widget.wallet.initAmount.toString());
-    currentAmountController = TextEditingController(
-        text: widget.wallet.currentAmount.toString());
+    initAmountController =
+        TextEditingController(text: widget.wallet.initAmount.toString());
+    currentAmountController =
+        TextEditingController(text: widget.wallet.currentAmount.toString());
 
     if (widget.wallet.type == 'BANKING') {
       loginIdController = TextEditingController(
@@ -328,11 +328,13 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
             fontSize: 15,
           ),
           decoration: InputDecoration(
-            prefixIcon: prefixIcon != null ? Icon(
-              prefixIcon,
-              color: color.withOpacity(0.5),
-              size: 20,
-            ) : null,
+            prefixIcon: prefixIcon != null
+                ? Icon(
+                    prefixIcon,
+                    color: color.withOpacity(0.5),
+                    size: 20,
+                  )
+                : null,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 12,
@@ -362,7 +364,8 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
 
     try {
       final name = nameController.text;
-      final initAmount = int.tryParse(initAmountController.text) ?? widget.wallet.initAmount;
+      final initAmount =
+          int.tryParse(initAmountController.text) ?? widget.wallet.initAmount;
       final accountSourceType = widget.wallet.type;
 
       // Tách chuỗi số tài khoản thành danh sách

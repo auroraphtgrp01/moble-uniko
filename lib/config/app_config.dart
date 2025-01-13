@@ -14,4 +14,8 @@ class AppConfig {
   static const String loginEndpoint = '$apiUrl/auth/login';
   static const String registerEndpoint = '$apiUrl/auth/register';
   static const String getMeEndpoint = '/users/me';
+
+  // FUND
+  static const String getAccoutSourceByFundIdEndpoint =
+      '$apiUrl/account-sources/advanced/:fundId';
 }

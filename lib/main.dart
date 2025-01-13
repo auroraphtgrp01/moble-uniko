@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:uniko/config/theme.config.dart';
 import 'providers/theme_provider.dart';
 import 'providers/fund_provider.dart';
+import 'providers/account_source_provider.dart';
 import 'screens/Auth/SplashScreen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -12,6 +13,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => FundProvider()),
+        ChangeNotifierProvider(create: (_) => AccountSourceProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),

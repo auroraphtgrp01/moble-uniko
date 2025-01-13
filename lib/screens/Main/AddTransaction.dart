@@ -9,6 +9,9 @@ import 'dart:ui';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import 'package:uniko/widgets/CommonHeader.dart';
+import 'package:provider/provider.dart';
+import 'package:uniko/providers/account_source_provider.dart';
+import 'package:uniko/models/account_source.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -26,10 +29,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   final _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = '';
-  String _selectedWallet = 'Ví chính';
-  String _selectedFund = 'Tất cả';
-
-  final List<String> _wallets = ['Ví chính', 'Tiền mặt', 'Ngân hàng', 'Momo'];
+  String _selectedWallet = '';
 
   final _amountFocusNode = FocusNode();
 
@@ -37,6 +37,11 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    
+    // Fetch account sources khi widget được khởi tạo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AccountSourceProvider>().fetchAccountSources('default_fund_id');
+    });
   }
 
   @override
@@ -258,12 +263,21 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      _selectedWallet,
-                                      style: TextStyle(
-                                        color: AppTheme.textSecondary,
-                                        fontSize: 14,
-                                      ),
+                                    Consumer<AccountSourceProvider>(
+                                      builder: (context, provider, child) {
+                                        final selectedWallet = provider.accountSources
+                                            .firstWhere(
+                                              (wallet) => wallet.id == _selectedWallet,
+                                              orElse: () => AccountSource(id: '', name: 'Chọn ví', type: '', initAmount: 0, currency: '', currentAmount: 0, userId: '', fundId: ''),
+                                            );
+                                        return Text(
+                                          selectedWallet.name,
+                                          style: TextStyle(
+                                            color: AppTheme.textSecondary,
+                                            fontSize: 14,
+                                          ),
+                                        );
+                                      },
                                     ),
                                     const SizedBox(width: 4),
                                     Icon(
@@ -529,12 +543,21 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      _selectedWallet,
-                                      style: TextStyle(
-                                        color: AppTheme.textSecondary,
-                                        fontSize: 14,
-                                      ),
+                                    Consumer<AccountSourceProvider>(
+                                      builder: (context, provider, child) {
+                                        final selectedWallet = provider.accountSources
+                                            .firstWhere(
+                                              (wallet) => wallet.id == _selectedWallet,
+                                              orElse: () => AccountSource(id: '', name: 'Chọn ví', type: '', initAmount: 0, currency: '', currentAmount: 0, userId: '', fundId: ''),
+                                            );
+                                        return Text(
+                                          selectedWallet.name,
+                                          style: TextStyle(
+                                            color: AppTheme.textSecondary,
+                                            fontSize: 14,
+                                          ),
+                                        );
+                                      },
                                     ),
                                     const SizedBox(width: 4),
                                     Icon(
@@ -707,69 +730,78 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: AppTheme.cardBackground,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 12),
-              decoration: BoxDecoration(
-                color: AppTheme.isDarkMode
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder: (context) => Consumer<AccountSourceProvider>(
+        builder: (context, provider, child) {
+          final wallets = provider.accountSources;
+          
+          return Container(
+            decoration: BoxDecoration(
+              color: AppTheme.cardBackground,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Chọn nguồn tiền',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ...List.generate(
-              _wallets.length,
-              (index) => ListTile(
-                leading: Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: _selectedWallet == _wallets[index]
-                      ? AppTheme.primary
-                      : AppTheme.textSecondary,
-                ),
-                title: Text(
-                  _wallets[index],
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontWeight: _selectedWallet == _wallets[index]
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.2)
+                        : Colors.black.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                trailing: _selectedWallet == _wallets[index]
-                    ? Icon(
-                        Icons.check_circle,
-                        color: AppTheme.primary,
-                      )
-                    : null,
-                onTap: () {
-                  setState(() => _selectedWallet = _wallets[index]);
-                  Navigator.pop(context);
-                },
-              ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Chọn nguồn tiền',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (provider.isLoading)
+                  const CircularProgressIndicator()
+                else
+                  ...List.generate(
+                    wallets.length,
+                    (index) => ListTile(
+                      leading: Icon(
+                        Icons.account_balance_wallet_outlined,
+                        color: _selectedWallet == wallets[index].id
+                            ? AppTheme.primary
+                            : AppTheme.textSecondary,
+                      ),
+                      title: Text(
+                        wallets[index].name,
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontWeight: _selectedWallet == wallets[index].id
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      trailing: _selectedWallet == wallets[index].id
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppTheme.primary,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() => _selectedWallet = wallets[index].id);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
