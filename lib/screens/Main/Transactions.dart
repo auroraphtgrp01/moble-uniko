@@ -3,11 +3,13 @@ import '../../config/theme.config.dart';
 import 'package:intl/intl.dart';
 import '../SubScreen/TransactionDetail.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
-import 'package:uniko/widgets/FundSelector.dart';
-import 'package:uniko/widgets/AddCategoryDrawer.dart';
 import 'dart:ui';
 import 'package:uniko/widgets/CategoryDrawer.dart';
 import 'package:uniko/widgets/CommonHeader.dart';
+import 'package:uniko/services/tracker_transaction_service.dart';
+import 'package:uniko/models/tracker_transaction.dart';
+import 'package:provider/provider.dart';
+import 'package:uniko/providers/fund_provider.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -18,10 +20,96 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   String _selectedCategory = 'Tất cả';
-  String _selectedFund = 'Tất cả';
   DateTime? _filterStartDate;
   DateTime? _filterEndDate;
   FilterType? _filterType;
+  final _trackerTransactionService = TrackerTransactionService();
+  List<TrackerTransaction> _transactions = [];
+  bool _isLoading = false;
+  int _currentPage = 1;
+  bool _hasMoreData = true;
+  bool _isLoadingMore = false;
+  final ScrollController _scrollController = ScrollController();
+  String? _previousFundId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTransactions();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      if (!_isLoadingMore && _hasMoreData) {
+        _loadMoreTransactions();
+      }
+    }
+  }
+
+  Future<void> _loadTransactions() async {
+    try {
+      setState(() => _isLoading = true);
+
+      final fundId = context.read<FundProvider>().selectedFundId;
+      if (fundId == null) return;
+
+      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
+        fundId,
+        page: 1,
+        limit: 8,
+      );
+
+      setState(() {
+        _transactions = response.data;
+        _isLoading = false;
+        _currentPage = 1;
+        _hasMoreData = response.data.length >= 5;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadMoreTransactions() async {
+    if (_isLoadingMore) return;
+
+    try {
+      setState(() => _isLoadingMore = true);
+
+      final fundId = context.read<FundProvider>().selectedFundId;
+      if (fundId == null) return;
+
+      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
+        fundId,
+        page: _currentPage + 1,
+        limit: 5,
+      );
+
+      setState(() {
+        _transactions.addAll(response.data);
+        _currentPage++;
+        _hasMoreData = response.data.length >= 5;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingMore = false);
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {
+      _currentPage = 1;
+      _hasMoreData = true;
+    });
+    await _loadTransactions();
+  }
 
   final List<CategoryItem> _categories = [
     CategoryItem(emoji: '🌟', name: 'Tất cả', color: const Color(0xFF5856D6)),
@@ -34,13 +122,25 @@ class _TransactionsPageState extends State<TransactionsPage> {
     CategoryItem(emoji: '💰', name: 'Thu nhập', color: const Color(0xFF34C759)),
   ];
 
-  Future<void> _onRefresh() async {
-    // Giả lập loading trong 1.5 giây
-    await Future.delayed(const Duration(milliseconds: 1500));
+  String _formatAmount(int amount) {
+    final format = NumberFormat("#,###", "vi_VN");
+    return "${format.format(amount)} đ";
+  }
 
-    setState(() {
-      // Thêm logic cập nhật dữ liệu ở đây
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    final newFundId = context.watch<FundProvider>().selectedFundId;
+    if (newFundId != null && newFundId != _previousFundId) {
+      _previousFundId = newFundId;
+      setState(() {
+        _currentPage = 1;
+        _hasMoreData = true;
+        _transactions = [];
+      });
+      _loadTransactions();
+    }
   }
 
   @override
@@ -55,6 +155,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
         backgroundColor: AppTheme.cardBackground,
         edgeOffset: MediaQuery.of(context).padding.top + 80,
         child: CustomScrollView(
+          controller: _scrollController,
           slivers: [
             SliverPadding(
               padding: EdgeInsets.only(top: 120),
@@ -140,68 +241,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 ),
               ),
             ),
-            SliverList(
-              delegate: SliverChildListDelegate([
-                _buildDateGroup(
-                  date: 'Hôm nay',
-                  transactions: [
-                    _buildTransaction(
-                      icon: Icons.restaurant,
-                      title: 'Ăn trưa',
-                      amount: '-45,000',
-                      time: '12:30',
-                      category: '🍲 Ăn uống',
-                    ),
-                    _buildTransaction(
-                      icon: Icons.directions_bus,
-                      title: 'Xe buýt',
-                      amount: '-7,000',
-                      time: '09:15',
-                      category: '🚌 Di chuyển',
-                    ),
-                  ],
-                ),
-                _buildDateGroup(
-                  date: 'Hôm qua',
-                  transactions: [
-                    _buildTransaction(
-                      icon: Icons.work,
-                      title: 'Lương tháng 3',
-                      amount: '+15,300,000',
-                      time: '10:00',
-                      category: '💰 Thu nhập',
-                      isIncome: true,
-                    ),
-                    _buildTransaction(
-                      icon: Icons.shopping_bag,
-                      title: 'Siêu thị',
-                      amount: '-320,000',
-                      time: '18:45',
-                      category: '🛒 Mua sắm',
-                    ),
-                  ],
-                ),
-                _buildDateGroup(
-                  date: '21/03/2024',
-                  transactions: [
-                    _buildTransaction(
-                      icon: Icons.local_hospital,
-                      title: 'Khám bệnh',
-                      amount: '-850,000',
-                      time: '14:20',
-                      category: '🏥 Sức khỏe',
-                    ),
-                    _buildTransaction(
-                      icon: Icons.movie,
-                      title: 'Xem phim',
-                      amount: '-150,000',
-                      time: '20:30',
-                      category: '🎬 Giải trí',
-                    ),
-                  ],
-                ),
-              ]),
-            ),
+            _buildTransactionsList(),
           ],
         ),
       ),
@@ -269,13 +309,19 @@ class _TransactionsPageState extends State<TransactionsPage> {
     required String date,
     required List<Widget> transactions,
   }) {
+    final DateTime transactionDate = DateFormat('dd/MM/yyyy').parse(date);
+    final DateTime now = DateTime.now();
+    final bool isToday = transactionDate.year == now.year && 
+                        transactionDate.month == now.month && 
+                        transactionDate.day == now.day;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: Text(
-            date,
+            isToday ? 'Hôm nay' : date,
             style: TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 14,
@@ -305,171 +351,150 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   Widget _buildTransaction({
-  required IconData icon,
-  required String title,
-  required String amount,
-  required String time,
-  required String category,
-  bool isIncome = false,
-}) {
-  return InkWell(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TransactionDetailPage(
-            icon: icon,
-            title: title,
-            amount: amount,
-            date: time,
-            category: category,
-            isIncome: isIncome,
+    required IconData icon,
+    required String title,
+    required String amount,
+    required String time,
+    required String category,
+    bool isIncome = false,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TransactionDetailPage(
+              icon: icon,
+              title: title,
+              amount: amount,
+              date: time,
+              category: category,
+              isIncome: isIncome,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.isDarkMode
+                ? Colors.white.withOpacity(0.05)
+                : AppTheme.borderColor,
+            width: 0.5,
           ),
         ),
-      );
-    },
-    child: Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.isDarkMode
-              ? Colors.white.withOpacity(0.05)
-              : AppTheme.borderColor,
-          width: 0.5,
-        ),
-      ),
-      // 
-      // Sử dụng Row với mainAxisAlignment: spaceBetween
-      // để tách phần nội dung bên trái và amount bên phải
-      //
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Bên trái: Icon + Title + Category + Time
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Icon
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isIncome
-                        ? const Color(0xFF34C759).withOpacity(0.1)
-                        : AppTheme.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isIncome
+                          ? const Color(0xFF34C759).withOpacity(0.1)
+                          : AppTheme.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      icon,
+                      color:
+                          isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                      size: 22,
+                    ),
                   ),
-                  child: Icon(
-                    icon,
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        InkWell(
+                          onTap: () => _showCategoryDrawer(context, category),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.isDarkMode
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.black.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  category,
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.arrow_drop_down,
+                                  size: 16,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '$amount đ',
+                  style: TextStyle(
                     color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
-                    size: 22,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 12),
-                
-                // Nội dung (title, category, time)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-
-                      // Category + Time
-                      Row(
-                        children: [
-                          InkWell(
-                            onTap: () => _showCategoryDrawer(context, category),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.isDarkMode
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    category,
-                                    style: TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.arrow_drop_down,
-                                    size: 16,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 6),
-                            width: 3,
-                            height: 3,
-                            decoration: BoxDecoration(
-                              color: AppTheme.textSecondary.withOpacity(0.5),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          
-                          // Để tránh tràn text, có thể bọc Text(time) 
-                          // bởi Expanded hoặc cho thêm overflow.
-                          Expanded(
-                            child: Text(
-                              time,
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13,
-                              ),
-                              maxLines: 1,                // chỉ hiển thị 1 dòng
-                              overflow: TextOverflow.ellipsis, // cắt ngắn nếu quá dài
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    time,
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-
-          // Bên phải: Amount
-          Text(
-            '$amount đ',
-            style: TextStyle(
-              color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   void _showFilterDrawer() {
     showModalBottomSheet(
@@ -488,6 +513,206 @@ class _TransactionsPageState extends State<TransactionsPage> {
           });
           // TODO: Implement filter logic
         },
+      ),
+    );
+  }
+
+  Widget _buildTransactionsList() {
+    if (_isLoading) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: Column(
+            children: List.generate(3, (index) => _buildTransactionShimmer()),
+          ),
+        ),
+      );
+    }
+
+    if (_transactions.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 64,
+                color: AppTheme.textSecondary.withOpacity(0.5),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Chưa có giao dịch nào',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Group transactions by date
+    final groupedTransactions = <String, List<TrackerTransaction>>{};
+    for (var transaction in _transactions) {
+      final date = DateFormat('dd/MM/yyyy').format(transaction.time);
+      groupedTransactions.putIfAbsent(date, () => []).add(transaction);
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          // Kiểm tra nếu đây là item cuối cùng dành cho loading
+          if (index == groupedTransactions.length) {
+            if (!_hasMoreData) return null;
+            
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Center(
+                child: _isLoadingMore 
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Đang tải thêm...',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox(height: 40),
+              ),
+            );
+          }
+
+          // Hiển thị các giao dịch theo ngày
+          final date = groupedTransactions.keys.elementAt(index);
+          final transactions = groupedTransactions[date]!;
+
+          return _buildDateGroup(
+            date: date,
+            transactions: transactions.map((transaction) {
+              final amount = _formatAmount(transaction.transaction.amount);
+              final isIncome = transaction.transaction.direction == 'INCOMING';
+
+              return _buildTransaction(
+                icon: isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                title: transaction.reasonName,
+                amount: '${isIncome ? '+' : '-'}$amount',
+                time: DateFormat('HH:mm').format(transaction.time),
+                category: transaction.trackerType.name,
+                isIncome: isIncome,
+              );
+            }).toList(),
+          );
+        },
+        // Thêm 1 vào childCount cho loading indicator
+        childCount: groupedTransactions.length + 1,
+      ),
+    );
+  }
+
+  // Thêm widget shimmer effect cho loading state
+  Widget _buildTransactionShimmer() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.isDarkMode
+              ? Colors.white.withOpacity(0.05)
+              : AppTheme.borderColor,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Icon placeholder
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppTheme.isDarkMode
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title placeholder
+                Container(
+                  width: double.infinity,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Category placeholder
+                Container(
+                  width: 100,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Amount placeholder
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                width: 80,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: 60,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

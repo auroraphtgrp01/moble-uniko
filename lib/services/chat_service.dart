@@ -43,6 +43,7 @@ class Transaction {
   final String description;
   final int amount;
   final String type;
+  final String direction;
   final String walletName;
   final String categoryId;
   final String categoryName;
@@ -56,6 +57,7 @@ class Transaction {
     required this.categoryId,
     required this.categoryName,
     required this.accountSourceName,
+    required this.direction,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -67,6 +69,7 @@ class Transaction {
       categoryId: json['categoryId'] ?? '',
       categoryName: json['categoryName'] ?? '',
       accountSourceName: json['accountSourceName'] ?? '',
+      direction: json['direction'] ?? '',
     );
   }
 }
@@ -147,12 +150,13 @@ class ChatService {
         LoggerService.debug('Raw Response: $responseData');
 
         String htmlContent = responseData['message'] ?? '';
-        
+
         // Lấy transactions từ data
         final transactions = (responseData['data']?['transactions'] as List?)
-            ?.map((e) => Transaction.fromJson(e))
-            .toList() ?? [];
-            
+                ?.map((e) => Transaction.fromJson(e))
+                .toList() ??
+            [];
+
         return ChatResponse(
           type: 'message',
           messages: htmlContent,
