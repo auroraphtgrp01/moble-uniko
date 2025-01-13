@@ -6,12 +6,14 @@ class CategoryDrawer extends StatefulWidget {
   final String currentCategory;
   final List<CategoryItem> categories;
   final Function(String) onCategorySelected;
+  final bool isExpense;
 
   const CategoryDrawer({
     super.key,
     required this.currentCategory,
     required this.categories,
     required this.onCategorySelected,
+    required this.isExpense,
   });
 
   @override
@@ -50,7 +52,7 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
             child: Row(
               children: [
                 Text(
-                  'Danh mục',
+                  widget.isExpense ? 'Chi tiêu' : 'Thu nhập',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 20,
@@ -306,9 +308,9 @@ class CategoryItem {
   final String name;
   final Color color;
 
-  CategoryItem({
+  const CategoryItem({
     required this.emoji,
     required this.name,
     required this.color,
   });
-} 
+}

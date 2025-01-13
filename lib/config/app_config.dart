@@ -18,4 +18,8 @@ class AppConfig {
   // FUND
   static const String getAccoutSourceByFundIdEndpoint =
       '$apiUrl/account-sources/advanced/:fundId';
+
+  // ACCOUNT TRACKER TRANSACTION TYPE ( CATEGORY )
+  static const String getAccountTrackerTransactionTypeEndpoint =
+      '$apiUrl/tracker-transaction-types/all/:fundId';
 }

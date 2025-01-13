@@ -994,6 +994,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           // TODO: Xử lý khi category được chọn
           Navigator.pop(context);
         },
+        isExpense: true,
       ),
     );
   }

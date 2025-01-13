@@ -5,6 +5,7 @@ import 'package:uniko/services/expenditure_service.dart';
 import 'package:uniko/providers/account_source_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/main.dart';
+import 'package:uniko/providers/category_provider.dart';
 
 class FundProvider with ChangeNotifier {
   String _selectedFund = '';
@@ -28,10 +29,17 @@ class FundProvider with ChangeNotifier {
       _funds = response.data;
       if (_funds.isNotEmpty) {
         _selectedFund = _funds[0].name;
-        // Fetch account sources for initial fund
-        await Provider.of<AccountSourceProvider>(navigatorKey.currentContext!,
-                listen: false)
-            .fetchAccountSources(_funds[0].id);
+        
+        // Fetch initial data for the first fund
+        final context = navigatorKey.currentContext!;
+        await Future.wait([
+          // Fetch account sources
+          Provider.of<AccountSourceProvider>(context, listen: false)
+              .fetchAccountSources(_funds[0].id),
+          // Fetch categories
+          Provider.of<CategoryProvider>(context, listen: false)
+              .fetchCategories(_funds[0].id),
+        ]);
       }
     } catch (e) {
       LoggerService.error('Failed to initialize funds: $e');
@@ -43,12 +51,17 @@ class FundProvider with ChangeNotifier {
 
   void setSelectedFund(String fundName) {
     _selectedFund = fundName;
-    // Fetch account sources when fund changes
     final fundId = selectedFundId;
     if (fundId != null) {
+      // Fetch account sources
       Provider.of<AccountSourceProvider>(navigatorKey.currentContext!,
               listen: false)
           .fetchAccountSources(fundId);
+      
+      // Fetch categories
+      Provider.of<CategoryProvider>(navigatorKey.currentContext!,
+              listen: false)
+          .fetchCategories(fundId);
     }
     notifyListeners();
   }

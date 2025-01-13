@@ -299,6 +299,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
         onCategorySelected: (category) {
           Navigator.pop(context);
         },
+        isExpense: true,
       ),
     );
   }

@@ -12,6 +12,9 @@ import 'package:provider/provider.dart';
 import 'package:uniko/providers/account_source_provider.dart';
 import 'package:uniko/models/account_source.dart';
 import 'package:uniko/providers/fund_provider.dart';
+import 'package:uniko/providers/category_provider.dart';
+import 'package:uniko/models/category.dart';
+import 'package:uniko/widgets/CategoryDrawer.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -33,17 +36,21 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   final _amountFocusNode = FocusNode();
 
+  bool get isExpense => _tabController.index == 0;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // Fetch account sources với fundId từ FundProvider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final fundProvider = context.read<FundProvider>();
       final selectedFundId = fundProvider.selectedFundId;
       if (selectedFundId != null) {
-        context.read<AccountSourceProvider>().fetchAccountSources(selectedFundId);
+        context
+            .read<AccountSourceProvider>()
+            .fetchAccountSources(selectedFundId);
       }
     });
   }
@@ -62,7 +69,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppTheme.background,
-      endDrawer: _buildCategoryDrawer(_tabController.index == 0),
       appBar: const CommonHeader(
         title: 'Thêm giao dịch',
         showFundSelector: true,
@@ -165,9 +171,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
                               // Phân loại
                               ListTile(
-                                onTap: () {
-                                  _scaffoldKey.currentState?.openEndDrawer();
-                                },
+                                onTap: () => _showCategoryDrawer(
+                                    _tabController.index == 0),
                                 leading: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
@@ -180,12 +185,27 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                     size: 20,
                                   ),
                                 ),
-                                title: Text(
-                                  'Ăn uống',
-                                  style: TextStyle(
-                                    color: AppTheme.textPrimary,
-                                    fontSize: 15,
-                                  ),
+                                title: Consumer<CategoryProvider>(
+                                  builder: (context, provider, child) {
+                                    final selectedCategory =
+                                        provider.categories.firstWhere(
+                                      (cat) => cat.id == _selectedCategory,
+                                      orElse: () => Category(
+                                        id: '',
+                                        name: 'Chọn phân loại',
+                                        type:
+                                            isExpense ? 'EXPENSE' : 'INCOMING',
+                                        trackerType: 'DEFAULT',
+                                      ),
+                                    );
+                                    return Text(
+                                      selectedCategory.name,
+                                      style: TextStyle(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 15,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 trailing: Icon(
                                   Icons.chevron_right,
@@ -269,11 +289,20 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                   children: [
                                     Consumer<AccountSourceProvider>(
                                       builder: (context, provider, child) {
-                                        final selectedWallet = provider.accountSources
-                                            .firstWhere(
-                                              (wallet) => wallet.id == _selectedWallet,
-                                              orElse: () => AccountSource(id: '', name: 'Chọn ví', type: '', initAmount: 0, currency: '', currentAmount: 0, userId: '', fundId: ''),
-                                            );
+                                        final selectedWallet =
+                                            provider.accountSources.firstWhere(
+                                          (wallet) =>
+                                              wallet.id == _selectedWallet,
+                                          orElse: () => AccountSource(
+                                              id: '',
+                                              name: 'Chọn ví',
+                                              type: '',
+                                              initAmount: 0,
+                                              currency: '',
+                                              currentAmount: 0,
+                                              userId: '',
+                                              fundId: ''),
+                                        );
                                         return Text(
                                           selectedWallet.name,
                                           style: TextStyle(
@@ -445,9 +474,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
                               // Phân loại
                               ListTile(
-                                onTap: () {
-                                  _scaffoldKey.currentState?.openEndDrawer();
-                                },
+                                onTap: () => _showCategoryDrawer(
+                                    _tabController.index == 0),
                                 leading: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
@@ -460,12 +488,26 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                     size: 20,
                                   ),
                                 ),
-                                title: Text(
-                                  'Lương',
-                                  style: TextStyle(
-                                    color: AppTheme.textPrimary,
-                                    fontSize: 15,
-                                  ),
+                                title: Consumer<CategoryProvider>(
+                                  builder: (context, provider, child) {
+                                    final selectedCategory =
+                                        provider.categories.firstWhere(
+                                      (cat) => cat.id == _selectedCategory,
+                                      orElse: () => Category(
+                                        id: '',
+                                        name: 'Chọn phân loại',
+                                        type: 'INCOMING',
+                                        trackerType: 'DEFAULT',
+                                      ),
+                                    );
+                                    return Text(
+                                      selectedCategory.name,
+                                      style: TextStyle(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 15,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 trailing: Icon(
                                   Icons.chevron_right,
@@ -549,11 +591,20 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                   children: [
                                     Consumer<AccountSourceProvider>(
                                       builder: (context, provider, child) {
-                                        final selectedWallet = provider.accountSources
-                                            .firstWhere(
-                                              (wallet) => wallet.id == _selectedWallet,
-                                              orElse: () => AccountSource(id: '', name: 'Chọn ví', type: '', initAmount: 0, currency: '', currentAmount: 0, userId: '', fundId: ''),
-                                            );
+                                        final selectedWallet =
+                                            provider.accountSources.firstWhere(
+                                          (wallet) =>
+                                              wallet.id == _selectedWallet,
+                                          orElse: () => AccountSource(
+                                              id: '',
+                                              name: 'Chọn ví',
+                                              type: '',
+                                              initAmount: 0,
+                                              currency: '',
+                                              currentAmount: 0,
+                                              userId: '',
+                                              fundId: ''),
+                                        );
                                         return Text(
                                           selectedWallet.name,
                                           style: TextStyle(
@@ -737,11 +788,12 @@ class _AddTransactionPageState extends State<AddTransactionPage>
       builder: (context) => Consumer<AccountSourceProvider>(
         builder: (context, provider, child) {
           final wallets = provider.accountSources;
-          
+
           return Container(
             decoration: BoxDecoration(
               color: AppTheme.cardBackground,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1094,144 +1146,36 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     );
   }
 
-  Widget _buildCategoryDrawer(bool isExpense) {
-    return Drawer(
-      backgroundColor: AppTheme.background,
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppTheme.borderColor,
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    'Phân loại',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.close,
-                      color: AppTheme.textSecondary,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
-                  if (isExpense) ...[
-                    _buildCategoryGroup('Cơ bản', [
-                      CategoryItem('Ăn uống', Icons.restaurant, Colors.orange),
-                      CategoryItem(
-                          'Di chuyển', Icons.directions_car, Colors.blue),
-                      CategoryItem(
-                          'Mua sắm', Icons.shopping_bag, Colors.purple),
-                      CategoryItem('Hóa đơn', Icons.receipt, Colors.green),
-                    ]),
-                    _buildCategoryGroup('Khác', [
-                      CategoryItem('Giải trí', Icons.movie, Colors.pink),
-                      CategoryItem('Sức khỏe', Icons.favorite, Colors.red),
-                      CategoryItem('Giáo dục', Icons.school, Colors.indigo),
-                      CategoryItem('Du lịch', Icons.flight, Colors.teal),
-                      CategoryItem('Bảo hiểm', Icons.security, Colors.brown),
-                      CategoryItem('Khác', Icons.more_horiz, Colors.grey),
-                    ]),
-                  ] else ...[
-                    _buildCategoryGroup('Thu nhập', [
-                      CategoryItem('Lương', Icons.work, Colors.green),
-                      CategoryItem(
-                          'Thưởng', Icons.card_giftcard, Colors.orange),
-                      CategoryItem('Đầu tư', Icons.trending_up, Colors.blue),
-                      CategoryItem('Bán hàng', Icons.store, Colors.purple),
-                      CategoryItem('Cho thuê', Icons.home, Colors.brown),
-                      CategoryItem('Được tặng', Icons.redeem, Colors.pink),
-                      CategoryItem('Khác', Icons.more_horiz, Colors.grey),
-                    ]),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
+  void _showCategoryDrawer(bool isExpense) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Consumer<CategoryProvider>(
+        builder: (context, provider, child) {
+          final categories = provider
+              .getCategoriesByType(isExpense ? 'EXPENSE' : 'INCOMING')
+              .map((cat) => CategoryItem(
+                    emoji: cat.name.split(' ')[0],
+                    name: cat.name.split(' ').skip(1).join(' '),
+                    color: isExpense ? Colors.red : Colors.green,
+                  ))
+              .toList();
+
+          return CategoryDrawer(
+            currentCategory: _selectedCategory,
+            categories: categories,
+            onCategorySelected: (categoryName) {
+              setState(() {
+                _selectedCategory = provider.categories
+                    .firstWhere((cat) => cat.name.contains(categoryName))
+                    .id;
+              });
+            },
+            isExpense: isExpense,
+          );
+        },
       ),
     );
   }
-
-  Widget _buildCategoryGroup(String title, List<CategoryItem> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        ...items.map((item) => _buildCategoryTile(item)).toList(),
-      ],
-    );
-  }
-
-  Widget _buildCategoryTile(CategoryItem item) {
-    return ListTile(
-      onTap: () {
-        // TODO: Handle category selection
-        Navigator.pop(context);
-      },
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: item.color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          item.icon,
-          color: item.color,
-          size: 20,
-        ),
-      ),
-      title: Text(
-        item.name,
-        style: TextStyle(
-          color: AppTheme.textPrimary,
-          fontSize: 15,
-        ),
-      ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: AppTheme.textSecondary,
-        size: 20,
-      ),
-    );
-  }
-}
-
-class CategoryItem {
-  final String name;
-  final IconData icon;
-  final Color color;
-
-  CategoryItem(this.name, this.icon, this.color);
 }
