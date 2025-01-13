@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/services/core/toast_service.dart';
 import '../../config/theme.config.dart';
 import 'package:flutter/services.dart';
+import '../../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -17,6 +20,8 @@ class _RegisterState extends State<Register> {
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  final _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -158,7 +163,7 @@ class _RegisterState extends State<Register> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _handleRegister,
+                    onPressed: _isLoading ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
                       elevation: 0,
@@ -166,14 +171,23 @@ class _RegisterState extends State<Register> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Đăng ký',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Đăng ký',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -261,12 +275,45 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  void _handleRegister() {
+  void _handleRegister() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implement register logic
-      print('Name: ${_nameController.text}');
-      print('Email: ${_emailController.text}');
-      print('Password: ${_passwordController.text}');
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final result = await _authService.register(
+          _emailController.text,
+          _passwordController.text,
+          _nameController.text,
+        );
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (!mounted) return;
+
+        if (result['success']) {
+          // Lưu email vào SharedPreferences
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(
+              'lastRegisteredEmail', _emailController.text.trim());
+
+          ToastService.showSuccess(
+              '${result['message']} - Vui lòng kiểm tra email để xác thực tài khoản !');
+
+          // Đảm bảo email được truyền về LoginPage
+          Navigator.pop(context, _emailController.text.trim());
+        } else {
+          ToastService.showError(result['message']);
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        ToastService.showError('Có lỗi xảy ra, vui lòng thử lại');
+      }
     }
   }
 }

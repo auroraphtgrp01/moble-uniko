@@ -18,10 +18,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController =
-      TextEditingController(text: 'minhtuanledng@gmail.com');
-  final TextEditingController _passwordController =
-      TextEditingController(text: '123123');
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
   final _authService = AuthService();
@@ -155,20 +153,31 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _loadSavedUserInfo();
+    _loadLastRegisteredEmail();
   }
 
   Future<void> _loadSavedUserInfo() async {
     final userInfo = await StorageService.getUserInfo();
-    
+
     if (userInfo != null) {
       setState(() {
         _savedUserName = userInfo['fullName'];
         _savedUserEmail = userInfo['email'];
         _savedAvatarId = userInfo['avatarId'];
-        
+
         if (_savedUserEmail != null) {
           _emailController.text = _savedUserEmail!;
         }
+      });
+    }
+  }
+
+  Future<void> _loadLastRegisteredEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastEmail = prefs.getString('lastRegisteredEmail');
+    if (lastEmail != null && _emailController.text.isEmpty) {
+      setState(() {
+        _emailController.text = lastEmail;
       });
     }
   }
@@ -222,8 +231,7 @@ class _LoginPageState extends State<LoginPage> {
             // Avatar với hiệu ứng gradient
             Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-              ),
+              decoration: BoxDecoration(),
               child: Avatar(
                 avatarId: _savedAvatarId,
                 size: 90,
@@ -518,7 +526,7 @@ class _LoginPageState extends State<LoginPage> {
                       // Login and Fingerprint buttons row
                       Row(
                         children: [
-                          if (_savedUserName != null && !_showPasswordLogin) 
+                          if (_savedUserName != null && !_showPasswordLogin)
                             // Chỉ hiển thị button vân tay khi có thông tin user đã lưu
                             FutureBuilder<bool>(
                               future: AuthService.isBiometricEnabled(),
@@ -529,16 +537,20 @@ class _LoginPageState extends State<LoginPage> {
                                       onPressed: _handleBiometricLogin,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppTheme.primary,
-                                        minimumSize: const Size(double.infinity, 56),
+                                        minimumSize:
+                                            const Size(double.infinity, 56),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(15),
+                                          borderRadius:
+                                              BorderRadius.circular(15),
                                         ),
                                         elevation: isDarkMode ? 4 : 0,
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.fingerprint_rounded, size: 28, color: Colors.white),
+                                          Icon(Icons.fingerprint_rounded,
+                                              size: 28, color: Colors.white),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Đăng nhập bằng vân tay',
@@ -681,13 +693,19 @@ class _LoginPageState extends State<LoginPage> {
                               style: TextStyle(color: subtextColor),
                             ),
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const Register(),
                                   ),
                                 );
+
+                                if (result != null && result is String) {
+                                  setState(() {
+                                    _emailController.text = result;
+                                  });
+                                }
                               },
                               child: Text(
                                 'Đăng ký ngay',

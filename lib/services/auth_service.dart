@@ -103,4 +103,42 @@ class AuthService {
       return {'success': false, 'message': 'Lỗi kết nối, vui lòng thử lại sau'};
     }
   }
+
+  Future<Map<String, dynamic>> register(
+      String email, String password, String fullName) async {
+    try {
+      final response = await http.post(
+        Uri.parse(AppConfig.registerEndpoint),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'password': password,
+          'fullName': fullName,
+        }),
+      );
+
+      final data = json.decode(response.body);
+      LoggerService.api('POST /auth/register', data);
+
+      if (response.statusCode == 201) {
+        final token = data['data']['accessToken'];
+        await StorageService.saveAccessToken(token);
+        await StorageService.saveAuthData(data['data']);
+
+        return {
+          'success': true,
+          'message': 'Đăng ký thành công',
+          'data': data['data']
+        };
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Đăng ký thất bại'
+        };
+      }
+    } catch (e) {
+      LoggerService.error('Register Error', e);
+      return {'success': false, 'message': 'Lỗi kết nối, vui lòng thử lại sau'};
+    }
+  }
 }
