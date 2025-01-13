@@ -238,18 +238,69 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleBiometricLogin() async {
     final isAuthenticated = await AuthService.authenticateWithBiometrics();
     if (isAuthenticated && mounted) {
-      // Delay ngắn để hiện toast
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
+      setState(() => _isLoading = true);
+      
+      try {
+        // 1. Call login API first
+        final response = await _authService.login(
+          _emailController.text,
+          _passwordController.text,
+        );
 
-      // Chuyển đến màn hình Home
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const HomePage(),
-        ),
-        (route) => false,
-      );
+        if (!response['success']) {
+          ToastService.showError(response['message'] ?? 'Đăng nhập thất bại');
+          return;
+        }
+
+        // 2. Lưu thông tin đăng nhập
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', 'mock_token');
+        await prefs.setString('userName', 'Lê Minh Tuấn 1');
+        await prefs.setString('userEmail', 'minhtuanledng@gmail.com');
+
+        if (!mounted) return;
+
+        // 3. Initialize providers và call APIs
+        final fundProvider = Provider.of<FundProvider>(context, listen: false);
+        final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+        final accountSourceProvider = Provider.of<AccountSourceProvider>(context, listen: false);
+        final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
+
+        await Future.wait([
+          fundProvider.initializeFunds(),
+          Future.delayed(Duration(milliseconds: 100)).then((_) async {
+            final selectedFundId = fundProvider.selectedFundId;
+            if (selectedFundId != null) {
+              await Future.wait([
+                categoryProvider.fetchCategories(selectedFundId),
+                accountSourceProvider.fetchAccountSources(selectedFundId),
+                statisticsProvider.fetchStatistics(
+                  selectedFundId,
+                  DateTime.now().subtract(const Duration(days: 30)),
+                  DateTime.now(),
+                ),
+              ]);
+            }
+          }),
+        ]);
+
+        if (!mounted) return;
+        
+        ToastService.showSuccess('Đăng nhập thành công - Chào mừng bạn đến với Uniko');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false,
+        );
+      } catch (e) {
+        if (mounted) {
+          ToastService.showError('Có lỗi xảy ra khi tải dữ liệu');
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
@@ -587,7 +638,7 @@ class _LoginPageState extends State<LoginPage> {
                                 if (snapshot.data == true) {
                                   return Expanded(
                                     child: ElevatedButton(
-                                      onPressed: _handleBiometricLogin,
+                                      onPressed: _isLoading ? null : _handleBiometricLogin,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppTheme.primary,
                                         minimumSize:
@@ -598,23 +649,32 @@ class _LoginPageState extends State<LoginPage> {
                                         ),
                                         elevation: isDarkMode ? 4 : 0,
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.fingerprint_rounded,
-                                              size: 28, color: Colors.white),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Đăng nhập bằng vân tay',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
+                                      child: _isLoading
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
                                               color: Colors.white,
+                                              strokeWidth: 2,
                                             ),
+                                          )
+                                        : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.fingerprint_rounded,
+                                                  size: 28, color: Colors.white),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Đăng nhập bằng vân tay',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
                                     ),
                                   );
                                 }

@@ -71,15 +71,15 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response =
-          await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: 1,
         limit: 8,
       );
 
       setState(() {
-        _transactions = response.data;
+        _transactions = response.data
+          ..sort((a, b) => b.time.compareTo(a.time));
         _isLoading = false;
         _currentPage = 1;
         _hasMoreData = response.data.length >= 5;
@@ -98,8 +98,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response =
-          await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: _currentPage + 1,
         limit: 5,
@@ -107,6 +106,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
       setState(() {
         _transactions.addAll(response.data);
+        _transactions.sort((a, b) => b.time.compareTo(a.time));
         _currentPage++;
         _hasMoreData = response.data.length >= 5;
         _isLoadingMore = false;
@@ -379,7 +379,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'Cập nhật ${DateFormat('HH:mm').format(DateTime.now())}',
+                                  'Cập nhật ${DateFormat('HH:mm').format(_convertToVietnamTime(DateTime.now()))}',
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontSize: 12,
@@ -956,7 +956,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
     // Group transactions by date
     final groupedTransactions = <String, List<TrackerTransaction>>{};
     for (var transaction in filteredTransactions) {
-      final date = DateFormat('dd/MM/yyyy').format(transaction.time);
+      final vietnamTime = _convertToVietnamTime(transaction.time);
+      final date = DateFormat('dd/MM/yyyy').format(vietnamTime);
       groupedTransactions.putIfAbsent(date, () => []).add(transaction);
     }
 
@@ -984,7 +985,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 icon: isIncome ? Icons.arrow_downward : Icons.arrow_upward,
                 title: transaction.reasonName,
                 amount: '${isIncome ? '+' : '-'}$amount',
-                time: DateFormat('HH:mm').format(transaction.time),
+                time: DateFormat('HH:mm').format(_convertToVietnamTime(transaction.time)),
                 category: transaction.trackerType.name,
                 isIncome: isIncome,
               );
@@ -1139,6 +1140,11 @@ class _TransactionsPageState extends State<TransactionsPage> {
         ],
       ),
     );
+  }
+
+  // Thêm hàm helper để chuyển đổi thời gian sang UTC+7
+  DateTime _convertToVietnamTime(DateTime time) {
+    return time.toUtc().add(const Duration(hours: 7));
   }
 }
 

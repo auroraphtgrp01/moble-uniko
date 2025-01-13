@@ -5,7 +5,6 @@ import 'package:uniko/services/core/toast_service.dart';
 import 'package:uniko/widgets/LoadingDialog.dart';
 import '../../config/theme.config.dart';
 import 'package:intl/intl.dart';
-import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'dart:ui';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/widgets/CommonHeader.dart';
@@ -17,6 +16,7 @@ import 'package:uniko/providers/category_provider.dart';
 import 'package:uniko/models/category.dart';
 import 'package:uniko/widgets/CategoryDrawer.dart';
 import 'package:uniko/services/api/tracker_service.dart';
+import 'package:uniko/widgets/DatePickerDrawer.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -316,7 +316,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                   ),
                 ),
                 title: Text(
-                  'Ngày giao dịch',
+                  'Thời gian',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 15,
@@ -326,7 +326,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      DateFormat('dd/MM/yyyy').format(_selectedDate),
+                      '${DateFormat('dd/MM/yyyy').format(_selectedDate)} ${DateFormat('HH:mm').format(_selectedDate)}',
                       style: TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 14,
@@ -746,82 +746,13 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.cardBackground,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: AppTheme.borderColor,
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Chọn ngày',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close,
-                    color: AppTheme.textSecondary,
-                    size: 24,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Calendar
-          Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.5,
-            ),
-            child: CalendarDatePicker2(
-              config: CalendarDatePicker2Config(
-                calendarType: CalendarDatePicker2Type.single,
-                selectedDayHighlightColor: AppTheme.primary,
-                weekdayLabels: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
-                weekdayLabelTextStyle: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontWeight: FontWeight.bold,
-                ),
-                dayTextStyle: TextStyle(
-                  color: AppTheme.textPrimary,
-                ),
-                selectedDayTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                dayBorderRadius: BorderRadius.circular(8),
-              ),
-              value: [_selectedDate],
-              onValueChanged: (dates) {
-                if (dates.isNotEmpty) {
-                  setState(() => _selectedDate = dates.first!);
-                  Navigator.pop(context);
-                }
-              },
-            ),
-          ),
-
-          const SizedBox(height: 16),
-        ],
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => DatePickerDrawer(
+        selectedDate: _selectedDate,
+        onDateSelected: (date) {
+          setState(() => _selectedDate = date);
+        },
       ),
     );
   }
