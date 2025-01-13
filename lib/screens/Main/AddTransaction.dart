@@ -56,109 +56,11 @@ class _AddTransactionPageState extends State<AddTransactionPage>
       endDrawer: _buildCategoryDrawer(_tabController.index == 0),
       appBar: const CommonHeader(
         title: 'Thêm giao dịch',
-        showFundSelector: false,
+        showFundSelector: true,
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Header với blur effect
-            Container(
-              color: AppTheme.background.withOpacity(0.8),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Thêm giao dịch',
-                              style: TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                        FundSelector(
-                          selectedFund: _selectedFund,
-                          onFundChanged: (fund) =>
-                              setState(() => _selectedFund = fund),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Tabs
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardBackground,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: TabBar(
-                      controller: _tabController,
-                      padding: const EdgeInsets.all(4),
-                      indicator: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      dividerColor: Colors.transparent,
-                      labelColor: AppTheme.primary,
-                      unselectedLabelColor: AppTheme.textSecondary,
-                      labelStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                      ),
-                      tabs: [
-                        Tab(
-                          height: 44,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.arrow_downward,
-                                  size: 18, color: Colors.red),
-                              const SizedBox(width: 8),
-                              const Text('Chi tiêu'),
-                            ],
-                          ),
-                        ),
-                        Tab(
-                          height: 44,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.arrow_upward,
-                                  size: 18, color: Colors.green),
-                              const SizedBox(width: 8),
-                              const Text('Thu nhập'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-
             // Tab content
             Expanded(
               child: TabBarView(

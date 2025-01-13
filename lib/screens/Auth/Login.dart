@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:uniko/providers/fund_provider.dart';
 import 'package:uniko/services/core/storage_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
 import 'package:uniko/widgets/Avatar.dart';
@@ -77,6 +79,11 @@ class _LoginPageState extends State<LoginPage> {
           await prefs.setString('userEmail', 'minhtuanledng@gmail.com');
 
           if (!mounted) return;
+
+          final fundProvider =
+              Provider.of<FundProvider>(context, listen: false);
+          await fundProvider.initializeFunds();
+
           ToastService.showSuccess(
               'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
           Navigator.pushAndRemoveUntil(

@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/providers/fund_provider.dart';
 import '../config/theme.config.dart';
+import 'package:provider/provider.dart';
 
 class FundSelector extends StatelessWidget {
   final String selectedFund;
   final Function(String) onFundChanged;
-  final List<String> funds = [
-    'Tất cả',
-    'Quỹ cá nhân',
-    'Quỹ gia đình',
-    'Quỹ đầu tư'
-  ];
 
   FundSelector({
     super.key,
@@ -61,37 +57,42 @@ class FundSelector extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: funds.length,
-                itemBuilder: (context, index) {
-                  final fund = funds[index];
-                  return ListTile(
-                    onTap: () {
-                      onFundChanged(fund);
-                      Navigator.pop(context);
+              child: Consumer<FundProvider>(
+                builder: (context, fundProvider, _) {
+                  final allFunds = fundProvider.funds.map((fund) => fund.name).toList();
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: allFunds.length,
+                    itemBuilder: (context, index) {
+                      final fund = allFunds[index];
+                      return ListTile(
+                        onTap: () {
+                          onFundChanged(fund);
+                          Navigator.pop(context);
+                        },
+                        leading: Icon(
+                          Icons.account_balance_wallet,
+                          color: selectedFund == fund
+                              ? AppTheme.primary
+                              : AppTheme.textSecondary,
+                        ),
+                        title: Text(
+                          fund,
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontWeight: selectedFund == fund
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        trailing: selectedFund == fund
+                            ? Icon(
+                                Icons.check_circle,
+                                color: AppTheme.primary,
+                              )
+                            : null,
+                      );
                     },
-                    leading: Icon(
-                      Icons.account_balance_wallet,
-                      color: selectedFund == fund
-                          ? AppTheme.primary
-                          : AppTheme.textSecondary,
-                    ),
-                    title: Text(
-                      fund,
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: selectedFund == fund
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    trailing: selectedFund == fund
-                        ? Icon(
-                            Icons.check_circle,
-                            color: AppTheme.primary,
-                          )
-                        : null,
                   );
                 },
               ),
@@ -148,4 +149,4 @@ class FundSelector extends StatelessWidget {
       ),
     );
   }
-} 
+}
