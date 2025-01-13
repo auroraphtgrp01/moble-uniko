@@ -7,11 +7,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'dart:ui';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
-import 'package:uniko/widgets/FundSelector.dart';
 import 'package:uniko/widgets/CommonHeader.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/account_source_provider.dart';
 import 'package:uniko/models/account_source.dart';
+import 'package:uniko/providers/fund_provider.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -38,9 +38,13 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     
-    // Fetch account sources khi widget được khởi tạo
+    // Fetch account sources với fundId từ FundProvider
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AccountSourceProvider>().fetchAccountSources('default_fund_id');
+      final fundProvider = context.read<FundProvider>();
+      final selectedFundId = fundProvider.selectedFundId;
+      if (selectedFundId != null) {
+        context.read<AccountSourceProvider>().fetchAccountSources(selectedFundId);
+      }
     });
   }
 
