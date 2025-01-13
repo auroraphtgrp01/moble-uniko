@@ -10,6 +10,9 @@ import 'ForgotPassword.dart';
 import '../../services/auth_service.dart';
 import 'register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uniko/providers/category_provider.dart';
+import 'package:uniko/providers/account_source_provider.dart';
+import 'package:uniko/providers/statistics_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -61,6 +64,7 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       try {
+        // 1. Login
         final response = await _authService.login(
           _emailController.text,
           _passwordController.text,
@@ -68,32 +72,11 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!mounted) return;
 
-        setState(() {
-          _isLoading = false;
-        });
+        if (!response['success']) {
+          setState(() {
+            _isLoading = false;
+          });
 
-        if (response['success']) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', 'mock_token');
-          await prefs.setString('userName', 'Lê Minh Tuấn 1');
-          await prefs.setString('userEmail', 'minhtuanledng@gmail.com');
-
-          if (!mounted) return;
-
-          final fundProvider =
-              Provider.of<FundProvider>(context, listen: false);
-          await fundProvider.initializeFunds();
-
-          ToastService.showSuccess(
-              'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HomePage(),
-            ),
-            (route) => false,
-          );
-        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Container(
@@ -138,11 +121,66 @@ class _LoginPageState extends State<LoginPage> {
               elevation: 8,
             ),
           );
+          return;
+        }
+
+        // 2. Lưu thông tin đăng nhập
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', 'mock_token');
+        await prefs.setString('userName', 'Lê Minh Tuấn 1');
+        await prefs.setString('userEmail', 'minhtuanledng@gmail.com');
+
+        if (!mounted) return;
+
+        // 3. Initialize tất cả providers cần thiết
+        try {
+          final fundProvider =
+              Provider.of<FundProvider>(context, listen: false);
+          final categoryProvider =
+              Provider.of<CategoryProvider>(context, listen: false);
+          final accountSourceProvider =
+              Provider.of<AccountSourceProvider>(context, listen: false);
+          final statisticsProvider =
+              Provider.of<StatisticsProvider>(context, listen: false);
+
+          // Gọi tất cả API cần thiết
+          await Future.wait([
+            fundProvider.initializeFunds(),
+            // Sau khi có selectedFundId từ fundProvider
+            Future.delayed(Duration(milliseconds: 100)).then((_) async {
+              final selectedFundId = fundProvider.selectedFundId;
+              if (selectedFundId != null) {
+                await Future.wait([
+                  categoryProvider.fetchCategories(selectedFundId),
+                  accountSourceProvider.fetchAccountSources(selectedFundId),
+                  statisticsProvider.fetchStatistics(
+                    selectedFundId,
+                    DateTime.now().subtract(const Duration(days: 30)),
+                    DateTime.now(),
+                  ),
+                ]);
+              }
+            }),
+          ]);
+
+          // 4. Chuyển đến trang Home khi tất cả hoàn tất
+          if (!mounted) return;
+
+          ToastService.showSuccess(
+              'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomePage(),
+            ),
+            (route) => false,
+          );
+        } catch (e) {
+          // Xử lý lỗi khi initialize providers
+          ToastService.showError('Có lỗi xảy ra khi tải dữ liệu');
         }
       } catch (e) {
-        setState(() {
-          _isLoading = false;
-        });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Có lỗi xảy ra, vui lòng thử lại sau'),
@@ -154,6 +192,12 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
