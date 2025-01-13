@@ -469,7 +469,9 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   Widget _buildAmountField() {
     return TextFormField(
       controller: _amountController,
+      focusNode: _amountFocusNode,
       keyboardType: TextInputType.number,
+      autofocus: false,
       style: TextStyle(
         color: AppTheme.textPrimary,
         fontSize: 24,
@@ -633,6 +635,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                             )
                           : null,
                       onTap: () {
+                        FocusScope.of(context).unfocus();
                         setState(() => _selectedWallet = wallets[index].id);
                         Navigator.pop(context);
                       },
@@ -648,10 +651,11 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   }
 
   void _handleSubmit() async {
+    FocusScope.of(context).unfocus();
+
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
 
-      // Validate các trường bắt buộc
       if (_selectedCategory.isEmpty) {
         ToastService.showError('Vui lòng chọn phân loại');
         return;
@@ -662,7 +666,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         return;
       }
 
-      // Lấy fundId từ FundProvider
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) {
         ToastService.showError('Vui lòng chọn quỹ');
@@ -670,10 +673,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
       }
 
       try {
-        // Show loading
         LoadingDialog.show(context);
 
-        // Call API
         await TrackerService.createTracker(
           trackerTypeId: _selectedCategory,
           reasonName: _reasonName,
@@ -684,11 +685,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
           description: _descriptionController.text.trim(),
         );
 
-        // Hide loading
         LoadingDialog.hide(context);
-
-        // Show success message
-        ToastService.showSuccess('Đã thêm giao dịch thành công');
 
         // Clear form
         _amountController.clear();
@@ -698,6 +695,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
           _selectedCategory = '';
           _selectedWallet = '';
         });
+
+        ToastService.showSuccess('Đã thêm giao dịch thành công');
       } catch (e) {
         LoadingDialog.hide(context);
         ToastService.showError('Có lỗi xảy ra khi thêm giao dịch');
@@ -728,6 +727,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
             currentCategory: _selectedCategory,
             categories: categories,
             onCategorySelected: (categoryName) {
+              FocusScope.of(context).unfocus();
               setState(() {
                 _selectedCategory = provider.categories
                     .firstWhere((cat) => cat.name.contains(categoryName))
