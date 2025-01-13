@@ -13,6 +13,7 @@ class CustomBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final screenWidth = MediaQuery.of(context).size.width;
     final itemWidth = (screenWidth - 32) / 5;
 
@@ -40,40 +41,46 @@ class CustomBottomNav extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _buildNavItem(
-            index: 0,
-            icon: Icons.account_balance_wallet_outlined,
-            activeIcon: Icons.account_balance_wallet_rounded,
-            label: 'Tổng quan',
-            width: itemWidth,
+      child: IgnorePointer(
+        ignoring: isKeyboardVisible,
+        child: Opacity(
+          opacity: isKeyboardVisible ? 0.5 : 1.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              _buildNavItem(
+                index: 0,
+                icon: Icons.account_balance_wallet_outlined,
+                activeIcon: Icons.account_balance_wallet_rounded,
+                label: 'Tổng quan',
+                width: itemWidth,
+              ),
+              _buildNavItem(
+                index: 1,
+                icon: Icons.sync_alt_outlined,
+                activeIcon: Icons.sync_alt_rounded,
+                label: 'Giao dịch',
+                width: itemWidth,
+              ),
+              _buildAddButton(width: itemWidth),
+              _buildNavItem(
+                index: 3,
+                icon: Icons.insert_chart_outlined,
+                activeIcon: Icons.insert_chart_rounded,
+                label: 'TT tài chính',
+                width: itemWidth,
+              ),
+              _buildNavItem(
+                index: 4,
+                icon: Icons.person_outline,
+                activeIcon: Icons.person_rounded,
+                label: 'Cá nhân',
+                width: itemWidth,
+              ),
+            ],
           ),
-          _buildNavItem(
-            index: 1,
-            icon: Icons.sync_alt_outlined,
-            activeIcon: Icons.sync_alt_rounded,
-            label: 'Giao dịch',
-            width: itemWidth,
-          ),
-          _buildAddButton(width: itemWidth),
-          _buildNavItem(
-            index: 3,
-            icon: Icons.insert_chart_outlined,
-            activeIcon: Icons.insert_chart_rounded,
-            label: 'TT tài chính',
-            width: itemWidth,
-          ),
-          _buildNavItem(
-            index: 4,
-            icon: Icons.person_outline,
-            activeIcon: Icons.person_rounded,
-            label: 'Cá nhân',
-            width: itemWidth,
-          ),
-        ],
+        ),
       ),
     );
   }

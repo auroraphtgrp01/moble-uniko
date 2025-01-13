@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
+import 'package:uniko/widgets/LoadingDialog.dart';
 import '../../config/theme.config.dart';
 import 'package:intl/intl.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
@@ -15,6 +16,7 @@ import 'package:uniko/providers/fund_provider.dart';
 import 'package:uniko/providers/category_provider.dart';
 import 'package:uniko/models/category.dart';
 import 'package:uniko/widgets/CategoryDrawer.dart';
+import 'package:uniko/services/api/tracker_service.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -38,6 +40,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
   final _amountFocusNode = FocusNode();
 
+  final _descriptionController = TextEditingController();
+
   bool get isExpense => _currentIndex == 0;
 
   @override
@@ -59,6 +63,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
+    _descriptionController.dispose();
     _amountFocusNode.dispose();
     super.dispose();
   }
@@ -403,7 +408,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         ),
         const SizedBox(height: 16),
 
-        // Mô tả
+        // Description field
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -414,20 +419,33 @@ class _AddTransactionPageState extends State<AddTransactionPage>
               width: 1,
             ),
           ),
-          child: TextField(
-            maxLines: 3,
-            style: TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 15,
-            ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Thêm mô tả (tùy chọn)',
-              hintStyle: TextStyle(
-                color: AppTheme.textSecondary.withOpacity(0.5),
-                fontSize: 15,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Mô tả',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 13,
+                ),
               ),
-            ),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 3,
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 15,
+                ),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Thêm mô tả (tùy chọn)',
+                  hintStyle: TextStyle(
+                    color: AppTheme.textSecondary.withOpacity(0.5),
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
 
@@ -437,6 +455,15 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         _buildSubmitButton(),
       ],
     );
+  }
+
+  // Hàm format số tiền
+  String _formatNumber(String value) {
+    if (value.isEmpty) return '';
+    final number = int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (number == null) return '';
+    final format = NumberFormat("#,###", "vi_VN");
+    return format.format(number);
   }
 
   Widget _buildAmountField() {
@@ -452,7 +479,26 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         border: InputBorder.none,
         hintText: '0',
         suffixText: 'đ',
+        suffixStyle: TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
       ),
+      onChanged: (value) {
+        // Lưu vị trí con trỏ hiện tại
+        final cursorPos = _amountController.selection;
+        // Format số tiền
+        final formattedValue = _formatNumber(value);
+
+        // Cập nhật text và vị trí con trỏ
+        _amountController.value = TextEditingValue(
+          text: formattedValue,
+          selection: TextSelection.collapsed(
+            offset: formattedValue.length,
+          ),
+        );
+      },
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Vui lòng nhập số tiền';
@@ -601,7 +647,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     );
   }
 
-  void _handleSubmit() {
+  void _handleSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
 
@@ -623,23 +669,40 @@ class _AddTransactionPageState extends State<AddTransactionPage>
         return;
       }
 
-      // Tạo payload
-      final payload = {
-        'trackerTypeId': _selectedCategory,
-        'reasonName': _reasonName,
-        'direction': isExpense ? 'EXPENSE' : 'INCOMING',
-        'amount': _amount,
-        'accountSourceId': _selectedWallet,
-        'fundId': fundId,
-      };
+      try {
+        // Show loading
+        LoadingDialog.show(context);
 
-      LoggerService.debug('Transaction Payload: $payload');
+        // Call API
+        await TrackerService.createTracker(
+          trackerTypeId: _selectedCategory,
+          reasonName: _reasonName,
+          direction: isExpense ? 'EXPENSE' : 'INCOMING',
+          amount: _amount,
+          accountSourceId: _selectedWallet,
+          fundId: fundId,
+          description: _descriptionController.text.trim(),
+        );
 
-      FocusScope.of(context).unfocus();
+        // Hide loading
+        LoadingDialog.hide(context);
 
-      ToastService.showSuccess('Đã thêm giao dịch thành công');
+        // Show success message
+        ToastService.showSuccess('Đã thêm giao dịch thành công');
 
-      Future.delayed(const Duration(milliseconds: 500), () {});
+        // Clear form
+        _amountController.clear();
+        _noteController.clear();
+        _descriptionController.clear();
+        setState(() {
+          _selectedCategory = '';
+          _selectedWallet = '';
+        });
+      } catch (e) {
+        LoadingDialog.hide(context);
+        ToastService.showError('Có lỗi xảy ra khi thêm giao dịch');
+        LoggerService.error('Create Tracker Error: $e');
+      }
     }
   }
 
@@ -683,85 +746,82 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          decoration: BoxDecoration(
-            color: AppTheme.cardBackground.withOpacity(0.9),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+      backgroundColor: AppTheme.cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: AppTheme.borderColor,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Chọn ngày',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(
+                    Icons.close,
+                    color: AppTheme.textSecondary,
+                    size: 24,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Chọn ngày',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(
-                        Icons.close,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              // Calendar
-              Expanded(
-                child: CalendarDatePicker2(
-                  config: CalendarDatePicker2Config(
-                    calendarType: CalendarDatePicker2Type.single,
-                    selectedDayHighlightColor: AppTheme.primary,
-                    weekdayLabels: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
-                    weekdayLabelTextStyle: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    dayTextStyle: TextStyle(
-                      color: AppTheme.textPrimary,
-                    ),
-                    selectedDayTextStyle: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    dayBorderRadius: BorderRadius.circular(10),
-                  ),
-                  value: [_selectedDate],
-                  onValueChanged: (dates) {
-                    if (dates.isNotEmpty) {
-                      setState(() => _selectedDate = dates.first!);
-                      Navigator.pop(context);
-                    }
-                  },
+          // Calendar
+          Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.5,
+            ),
+            child: CalendarDatePicker2(
+              config: CalendarDatePicker2Config(
+                calendarType: CalendarDatePicker2Type.single,
+                selectedDayHighlightColor: AppTheme.primary,
+                weekdayLabels: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+                weekdayLabelTextStyle: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.bold,
                 ),
+                dayTextStyle: TextStyle(
+                  color: AppTheme.textPrimary,
+                ),
+                selectedDayTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                dayBorderRadius: BorderRadius.circular(8),
               ),
-            ],
+              value: [_selectedDate],
+              onValueChanged: (dates) {
+                if (dates.isNotEmpty) {
+                  setState(() => _selectedDate = dates.first!);
+                  Navigator.pop(context);
+                }
+              },
+            ),
           ),
-        ),
+
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
