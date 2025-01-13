@@ -10,6 +10,7 @@ import 'package:uniko/services/tracker_transaction_service.dart';
 import 'package:uniko/models/tracker_transaction.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/fund_provider.dart';
+import 'package:uniko/providers/statistics_provider.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -124,7 +125,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
   String _formatAmount(int amount) {
     final format = NumberFormat("#,###", "vi_VN");
-    return "${format.format(amount)} đ";
+    return format.format(amount);
   }
 
   @override
@@ -174,26 +175,182 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         : AppTheme.borderColor,
                     width: 0.5,
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildSummaryItem(
-                      label: 'Thu nhập',
-                      amount: '15,300,000',
-                      isIncome: true,
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: AppTheme.divider,
-                    ),
-                    _buildSummaryItem(
-                      label: 'Chi tiêu',
-                      amount: '8,520,000',
-                      isIncome: false,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
+                ),
+                child: Consumer<StatisticsProvider>(
+                  builder: (context, statisticsProvider, _) {
+                    final stats = statisticsProvider.statistics;
+                    final income = stats?.income.totalToday ?? 0;
+                    final expense = stats?.expense.totalToday ?? 0;
+                    final balance = stats?.total.totalBalance ?? 0;
+                    final balanceRate = stats?.total.rate ?? "0";
+
+                    return Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: balance >= 0 ? [
+                                const Color(0xFF34C759).withOpacity(0.8),
+                                const Color(0xFF34C759),
+                              ] : [
+                                const Color(0xFFE53935).withOpacity(0.8),
+                                const Color(0xFFD32F2F),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: balance >= 0 
+                                    ? const Color(0xFF34C759).withOpacity(0.2)
+                                    : const Color(0xFFD32F2F).withOpacity(0.2),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Icon(
+                                          Icons.account_balance_wallet_outlined,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Text(
+                                        'Số dư hiện tại',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.3),
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          double.parse(balanceRate) >= 0
+                                              ? Icons.trending_up_rounded
+                                              : Icons.trending_down_rounded,
+                                          color: Colors.white,
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${balanceRate}%',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                '${_formatAmount(balance)} đ',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Cập nhật ${DateFormat('HH:mm').format(DateTime.now())}',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          height: 1,
+                          color: AppTheme.divider.withOpacity(0.3),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildSummaryItem(
+                                icon: Icons.arrow_downward_rounded,
+                                label: 'Thu nhập',
+                                amount: _formatAmount(income),
+                                isIncome: true,
+                                rate: stats?.income.rate,
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 50,
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              color: AppTheme.divider.withOpacity(0.5),
+                            ),
+                            Expanded(
+                              child: _buildSummaryItem(
+                                icon: Icons.arrow_upward_rounded,
+                                label: 'Chi tiêu',
+                                amount: _formatAmount(expense),
+                                isIncome: false,
+                                rate: stats?.expense.rate,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -279,28 +436,107 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   Widget _buildSummaryItem({
+    required IconData icon,
     required String label,
     required String amount,
     required bool isIncome,
+    String? rate,
   }) {
+    final color = isIncome ? const Color(0xFF34C759) : AppTheme.error;
+    
     return Column(
+      crossAxisAlignment: isIncome ? CrossAxisAlignment.start : CrossAxisAlignment.end,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppTheme.textSecondary,
-            fontSize: 14,
-          ),
+        Row(
+          mainAxisAlignment: isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
+          children: [
+            if (!isIncome) ...[
+              Text(
+                label,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 16,
+              ),
+            ),
+            if (isIncome) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           '$amount đ',
           style: TextStyle(
-            color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+            color: AppTheme.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
           ),
         ),
+        if (rate != null) ...[
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: color.withOpacity(0.2),
+                width: 0.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  double.parse(rate) > 0 
+                      ? Icons.trending_up_rounded
+                      : Icons.trending_down_rounded,
+                  color: color,
+                  size: 14,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '${rate}%',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

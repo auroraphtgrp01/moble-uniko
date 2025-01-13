@@ -6,6 +6,7 @@ import 'package:uniko/providers/account_source_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/main.dart';
 import 'package:uniko/providers/category_provider.dart';
+import 'package:uniko/providers/statistics_provider.dart';
 
 class FundProvider with ChangeNotifier {
   String _selectedFund = '';
@@ -30,15 +31,18 @@ class FundProvider with ChangeNotifier {
       if (_funds.isNotEmpty) {
         _selectedFund = _funds[0].name;
         
-        // Fetch initial data for the first fund
         final context = navigatorKey.currentContext!;
         await Future.wait([
-          // Fetch account sources
           Provider.of<AccountSourceProvider>(context, listen: false)
               .fetchAccountSources(_funds[0].id),
-          // Fetch categories
           Provider.of<CategoryProvider>(context, listen: false)
               .fetchCategories(_funds[0].id),
+          Provider.of<StatisticsProvider>(context, listen: false)
+              .fetchStatistics(
+                _funds[0].id,
+                DateTime.now().subtract(const Duration(days: 30)),
+                DateTime.now(),
+              ),
         ]);
       }
     } catch (e) {
@@ -53,15 +57,18 @@ class FundProvider with ChangeNotifier {
     _selectedFund = fundName;
     final fundId = selectedFundId;
     if (fundId != null) {
-      // Fetch account sources
-      Provider.of<AccountSourceProvider>(navigatorKey.currentContext!,
-              listen: false)
-          .fetchAccountSources(fundId);
+      final context = navigatorKey.currentContext!;
       
-      // Fetch categories
-      Provider.of<CategoryProvider>(navigatorKey.currentContext!,
-              listen: false)
+      Provider.of<AccountSourceProvider>(context, listen: false)
+          .fetchAccountSources(fundId);
+      Provider.of<CategoryProvider>(context, listen: false)
           .fetchCategories(fundId);
+      Provider.of<StatisticsProvider>(context, listen: false)
+          .fetchStatistics(
+            fundId,
+            DateTime.now().subtract(const Duration(days: 30)),
+            DateTime.now(),
+          );
     }
     notifyListeners();
   }

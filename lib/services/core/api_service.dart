@@ -16,9 +16,13 @@ class ApiService {
     String endpoint, {
     String method = 'GET',
     Map<String, dynamic>? body,
+    Map<String, dynamic>? queryParameters,
   }) async {
     final headers = await _getAuthenticatedHeaders();
-    final uri = Uri.parse('${AppConfig.apiUrl}$endpoint');
+    final uri = Uri.parse('${AppConfig.apiUrl}$endpoint').replace(
+      queryParameters:
+          queryParameters?.map((key, value) => MapEntry(key, value.toString())),
+    );
 
     try {
       switch (method) {
@@ -37,4 +41,4 @@ class ApiService {
       throw Exception('API Call Error: $e');
     }
   }
-} 
+}
