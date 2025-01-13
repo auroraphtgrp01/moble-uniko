@@ -8,6 +8,7 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'dart:ui';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
+import 'package:uniko/widgets/CommonHeader.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -53,6 +54,10 @@ class _AddTransactionPageState extends State<AddTransactionPage>
       key: _scaffoldKey,
       backgroundColor: AppTheme.background,
       endDrawer: _buildCategoryDrawer(_tabController.index == 0),
+      appBar: const CommonHeader(
+        title: 'Thêm giao dịch',
+        showFundSelector: false,
+      ),
       body: SafeArea(
         child: Column(
           children: [

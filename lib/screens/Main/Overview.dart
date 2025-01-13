@@ -9,6 +9,7 @@ import '../../widgets/BalanceCard.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/widgets/FundSelector.dart';
 import '../SubScreen/AccountDetail.dart';
+import '../../widgets/CommonHeader.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -71,83 +72,7 @@ class _OverviewPageState extends State<OverviewPage>
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppTheme.isDarkMode
-                        ? AppTheme.background.withOpacity(0.75)
-                        : Colors.white.withOpacity(0.75),
-                    AppTheme.isDarkMode
-                        ? AppTheme.background.withOpacity(0.65)
-                        : Colors.white.withOpacity(0.65),
-                  ],
-                ),
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.03)
-                        : Colors.black.withOpacity(0.03),
-                    width: 0.5,
-                  ),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.isDarkMode
-                        ? Colors.black.withOpacity(0.08)
-                        : Colors.white.withOpacity(0.6),
-                    offset: const Offset(0, 4),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tổng quan',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 15,
-                    letterSpacing: -0.2,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-            FundSelector(
-              selectedFund: _selectedFund,
-              onFundChanged: (fund) => setState(() => _selectedFund = fund),
-            ),
-          ],
-        ),
-        toolbarHeight: 80,
-      ),
+      appBar: const CommonHeader(title: 'Tổng quan'),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         color: AppTheme.primary,

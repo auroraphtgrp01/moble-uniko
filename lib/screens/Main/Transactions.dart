@@ -7,6 +7,7 @@ import 'package:uniko/widgets/FundSelector.dart';
 import 'package:uniko/widgets/AddCategoryDrawer.dart';
 import 'dart:ui';
 import 'package:uniko/widgets/CategoryDrawer.dart';
+import 'package:uniko/widgets/CommonHeader.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -45,72 +46,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const CommonHeader(title: 'Giao dịch'),
       backgroundColor: AppTheme.background,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.background.withOpacity(0.5),
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.03)
-                        : Colors.black.withOpacity(0.03),
-                    width: 0.5,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sổ giao dịch',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.filter_list_rounded,
-                    color: AppTheme.textPrimary,
-                  ),
-                  onPressed: () => _showFilterDrawer(),
-                ),
-                FundSelector(
-                  selectedFund: _selectedFund,
-                  onFundChanged: (fund) => setState(() => _selectedFund = fund),
-                ),
-              ],
-            ),
-          ],
-        ),
-        toolbarHeight: 80,
-      ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         color: AppTheme.primary,
