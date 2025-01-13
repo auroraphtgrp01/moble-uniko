@@ -15,7 +15,6 @@ import 'package:uniko/providers/fund_provider.dart';
 import 'package:uniko/providers/category_provider.dart';
 import 'package:uniko/models/category.dart';
 import 'package:uniko/widgets/CategoryDrawer.dart';
-import 'package:flutter/cupertino.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -45,7 +44,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   void initState() {
     super.initState();
 
-    // Fetch account sources với fundId từ FundProvider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final fundProvider = context.read<FundProvider>();
       final selectedFundId = fundProvider.selectedFundId;
@@ -84,8 +82,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                
-                // Custom Tab
+
+                // Custom Tab với animation
                 Container(
                   height: 40,
                   margin: const EdgeInsets.fromLTRB(20, 0, 20, 8),
@@ -95,55 +93,77 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                         : Colors.black.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Row(
+                  child: Stack(
                     children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _currentIndex = 0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: _currentIndex == 0
-                                  ? Colors.red
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Chi tiêu',
-                              style: TextStyle(
-                                color: _currentIndex == 0
-                                    ? Colors.white
-                                    : AppTheme.textSecondary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                      // Animated Background
+                      AnimatedAlign(
+                        alignment: _currentIndex == 0
+                            ? Alignment.centerLeft
+                            : Alignment.centerRight,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        child: Container(
+                          width: (MediaQuery.of(context).size.width - 40) / 2,
+                          decoration: BoxDecoration(
+                            color:
+                                _currentIndex == 0 ? Colors.red : Colors.green,
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _currentIndex = 1),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: _currentIndex == 1
-                                  ? Colors.green
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Thu nhập',
-                              style: TextStyle(
-                                color: _currentIndex == 1
-                                    ? Colors.white
-                                    : AppTheme.textSecondary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+
+                      // Tab Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => setState(() => _currentIndex = 0),
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                child: Center(
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.easeInOut,
+                                    style: TextStyle(
+                                      color: _currentIndex == 0
+                                          ? Colors.white
+                                          : AppTheme.textSecondary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    child: const Text('Chi tiêu'),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => setState(() => _currentIndex = 1),
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                child: Center(
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.easeInOut,
+                                    style: TextStyle(
+                                      color: _currentIndex == 1
+                                          ? Colors.white
+                                          : AppTheme.textSecondary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    child: const Text('Thu nhập'),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
