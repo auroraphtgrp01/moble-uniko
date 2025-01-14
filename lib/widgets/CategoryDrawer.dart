@@ -22,6 +22,48 @@ class CategoryDrawer extends StatefulWidget {
 
 class _CategoryDrawerState extends State<CategoryDrawer> {
   final searchController = TextEditingController();
+  List<CategoryItem> filteredCategories = [];
+  Set<String> addedCategories = {};
+
+  @override
+  void initState() {
+    super.initState();
+    filteredCategories = widget.categories.toSet().toList();
+    
+    searchController.addListener(() {
+      filterCategories();
+    });
+  }
+
+  void filterCategories() {
+    final query = searchController.text.toLowerCase();
+    setState(() {
+      final uniqueCategories = widget.categories.toSet().toList();
+      
+      filteredCategories = uniqueCategories
+          .where((category) => category.name.toLowerCase().contains(query))
+          .toList();
+    });
+  }
+
+  List<CategoryItem> get recentCategories {
+    addedCategories.clear();
+    return widget.categories.take(3).toList();
+  }
+
+  List<CategoryItem> get remainingCategories {
+    addedCategories.addAll(recentCategories.map((e) => e.name));
+    
+    return filteredCategories.where((category) => 
+      !addedCategories.contains(category.name)
+    ).toList();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,9 +205,9 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
-              itemCount: 3,
+              itemCount: recentCategories.length,
               itemBuilder: (context, index) {
-                final category = widget.categories[index + 1];
+                final category = recentCategories[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: FilterChip(
@@ -234,9 +276,9 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                 crossAxisSpacing: 16,
                 childAspectRatio: 0.85,
               ),
-              itemCount: widget.categories.length,
+              itemCount: remainingCategories.length,
               itemBuilder: (context, index) {
-                final category = widget.categories[index];
+                final category = remainingCategories[index];
                 final isSelected = category.name == widget.currentCategory;
 
                 return InkWell(

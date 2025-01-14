@@ -30,7 +30,7 @@ class FundProvider with ChangeNotifier {
       _funds = response.data;
       if (_funds.isNotEmpty) {
         _selectedFund = _funds[0].name;
-        
+
         final context = navigatorKey.currentContext!;
         await Future.wait([
           Provider.of<AccountSourceProvider>(context, listen: false)
@@ -39,10 +39,10 @@ class FundProvider with ChangeNotifier {
               .fetchCategories(_funds[0].id),
           Provider.of<StatisticsProvider>(context, listen: false)
               .fetchStatistics(
-                _funds[0].id,
-                DateTime.now().subtract(const Duration(days: 30)),
-                DateTime.now(),
-              ),
+            _funds[0].id,
+            DateTime.now().subtract(const Duration(days: 30)),
+            DateTime.now(),
+          ),
         ]);
       }
     } catch (e) {
@@ -58,18 +58,64 @@ class FundProvider with ChangeNotifier {
     final fundId = selectedFundId;
     if (fundId != null) {
       final context = navigatorKey.currentContext!;
-      
+
       Provider.of<AccountSourceProvider>(context, listen: false)
           .fetchAccountSources(fundId);
       Provider.of<CategoryProvider>(context, listen: false)
           .fetchCategories(fundId);
-      Provider.of<StatisticsProvider>(context, listen: false)
-          .fetchStatistics(
-            fundId,
-            DateTime.now().subtract(const Duration(days: 30)),
-            DateTime.now(),
-          );
+      Provider.of<StatisticsProvider>(context, listen: false).fetchStatistics(
+        fundId,
+        DateTime.now().subtract(const Duration(days: 30)),
+        DateTime.now(),
+      );
     }
     notifyListeners();
+  }
+
+  Future<void> refreshFunds() async {
+    try {
+      LoggerService.info('Refreshing funds');
+      final response = await ExpenditureService().getFunds();
+      _funds = response.data;
+      
+      if (_funds.isNotEmpty && (_selectedFund.isEmpty || !_funds.any((fund) => fund.name == _selectedFund))) {
+        _selectedFund = _funds[0].name;
+        
+        final context = navigatorKey.currentContext!;
+        await Future.wait([
+          Provider.of<AccountSourceProvider>(context, listen: false)
+              .fetchAccountSources(_funds[0].id),
+          Provider.of<CategoryProvider>(context, listen: false)
+              .fetchCategories(_funds[0].id),
+          Provider.of<StatisticsProvider>(context, listen: false)
+              .fetchStatistics(
+            _funds[0].id,
+            DateTime.now().subtract(const Duration(days: 30)),
+            DateTime.now(),
+          ),
+        ]);
+      } else if (_selectedFund.isNotEmpty) {
+        final fundId = selectedFundId;
+        if (fundId != null) {
+          final context = navigatorKey.currentContext!;
+          await Future.wait([
+            Provider.of<AccountSourceProvider>(context, listen: false)
+                .fetchAccountSources(fundId),
+            Provider.of<CategoryProvider>(context, listen: false)
+                .fetchCategories(fundId),
+            Provider.of<StatisticsProvider>(context, listen: false)
+                .fetchStatistics(
+              fundId,
+              DateTime.now().subtract(const Duration(days: 30)),
+              DateTime.now(),
+            ),
+          ]);
+        }
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      LoggerService.error('Failed to refresh funds: $e');
+    }
   }
 }

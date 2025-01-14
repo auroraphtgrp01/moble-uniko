@@ -4,14 +4,7 @@ import '../config/theme.config.dart';
 import 'package:provider/provider.dart';
 
 class FundSelector extends StatelessWidget {
-  final String selectedFund;
-  final Function(String) onFundChanged;
-
-  FundSelector({
-    super.key,
-    required this.selectedFund,
-    required this.onFundChanged,
-  });
+  const FundSelector({super.key});
 
   void _showFundDrawer(BuildContext context) {
     showGeneralDialog(
@@ -30,65 +23,65 @@ class FundSelector extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: Material(
               color: Colors.transparent,
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.85,
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(
-                  color: AppTheme.cardBackground,
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
-                ),
-                child: Column(
-                  children: [
-                    // Header
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.account_balance_wallet,
-                              color: AppTheme.primary,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Chọn quỹ chi tiêu',
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: Icon(
-                              Icons.close,
-                              color: AppTheme.textSecondary,
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
+              child: Consumer<FundProvider>(
+                builder: (context, fundProvider, _) {
+                  final funds = fundProvider.funds;
+                  return Container(
+                    width: MediaQuery.of(context).size.width * 0.85,
+                    height: MediaQuery.of(context).size.height,
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardBackground,
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
                     ),
-                    Divider(height: 1, color: AppTheme.borderColor),
-                    // Fund List
-                    Expanded(
-                      child: Consumer<FundProvider>(
-                        builder: (context, fundProvider, _) {
-                          final funds = fundProvider.funds;
-                          return ListView.builder(
+                    child: Column(
+                      children: [
+                        // Header
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.account_balance_wallet,
+                                  color: AppTheme.primary,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Chọn quỹ chi tiêu',
+                                style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                onPressed: () => Navigator.pop(context),
+                                icon: Icon(
+                                  Icons.close,
+                                  color: AppTheme.textSecondary,
+                                  size: 20,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Divider(height: 1, color: AppTheme.borderColor),
+                        // Fund List
+                        Expanded(
+                          child: ListView.builder(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             itemCount: funds.length,
                             itemBuilder: (context, index) {
                               final fund = funds[index];
-                              final isSelected = selectedFund == fund.name;
+                              final isSelected = fundProvider.selectedFund == fund.name;
                               
                               return Container(
                                 margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
@@ -100,7 +93,8 @@ class FundSelector extends StatelessWidget {
                                 ),
                                 child: ListTile(
                                   onTap: () {
-                                    onFundChanged(fund.name);
+                                    Provider.of<FundProvider>(context, listen: false)
+                                        .setSelectedFund(fund.name);
                                     Navigator.pop(context);
                                   },
                                   contentPadding: const EdgeInsets.symmetric(
@@ -186,12 +180,12 @@ class FundSelector extends StatelessWidget {
                                 ),
                               );
                             },
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ),
@@ -202,48 +196,52 @@ class FundSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showFundDrawer(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: AppTheme.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppTheme.isDarkMode
-                ? Colors.white.withOpacity(0.05)
-                : AppTheme.borderColor,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.account_balance_wallet,
-              color: AppTheme.primary,
-              size: 18,
+    return Consumer<FundProvider>(
+      builder: (context, fundProvider, _) {
+        return GestureDetector(
+          onTap: () => _showFundDrawer(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
             ),
-            const SizedBox(width: 8),
-            Text(
-              selectedFund,
-              style: TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+            decoration: BoxDecoration(
+              color: AppTheme.cardBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.isDarkMode
+                    ? Colors.white.withOpacity(0.05)
+                    : AppTheme.borderColor,
               ),
             ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              color: AppTheme.textSecondary,
-              size: 20,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  color: AppTheme.primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  fundProvider.selectedFund,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -96,17 +96,56 @@ class _OverviewPageState extends State<OverviewPage>
   Widget _buildRecentTransactions() {
     return Consumer<StatisticsProvider>(
       builder: (context, provider, child) {
-        final transactions =
-            provider.statistics?.unclassifiedTransactions ?? [];
+        final transactions = provider.statistics?.unclassifiedTransactions ?? [];
 
         if (transactions.isEmpty) {
-          return Center(
-            child: Text(
-              'Không có giao dịch chưa phân loại',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 15,
+          return Container(
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppTheme.cardBackground,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppTheme.isDarkMode
+                    ? Colors.white.withOpacity(0.05)
+                    : AppTheme.borderColor,
               ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_circle_outline,
+                    color: AppTheme.primary,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Tất cả giao dịch đã được phân loại',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Bạn đã phân loại tất cả các giao dịch. Hãy tiếp tục duy trì thói quen tốt này nhé!',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 15,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           );
         }

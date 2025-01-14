@@ -146,11 +146,7 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
                                   ),
                                 ],
                               ),
-                              child: FundSelector(
-                                selectedFund: fundProvider.selectedFund,
-                                onFundChanged: (fund) =>
-                                    fundProvider.setSelectedFund(fund),
-                              ),
+                              child: const FundSelector(),
                             ),
                           );
                         },

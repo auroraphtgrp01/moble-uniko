@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 import '../services/account_source_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/fund_provider.dart';
 
 enum WalletType {
   cash,
@@ -510,6 +512,8 @@ class _AddWalletDrawerState extends State<AddWalletDrawer> {
           loginId: _selectedType == WalletType.bank ? _usernameController.text.trim() : '',
           type: _selectedType == WalletType.bank ? 'MB_BANK' : 'WALLET',
         );
+        
+        await Provider.of<FundProvider>(context, listen: false).refreshFunds();
         
         if (mounted) {
           Navigator.pop(context);

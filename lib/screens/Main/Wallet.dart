@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import 'package:uniko/models/expenditure_fund.dart';
 import '../../services/expenditure_service.dart';
 import '../SubScreen/FundDetail.dart';
+import 'package:provider/provider.dart';
+import 'package:uniko/providers/fund_provider.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -144,10 +146,7 @@ class _WalletPageState extends State<WalletPage> {
                 ),
               ],
             ),
-            FundSelector(
-              selectedFund: _selectedFund,
-              onFundChanged: (fund) => setState(() => _selectedFund = fund),
-            ),
+            const FundSelector(),
           ],
         ),
         toolbarHeight: 80,
@@ -677,9 +676,12 @@ class _AddFundDrawerState extends State<AddFundDrawer> {
         );
 
         if (mounted) {
+          // Refresh FundProvider sau khi tạo quỹ thành công
+          await Provider.of<FundProvider>(context, listen: false).refreshFunds();
+          
           setState(() => _isLoading = false);
-          Navigator.pop(context); // Đóng drawer trước
-          widget.onSuccess(); // Sau đó gọi callback để refresh
+          Navigator.pop(context);
+          widget.onSuccess();
         }
       } catch (e) {
         if (mounted) {

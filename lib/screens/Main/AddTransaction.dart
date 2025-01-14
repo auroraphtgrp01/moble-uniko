@@ -609,6 +609,41 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                 ),
                 if (provider.isLoading)
                   const CircularProgressIndicator()
+                else if (wallets.isEmpty)
+                  SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet_outlined,
+                            size: 48,
+                            color: AppTheme.textSecondary.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Chưa có nguồn tiền nào',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Vui lòng thêm ví hoặc tài khoản ngân hàng',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary.withOpacity(0.7),
+                              fontSize: 13,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
                 else
                   ...List.generate(
                     wallets.length,

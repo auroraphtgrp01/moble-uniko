@@ -260,7 +260,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     final income = stats?.income.totalToday ?? 0;
                     final expense = stats?.expense.totalToday ?? 0;
                     final balance = stats?.total.totalBalance ?? 0;
-                    final balanceRate = stats?.total.rate ?? "0";
+                    final balanceRate = stats?.total.rate == "none" ? "0" : (stats?.total.rate ?? "0");
 
                     return Column(
                       children: [
@@ -556,6 +556,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
     String? rate,
   }) {
     final color = isIncome ? const Color(0xFF34C759) : AppTheme.error;
+    final safeRate = rate == "none" ? "0" : (rate ?? "0");
 
     return Column(
       crossAxisAlignment:
@@ -632,7 +633,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  double.parse(rate) > 0
+                  double.parse(safeRate) > 0
                       ? Icons.trending_up_rounded
                       : Icons.trending_down_rounded,
                   color: color,
@@ -640,7 +641,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  '${rate}%',
+                  '${safeRate}%',
                   style: TextStyle(
                     color: color,
                     fontSize: 12,
