@@ -61,6 +61,9 @@ class TransactionDetail {
   final int amount;
   final String direction;
   final DateTime transactionDateTime;
+  final String? toAccountName;
+  final String? toAccountNo;
+  final String? toBankName;
   final String? description;
   final AccountDetail? ofAccount;
   final AccountSourceDetail accountSource;
@@ -70,6 +73,9 @@ class TransactionDetail {
     required this.amount,
     required this.direction,
     required this.transactionDateTime,
+    this.toAccountName,
+    this.toAccountNo,
+    this.toBankName,
     this.description,
     this.ofAccount,
     required this.accountSource,
@@ -81,8 +87,13 @@ class TransactionDetail {
       amount: json['amount'],
       direction: json['direction'],
       transactionDateTime: DateTime.parse(json['transactionDateTime']),
+      toAccountName: json['toAccountName'],
+      toAccountNo: json['toAccountNo'],
+      toBankName: json['toBankName'],
       description: json['description'],
-      ofAccount: json['ofAccount'] != null ? AccountDetail.fromJson(json['ofAccount']) : null,
+      ofAccount: json['ofAccount'] != null
+          ? AccountDetail.fromJson(json['ofAccount'])
+          : null,
       accountSource: AccountSourceDetail.fromJson(json['accountSource']),
     );
   }
@@ -179,4 +190,4 @@ class FundDetail {
       name: json['name'],
     );
   }
-} 
+}

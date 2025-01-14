@@ -315,11 +315,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     );
   }
 
-  Widget _buildMainInfoCard(TrackerTransactionDetail transaction, bool isIncome) {
+  Widget _buildMainInfoCard(
+      TrackerTransactionDetail transaction, bool isIncome) {
     // Định nghĩa màu sắc theo loại giao dịch
-    final Color themeColor = isIncome 
-        ? const Color(0xFF34C759)  // Màu xanh cho thu nhập
-        : AppTheme.error;          // Màu đỏ cho chi tiêu
+    final Color themeColor = isIncome
+        ? const Color(0xFF34C759) // Màu xanh cho thu nhập
+        : AppTheme.error; // Màu đỏ cho chi tiêu
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -351,7 +352,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                 ),
               ),
             ),
-            
+
             // Content
             Padding(
               padding: const EdgeInsets.all(24),
@@ -378,7 +379,10 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              transaction.trackerType.name.split(' ').sublist(1).join(' '),
+                              transaction.trackerType.name
+                                  .split(' ')
+                                  .sublist(1)
+                                  .join(' '),
                               style: TextStyle(
                                 color: AppTheme.textPrimary,
                                 fontSize: 18,
@@ -409,15 +413,21 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isIncome ? Icons.arrow_upward : Icons.arrow_downward,
-                              color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                              isIncome
+                                  ? Icons.arrow_upward
+                                  : Icons.arrow_downward,
+                              color: isIncome
+                                  ? const Color(0xFF34C759)
+                                  : AppTheme.error,
                               size: 16,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               isIncome ? 'Thu nhập' : 'Chi tiêu',
                               style: TextStyle(
-                                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                                color: isIncome
+                                    ? const Color(0xFF34C759)
+                                    : AppTheme.error,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -490,7 +500,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
 
                   // Amount
                   Text(
-                    _formatAmount(transaction.transaction.amount) + ' đ',
+                    _formatCurrency(transaction.transaction.amount),
                     style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 32,
@@ -512,7 +522,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                       const SizedBox(width: 8),
                       _buildInfoChip(
                         Icons.schedule,
-                        _formatDateTime(transaction.transaction.transactionDateTime),
+                        _formatDateTime(
+                            transaction.transaction.transactionDateTime),
                         const Color(0xFF5856D6),
                       ),
                     ],
@@ -596,6 +607,54 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             title: 'Mô tả',
             content: Text(
               transaction.transaction.description!,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+
+        // Bank name
+        if (transaction.transaction.toBankName != null)
+          _buildTimelineItem(
+            icon: Icons.account_balance,
+            color: const Color(0xFF4CAF50),
+            title: 'Ngân hàng nhận',
+            content: Text(
+              transaction.transaction.toBankName!,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+
+        // Account number
+        if (transaction.transaction.toAccountNo != null)
+          _buildTimelineItem(
+            icon: Icons.account_box,
+            color: const Color(0xFFFFC107),
+            title: 'Số tài khoản người nhận',
+            content: Text(
+              transaction.transaction.toAccountNo!,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+
+        // Account name
+        if (transaction.transaction.toAccountName != null)
+          _buildTimelineItem(
+            icon: Icons.person,
+            color: const Color(0xFF2196F3),
+            title: 'Tên tài khoản người nhận',
+            content: Text(
+              transaction.transaction.toAccountName!,
               style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 16,
@@ -1362,8 +1421,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     );
   }
 
-  String _formatAmount(int amount) {
-    final format = NumberFormat("#,###", "vi_VN");
+  String _formatCurrency(int amount) {
+    final format = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     return format.format(amount);
   }
 
@@ -1393,8 +1452,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
               Text(
                 change,
                 style: TextStyle(
-                  color: change.startsWith('+') 
-                      ? const Color(0xFF34C759) 
+                  color: change.startsWith('+')
+                      ? const Color(0xFF34C759)
                       : AppTheme.error,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -1426,9 +1485,10 @@ class _TransactionHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     final progress = shrinkOffset / maxExtent;
-    
+
     return Container(
       height: maxExtent,
       child: Stack(
@@ -1510,7 +1570,7 @@ class _TransactionHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get minExtent => 200;
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => 
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
       oldDelegate is _TransactionHeaderDelegate &&
       (oldDelegate.transaction != transaction ||
           oldDelegate.isIncome != isIncome ||

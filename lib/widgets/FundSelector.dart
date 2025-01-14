@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:uniko/providers/fund_provider.dart';
 import '../config/theme.config.dart';
 import 'package:provider/provider.dart';
@@ -31,7 +32,8 @@ class FundSelector extends StatelessWidget {
                     height: MediaQuery.of(context).size.height,
                     decoration: BoxDecoration(
                       color: AppTheme.cardBackground,
-                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
+                      borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(24)),
                     ),
                     child: Column(
                       children: [
@@ -81,19 +83,21 @@ class FundSelector extends StatelessWidget {
                             itemCount: funds.length,
                             itemBuilder: (context, index) {
                               final fund = funds[index];
-                              final isSelected = fundProvider.selectedFund == fund.name;
-                              
+                              final isSelected =
+                                  fundProvider.selectedFund == fund.name;
+
                               return Container(
                                 margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
                                 decoration: BoxDecoration(
-                                  color: isSelected 
-                                      ? AppTheme.primary.withOpacity(0.1) 
+                                  color: isSelected
+                                      ? AppTheme.primary.withOpacity(0.1)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: ListTile(
                                   onTap: () {
-                                    Provider.of<FundProvider>(context, listen: false)
+                                    Provider.of<FundProvider>(context,
+                                            listen: false)
                                         .setSelectedFund(fund.name);
                                     Navigator.pop(context);
                                   },
@@ -107,7 +111,8 @@ class FundSelector extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       color: isSelected
                                           ? AppTheme.primary
-                                          : AppTheme.textSecondary.withOpacity(0.1),
+                                          : AppTheme.textSecondary
+                                              .withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
@@ -129,9 +134,11 @@ class FundSelector extends StatelessWidget {
                                     ),
                                   ),
                                   subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      if (fund.description?.isNotEmpty == true) ...[
+                                      if (fund.description?.isNotEmpty ==
+                                          true) ...[
                                         const SizedBox(height: 4),
                                         Text(
                                           fund.description!,
@@ -148,11 +155,13 @@ class FundSelector extends StatelessWidget {
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.textSecondary.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: AppTheme.textSecondary
+                                              .withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          '${fund.currentAmount} ${fund.currency}',
+                                          '${formatAmount(fund.currentAmount, fund.currency)} đ',
                                           style: TextStyle(
                                             color: AppTheme.textSecondary,
                                             fontSize: 12,
@@ -244,4 +253,13 @@ class FundSelector extends StatelessWidget {
       },
     );
   }
+}
+
+String formatAmount(double amount, String currency) {
+  final formatCurrency = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: '',
+    decimalDigits: 0,
+  );
+  return formatCurrency.format(amount);
 }

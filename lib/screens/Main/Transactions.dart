@@ -767,7 +767,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
     bool isIncome = false,
     required String id,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
@@ -786,7 +786,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
       },
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: AppTheme.cardBackground,
           borderRadius: BorderRadius.circular(16),
@@ -794,109 +794,117 @@ class _TransactionsPageState extends State<TransactionsPage> {
             color: AppTheme.isDarkMode
                 ? Colors.white.withOpacity(0.05)
                 : AppTheme.borderColor,
-            width: 0.5,
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Transaction Type Indicator
+            Container(
+              width: 4,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Transaction Details
             Expanded(
-              child: Row(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isIncome
-                          ? const Color(0xFF34C759).withOpacity(0.1)
-                          : AppTheme.error.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      icon,
-                      color:
-                          isIncome ? const Color(0xFF34C759) : AppTheme.error,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Account Info
+                      Expanded(
+                        child: Text(
                           title,
                           style: TextStyle(
                             color: AppTheme.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
-                        InkWell(
-                          onTap: () => _showCategoryDrawer(context, category),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : Colors.black.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  category,
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.arrow_drop_down,
-                                  size: 16,
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ],
-                            ),
+                      ),
+                      // Amount
+                      Text(
+                        amount,
+                        style: TextStyle(
+                          color: isIncome
+                              ? const Color(0xFF34C759)
+                              : AppTheme.error,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Date, Type, and Category
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.schedule,
+                        size: 12,
+                        color: AppTheme.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        time,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 3,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: AppTheme.textSecondary.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: (isIncome
+                                  ? const Color(0xFF34C759)
+                                  : AppTheme.error)
+                              .withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isIncome ? 'Thu nhập' : 'Chi tiêu',
+                          style: TextStyle(
+                            color: isIncome
+                                ? const Color(0xFF34C759)
+                                : AppTheme.error,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        category,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '$amount đ',
-                  style: TextStyle(
-                    color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    time,
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
