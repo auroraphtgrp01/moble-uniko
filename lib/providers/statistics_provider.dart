@@ -17,8 +17,9 @@ class StatisticsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _statistics =
+      final response =
           await _statisticsService.getStatistics(fundId, startDay, endDay);
+      _statistics = response;
     } catch (e) {
       LoggerService.error('Failed to fetch statistics: $e');
       _statistics = null;
@@ -27,4 +28,4 @@ class StatisticsProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-} 
+}

@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniko/providers/category_provider.dart';
 import 'package:uniko/providers/account_source_provider.dart';
 import 'package:uniko/providers/statistics_provider.dart';
+import '../../config/app_config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -239,7 +240,7 @@ class _LoginPageState extends State<LoginPage> {
     final isAuthenticated = await AuthService.authenticateWithBiometrics();
     if (isAuthenticated && mounted) {
       setState(() => _isLoading = true);
-      
+
       try {
         // 1. Call login API first
         final response = await _authService.login(
@@ -262,9 +263,12 @@ class _LoginPageState extends State<LoginPage> {
 
         // 3. Initialize providers và call APIs
         final fundProvider = Provider.of<FundProvider>(context, listen: false);
-        final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-        final accountSourceProvider = Provider.of<AccountSourceProvider>(context, listen: false);
-        final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
+        final categoryProvider =
+            Provider.of<CategoryProvider>(context, listen: false);
+        final accountSourceProvider =
+            Provider.of<AccountSourceProvider>(context, listen: false);
+        final statisticsProvider =
+            Provider.of<StatisticsProvider>(context, listen: false);
 
         await Future.wait([
           fundProvider.initializeFunds(),
@@ -285,8 +289,9 @@ class _LoginPageState extends State<LoginPage> {
         ]);
 
         if (!mounted) return;
-        
-        ToastService.showSuccess('Đăng nhập thành công - Chào mừng bạn đến với Uniko');
+
+        ToastService.showSuccess(
+            'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
@@ -559,6 +564,16 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // Thêm biến state để theo dõi mode
+  bool get _isDevMode => AppConfig.isDevMode;
+
+  // Thêm method để toggle mode
+  void _toggleDevMode() {
+    setState(() {
+      AppConfig.toggleDevMode();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -638,7 +653,9 @@ class _LoginPageState extends State<LoginPage> {
                                 if (snapshot.data == true) {
                                   return Expanded(
                                     child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _handleBiometricLogin,
+                                      onPressed: _isLoading
+                                          ? null
+                                          : _handleBiometricLogin,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppTheme.primary,
                                         minimumSize:
@@ -650,31 +667,32 @@ class _LoginPageState extends State<LoginPage> {
                                         elevation: isDarkMode ? 4 : 0,
                                       ),
                                       child: _isLoading
-                                        ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(Icons.fingerprint_rounded,
-                                                  size: 28, color: Colors.white),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Đăng nhập bằng vân tay',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.white,
-                                                ),
+                                          ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                                strokeWidth: 2,
                                               ),
-                                            ],
-                                          ),
+                                            )
+                                          : Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.fingerprint_rounded,
+                                                    size: 28,
+                                                    color: Colors.white),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Đăng nhập bằng vân tay',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                     ),
                                   );
                                 }
@@ -833,6 +851,57 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                       const SizedBox(height: 24),
                     ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Thêm button Dev/Prod mode ở góc trên bên phải
+          Positioned(
+            top: 50,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: _isDevMode ? Colors.orange : Colors.green,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _toggleDevMode,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isDevMode ? Icons.bug_report : Icons.verified_user,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _isDevMode ? 'Dev Mode' : 'Prod Mode',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

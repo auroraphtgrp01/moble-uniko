@@ -71,15 +71,15 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response =
+          await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: 1,
         limit: 8,
       );
 
       setState(() {
-        _transactions = response.data
-          ..sort((a, b) => b.time.compareTo(a.time));
+        _transactions = response.data..sort((a, b) => b.time.compareTo(a.time));
         _isLoading = false;
         _currentPage = 1;
         _hasMoreData = response.data.length >= 5;
@@ -98,7 +98,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response =
+          await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: _currentPage + 1,
         limit: 5,
@@ -456,9 +457,16 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         .toList();
 
                     _categories = [
-                      CategoryItem(name: 'Tất cả', emoji: '🏠', color: AppTheme.primary),
-                      CategoryItem(name: 'Thu nhập', emoji: '💰', color: const Color(0xFF34C759)),
-                      CategoryItem(name: 'Chi tiêu', emoji: '💸', color: const Color(0xFFD32F2F)),
+                      CategoryItem(
+                          name: 'Tất cả', emoji: '🏠', color: AppTheme.primary),
+                      CategoryItem(
+                          name: 'Thu nhập',
+                          emoji: '💰',
+                          color: const Color(0xFF34C759)),
+                      CategoryItem(
+                          name: 'Chi tiêu',
+                          emoji: '💸',
+                          color: const Color(0xFFD32F2F)),
                       ...incomeCategories,
                       ...expenseCategories,
                     ];
@@ -473,8 +481,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
                         // Xử lý hiển thị tên category
                         String displayName = category.name;
-                        if (!['Tất cả', 'Thu nhập', 'Chi tiêu'].contains(category.name)) {
-                          displayName = category.name.split(' ').sublist(1).join(' ');
+                        if (!['Tất cả', 'Thu nhập', 'Chi tiêu']
+                            .contains(category.name)) {
+                          displayName =
+                              category.name.split(' ').sublist(1).join(' ');
                         }
 
                         return Padding(
@@ -494,9 +504,13 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             ),
                             label: Text(displayName),
                             labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : AppTheme.textPrimary,
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppTheme.textPrimary,
                               fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                              fontWeight: isSelected
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
                               letterSpacing: 0.3,
                             ),
                             backgroundColor: AppTheme.cardBackground,
@@ -687,7 +701,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
             return Container(
               decoration: BoxDecoration(
                 color: AppTheme.cardBackground,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: const Center(
                 child: Padding(
@@ -720,8 +735,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
           // Tạo danh sách category cuối cùng
           final allCategories = [
             CategoryItem(name: 'Tất cả', emoji: '🏠', color: AppTheme.primary),
-            CategoryItem(name: 'Thu nhập', emoji: '💰', color: const Color(0xFF34C759)),
-            CategoryItem(name: 'Chi tiêu', emoji: '💸', color: const Color(0xFFD32F2F)),
+            CategoryItem(
+                name: 'Thu nhập', emoji: '💰', color: const Color(0xFF34C759)),
+            CategoryItem(
+                name: 'Chi tiêu', emoji: '💸', color: const Color(0xFFD32F2F)),
             ...incomeCategories,
             ...expenseCategories,
           ];
@@ -747,6 +764,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
     required String time,
     required String category,
     bool isIncome = false,
+    required String id,
   }) {
     return InkWell(
       onTap: () {
@@ -760,6 +778,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
               date: time,
               category: category,
               isIncome: isIncome,
+              id: id,
             ),
           ),
         );
@@ -985,9 +1004,11 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 icon: isIncome ? Icons.arrow_downward : Icons.arrow_upward,
                 title: transaction.reasonName,
                 amount: '${isIncome ? '+' : '-'}$amount',
-                time: DateFormat('HH:mm').format(_convertToVietnamTime(transaction.time)),
+                time: DateFormat('HH:mm')
+                    .format(_convertToVietnamTime(transaction.time)),
                 category: transaction.trackerType.name,
                 isIncome: isIncome,
+                id: transaction.id,
               );
             }).toList(),
           );

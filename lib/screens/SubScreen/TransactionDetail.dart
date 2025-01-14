@@ -4,6 +4,9 @@ import 'package:flutter/rendering.dart';
 import 'dart:ui';
 import '../../widgets/CategoryDrawer.dart';
 import '../../widgets/WalletDrawer.dart';
+import '../../services/tracker_transaction_service.dart';
+import '../../models/tracker_transaction_detail.dart';
+import 'package:intl/intl.dart';
 
 class TransactionDetailPage extends StatefulWidget {
   final IconData icon;
@@ -12,6 +15,7 @@ class TransactionDetailPage extends StatefulWidget {
   final String date;
   final String category;
   final bool isIncome;
+  final String id;
 
   const TransactionDetailPage({
     super.key,
@@ -21,6 +25,7 @@ class TransactionDetailPage extends StatefulWidget {
     required this.date,
     required this.category,
     this.isIncome = false,
+    required this.id,
   });
 
   @override
@@ -28,6 +33,9 @@ class TransactionDetailPage extends StatefulWidget {
 }
 
 class _TransactionDetailPageState extends State<TransactionDetailPage> {
+  final _trackerTransactionService = TrackerTransactionService();
+  TrackerTransactionDetail? _transactionDetail;
+  bool _isLoading = false;
   late ScrollController _scrollController;
   double _opacity = 0;
 
@@ -41,6 +49,22 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           setState(() => _opacity = opacity.toDouble());
         }
       });
+    _loadTransactionDetail();
+  }
+
+  Future<void> _loadTransactionDetail() async {
+    setState(() => _isLoading = true);
+    try {
+      final detail =
+          await _trackerTransactionService.getTransactionById(widget.id);
+      setState(() {
+        _transactionDetail = detail;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      // Handle error
+    }
   }
 
   @override
@@ -109,138 +133,292 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           const SizedBox(width: 16),
         ],
       ),
-      body: ListView(
-        controller: _scrollController,
+      body: _buildDetailContent(),
+    );
+  }
+
+  Widget _buildDetailContent() {
+    if (_isLoading) {
+      return ListView(
         padding: EdgeInsets.zero,
         children: [
-          // Header gradient
+          // Skeleton cho card thông tin chính
           Container(
-            height: MediaQuery.of(context).size.height * 0.2,
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 56,
-            ),
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: widget.isIncome
-                    ? [
-                        const Color(0xFF34C759).withOpacity(0.8),
-                        const Color(0xFF30B350),
-                      ]
-                    : [
-                        AppTheme.error.withOpacity(0.8),
-                        AppTheme.error,
-                      ],
+              color: AppTheme.cardBackground,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppTheme.isDarkMode
+                    ? Colors.white.withOpacity(0.05)
+                    : AppTheme.borderColor,
+                width: 1,
               ),
             ),
-          ),
-
-          // Content với card số tiền
-          Transform.translate(
-            offset: const Offset(0, -60),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Card số tiền
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardBackground,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 5),
+                // Skeleton cho category và type
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AppTheme.isDarkMode
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
+                    ),
+                    Container(
+                      width: 80,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AppTheme.isDarkMode
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Skeleton cho reason name
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        width: 80,
+                        height: 14,
                         decoration: BoxDecoration(
-                          color: (widget.isIncome
-                                  ? const Color(0xFF34C759)
-                                  : AppTheme.error)
-                              .withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          widget.icon,
-                          size: 32,
-                          color: widget.isIncome
-                              ? const Color(0xFF34C759)
-                              : AppTheme.error,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        widget.title,
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          color: AppTheme.isDarkMode
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(7),
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.amount,
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              height: 1,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'đ',
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
+                      Container(
+                        width: 200,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: AppTheme.isDarkMode
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Skeleton cho amount
+                Container(
+                  width: 180,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDarkMode
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Skeleton cho info chips
+                Row(
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppTheme.isDarkMode
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 140,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppTheme.isDarkMode
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_transactionDetail == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppTheme.error.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Không tìm thấy thông tin giao dịch',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final transaction = _transactionDetail!;
+    final isIncome = transaction.transaction.direction == 'INCOMING';
+
+    return ListView(
+      padding: const EdgeInsets.only(top: 100),
+      children: [
+        // Card thông tin chính
+        _buildMainInfoCard(transaction, isIncome),
+
+        // Timeline các thông tin chi tiết
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: _buildTimelineContent(transaction),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMainInfoCard(TrackerTransactionDetail transaction, bool isIncome) {
+    // Định nghĩa màu sắc theo loại giao dịch
+    final Color themeColor = isIncome 
+        ? const Color(0xFF34C759)  // Màu xanh cho thu nhập
+        : AppTheme.error;          // Màu đỏ cho chi tiêu
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            // Background pattern
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  color: themeColor.withOpacity(0.05),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category and amount type
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: themeColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          transaction.trackerType.name.split(' ')[0], // Emoji
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              transaction.trackerType.name.split(' ').sublist(1).join(' '),
+                              style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              transaction.trackerType.description,
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: (widget.isIncome
-                                  ? const Color(0xFF34C759)
-                                  : AppTheme.error)
-                              .withOpacity(0.1),
+                          color: themeColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              widget.isIncome
-                                  ? Icons.arrow_upward
-                                  : Icons.arrow_downward,
-                              color: widget.isIncome
-                                  ? const Color(0xFF34C759)
-                                  : AppTheme.error,
+                              isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
                               size: 16,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 4),
                             Text(
-                              widget.isIncome ? 'Thu nhập' : 'Chi tiêu',
+                              isIncome ? 'Thu nhập' : 'Chi tiêu',
                               style: TextStyle(
-                                color: widget.isIncome
-                                    ? const Color(0xFF34C759)
-                                    : AppTheme.error,
-                                fontSize: 14,
+                                color: isIncome ? const Color(0xFF34C759) : AppTheme.error,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -249,39 +427,260 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                       ),
                     ],
                   ),
-                ),
 
-                // Chi tiết giao dịch
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      _buildInfoSection('Thông tin cơ bản', [
-                        _buildInfoItem(Icons.title_outlined, 'Tên giao dịch',
-                            widget.title),
-                        _buildInfoItem(Icons.category_outlined, 'Danh mục',
-                            widget.category),
-                        _buildInfoItem(
-                          Icons.account_balance_wallet_outlined,
-                          'Ví',
-                          'Ví chính',
+                  const SizedBox(height: 24),
+
+                  // Reason Name với màu động
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          themeColor.withOpacity(0.15),
+                          themeColor.withOpacity(0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: themeColor.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Lý do ${isIncome ? "thu nhập" : "chi tiêu"}',
+                          style: TextStyle(
+                            color: themeColor.withOpacity(0.8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ]),
-                      const SizedBox(height: 20),
-                      _buildInfoSection('Thời gian', [
-                        _buildInfoItem(
-                            Icons.calendar_today_outlined, 'Ngày', widget.date),
-                        _buildInfoItem(Icons.schedule_outlined, 'Giờ', '14:30'),
-                      ]),
-                      if (!widget.isIncome) ...[
-                        const SizedBox(height: 20),
-                        _buildStatsCard(),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.label_important_outline_rounded,
+                              size: 20,
+                              color: themeColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                transaction.reasonName,
+                                style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
-                      const SizedBox(height: 20),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Amount
+                  Text(
+                    _formatAmount(transaction.transaction.amount) + ' đ',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Transaction info
+                  Row(
+                    children: [
+                      _buildInfoChip(
+                        Icons.account_balance_wallet_outlined,
+                        transaction.transaction.accountSource.name,
+                        AppTheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildInfoChip(
+                        Icons.schedule,
+                        _formatDateTime(transaction.transaction.transactionDateTime),
+                        const Color(0xFF5856D6),
+                      ),
                     ],
                   ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimelineContent(TrackerTransactionDetail transaction) {
+    return Column(
+      children: [
+        // Participant info
+        _buildTimelineItem(
+          icon: Icons.person_outline_rounded,
+          color: const Color(0xFF5856D6),
+          title: 'Người thực hiện',
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                transaction.participant.user.fullName,
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                transaction.participant.user.email,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Fund info
+        _buildTimelineItem(
+          icon: Icons.account_balance_rounded,
+          color: const Color(0xFF34C759),
+          title: 'Quỹ',
+          content: Text(
+            transaction.fund.name,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        // Account info if available
+        if (transaction.transaction.ofAccount != null)
+          _buildTimelineItem(
+            icon: Icons.account_box_outlined,
+            color: const Color(0xFFAF52DE),
+            title: 'Số tài khoản',
+            content: Text(
+              transaction.transaction.ofAccount!.accountNo,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+
+        // Description if available
+        if (transaction.transaction.description != null)
+          _buildTimelineItem(
+            icon: Icons.description_outlined,
+            color: const Color(0xFFFF9500),
+            title: 'Mô tả',
+            content: Text(
+              transaction.transaction.description!,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            isLast: true,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineItem({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required Widget content,
+    bool isLast = false,
+  }) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 40,
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            color.withOpacity(0.5),
+                            color.withOpacity(0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : AppTheme.borderColor,
+                  width: 0.5,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  content,
+                ],
+              ),
             ),
           ),
         ],
@@ -289,125 +688,41 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     );
   }
 
-  Widget _buildInfoSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textSecondary,
+  Widget _buildInfoChip(IconData icon, String label, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withOpacity(0.2),
+            width: 0.5,
           ),
         ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: AppTheme.cardBackground,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(children: children),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, [String? change]) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
                 label,
                 style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 16,
+                  color: color,
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        if (change != null)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF34C759).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              change,
-              style: const TextStyle(
-                color: Color(0xFF34C759),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildInfoItem(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.textPrimary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              size: 22,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -967,7 +1282,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         color: Colors.blue,
       ),
       CategoryItem(
-        emoji: '🍔',
+        emoji: '🍴',
         name: 'Ăn uống',
         color: Colors.orange,
       ),
@@ -977,7 +1292,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         color: Colors.green,
       ),
       CategoryItem(
-        emoji: '🏥',
+        emoji: '🏋',
         name: 'Sức khỏe',
         color: Colors.red,
       ),
@@ -1046,4 +1361,158 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       ),
     );
   }
+
+  String _formatAmount(int amount) {
+    final format = NumberFormat("#,###", "vi_VN");
+    return format.format(amount);
+  }
+
+  Widget _buildStatItem(String label, String value, [String? change]) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: AppTheme.textSecondary,
+            fontSize: 14,
+          ),
+        ),
+        Row(
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (change != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                change,
+                style: TextStyle(
+                  color: change.startsWith('+') 
+                      ? const Color(0xFF34C759) 
+                      : AppTheme.error,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _formatDateTime(DateTime utcTime) {
+    // Chuyển đổi UTC sang UTC+7
+    final localTime = utcTime.add(const Duration(hours: 7));
+    return DateFormat('HH:mm, dd/MM/yyyy').format(localTime);
+  }
+}
+
+class _TransactionHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final TrackerTransactionDetail transaction;
+  final bool isIncome;
+  final double opacity;
+
+  _TransactionHeaderDelegate({
+    required this.transaction,
+    required this.isIncome,
+    required this.opacity,
+  });
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final progress = shrinkOffset / maxExtent;
+    
+    return Container(
+      height: maxExtent,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Gradient background
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isIncome
+                    ? [
+                        const Color(0xFF34C759).withOpacity(0.8),
+                        const Color(0xFF30B350),
+                      ]
+                    : [
+                        AppTheme.error.withOpacity(0.8),
+                        AppTheme.error,
+                      ],
+              ),
+            ),
+          ),
+
+          // Pattern overlay
+          Opacity(
+            opacity: (1 - progress).clamp(0.0, 1.0),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -100,
+                  top: -100,
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -50,
+                  bottom: -50,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Blur overlay when scrolling
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: MediaQuery.of(context).padding.top + kToolbarHeight,
+              decoration: BoxDecoration(
+                color: AppTheme.background.withOpacity(opacity * 0.8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => 200;
+
+  @override
+  double get minExtent => 200;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => 
+      oldDelegate is _TransactionHeaderDelegate &&
+      (oldDelegate.transaction != transaction ||
+          oldDelegate.isIncome != isIncome ||
+          oldDelegate.opacity != opacity);
 }

@@ -475,6 +475,7 @@ class _OverviewPageState extends State<OverviewPage>
               date: date,
               category: category,
               isIncome: isIncome,
+              id: '1',
             ),
           ),
         );

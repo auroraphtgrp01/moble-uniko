@@ -6,6 +6,8 @@ class Statistics {
   final TotalStats total;
   final IncomeExpenseStats income;
   final IncomeExpenseStats expense;
+  final List<CashFlowItem> cashFlowAnalysis;
+  final List<UnclassifiedTransaction> unclassifiedTransactions;
 
   Statistics({
     required this.incomingTransactionTypeStats,
@@ -15,13 +17,16 @@ class Statistics {
     required this.total,
     required this.income,
     required this.expense,
+    required this.cashFlowAnalysis,
+    required this.unclassifiedTransactions,
   });
 
   factory Statistics.fromJson(Map<String, dynamic> json) {
     return Statistics(
-      incomingTransactionTypeStats: (json['incomingTransactionTypeStats'] as List)
-          .map((item) => StatItem.fromJson(item))
-          .toList(),
+      incomingTransactionTypeStats:
+          (json['incomingTransactionTypeStats'] as List)
+              .map((item) => StatItem.fromJson(item))
+              .toList(),
       expenseTransactionTypeStats: (json['expenseTransactionTypeStats'] as List)
           .map((item) => StatItem.fromJson(item))
           .toList(),
@@ -36,6 +41,12 @@ class Statistics {
       total: TotalStats.fromJson(json['total']),
       income: IncomeExpenseStats.fromJson(json['income']),
       expense: IncomeExpenseStats.fromJson(json['expense']),
+      cashFlowAnalysis: (json['cashFlowAnalysis'] as List)
+          .map((item) => CashFlowItem.fromJson(item))
+          .toList(),
+      unclassifiedTransactions: (json['unclassifiedTransactions'] as List)
+          .map((item) => UnclassifiedTransaction.fromJson(item))
+          .toList(),
     );
   }
 }
@@ -80,4 +91,131 @@ class IncomeExpenseStats {
       rate: json['rate'],
     );
   }
-} 
+}
+
+class CashFlowItem {
+  final String date;
+  final int incoming;
+  final int outgoing;
+
+  CashFlowItem({
+    required this.date,
+    required this.incoming,
+    required this.outgoing,
+  });
+
+  factory CashFlowItem.fromJson(Map<String, dynamic> json) {
+    return CashFlowItem(
+      date: json['date'],
+      incoming: json['incoming'],
+      outgoing: json['outgoing'],
+    );
+  }
+}
+
+class UnclassifiedTransaction {
+  final String id;
+  final String direction;
+  final int amount;
+  final String toAccountNo;
+  final String toAccountName;
+  final String toBankName;
+  final String currency;
+  final String description;
+  final DateTime transactionDateTime;
+  final AccountSource accountSource;
+  final OfAccount ofAccount;
+
+  UnclassifiedTransaction({
+    required this.id,
+    required this.direction,
+    required this.amount,
+    required this.toAccountNo,
+    required this.toAccountName,
+    required this.toBankName,
+    required this.currency,
+    required this.description,
+    required this.transactionDateTime,
+    required this.accountSource,
+    required this.ofAccount,
+  });
+
+  factory UnclassifiedTransaction.fromJson(Map<String, dynamic> json) {
+    return UnclassifiedTransaction(
+      id: json['id'],
+      direction: json['direction'],
+      amount: json['amount'],
+      toAccountNo: json['toAccountNo'],
+      toAccountName: json['toAccountName'],
+      toBankName: json['toBankName'],
+      currency: json['currency'],
+      description: json['description'],
+      transactionDateTime: DateTime.parse(json['transactionDateTime']),
+      accountSource: AccountSource.fromJson(json['accountSource']),
+      ofAccount: OfAccount.fromJson(json['ofAccount']),
+    );
+  }
+}
+
+class AccountSource {
+  final String name;
+  final AccountBank accountBank;
+
+  AccountSource({
+    required this.name,
+    required this.accountBank,
+  });
+
+  factory AccountSource.fromJson(Map<String, dynamic> json) {
+    return AccountSource(
+      name: json['name'],
+      accountBank: AccountBank.fromJson(json['accountBank']),
+    );
+  }
+}
+
+class AccountBank {
+  final List<BankAccount> accounts;
+
+  AccountBank({required this.accounts});
+
+  factory AccountBank.fromJson(Map<String, dynamic> json) {
+    return AccountBank(
+      accounts: (json['accounts'] as List)
+          .map((item) => BankAccount.fromJson(item))
+          .toList(),
+    );
+  }
+}
+
+class BankAccount {
+  final String accountNo;
+
+  BankAccount({required this.accountNo});
+
+  factory BankAccount.fromJson(Map<String, dynamic> json) {
+    return BankAccount(
+      accountNo: json['accountNo'],
+    );
+  }
+}
+
+class OfAccount {
+  final String id;
+  final String accountNo;
+  final String accountBankId;
+
+  OfAccount({
+    required this.id,
+    required this.accountNo,
+    required this.accountBankId,
+  });
+
+  factory OfAccount.fromJson(Map<String, dynamic> json) {
+    return OfAccount(
+      id: json['id'],
+      accountNo: json['accountNo'],
+      accountBankId: json['accountBankId'],
+    );
+  }
+}

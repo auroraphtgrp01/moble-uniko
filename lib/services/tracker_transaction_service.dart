@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:uniko/config/app_config.dart';
 import 'package:uniko/services/core/api_service.dart';
 import 'package:uniko/services/core/logger_service.dart';
 import '../models/tracker_transaction.dart';
+import '../models/tracker_transaction_detail.dart';
 
 class TrackerTransactionService {
   Future<TrackerTransactionResponse> getAdvancedTrackerTransactions(
@@ -26,6 +28,28 @@ class TrackerTransactionService {
     } catch (e) {
       LoggerService.error('Error getting tracker transactions: $e');
       throw Exception('Failed to get tracker transactions: $e');
+    }
+  }
+
+  Future<TrackerTransactionDetail> getTransactionById(String id) async {
+    try {
+      final response = await ApiService.call(
+        AppConfig.getTransactionByIdEndpoint(id),
+        method: 'GET',
+      );
+
+      LoggerService.info('GET_TRANSACTION_BY_ID Response: ${response.body}');
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return TrackerTransactionDetail.fromJson(responseData['data']);
+      }
+
+      throw Exception(
+          responseData['message'] ?? 'Failed to get transaction details');
+    } catch (e) {
+      throw Exception('Error getting transaction details: $e');
     }
   }
 }

@@ -1,6 +1,20 @@
 class AppConfig {
+  static bool _isDevMode = false;
+  static bool get isDevMode => _isDevMode;
+
+  static void toggleDevMode() {
+    _isDevMode = !_isDevMode;
+  }
+
   // Base URLs
-  static const String apiUrl = 'https://api-dev.uniko.id.vn/api';
+
+  static const List<String> apiUrls = [
+    'https://api-dev.uniko.id.vn/api',
+    'https://api.uniko.id.vn/api',
+  ];
+
+  static String get apiUrl => apiUrls[_isDevMode ? 0 : 1];
+
   static const String chatbotUrl = 'https://bot.uniko.id.vn/chat';
 
   static const String appName = 'Uniko';
@@ -11,15 +25,19 @@ class AppConfig {
   // ENDPOINT
 
   // AUTHENTICATION
-  static const String loginEndpoint = '$apiUrl/auth/login';
-  static const String registerEndpoint = '$apiUrl/auth/register';
-  static const String getMeEndpoint = '/users/me';
+  static String get loginEndpoint => '$apiUrl/auth/login';
+  static String get registerEndpoint => '$apiUrl/auth/register';
+  static String get getMeEndpoint => '/users/me';
 
   // FUND
-  static const String getAccoutSourceByFundIdEndpoint =
-      '$apiUrl/account-sources/advanced/:fundId';
+  static String getAccoutSourceByFundIdEndpoint(String fundId) =>
+      '$apiUrl/account-sources/advanced/$fundId';
 
   // ACCOUNT TRACKER TRANSACTION TYPE ( CATEGORY )
-  static const String getAccountTrackerTransactionTypeEndpoint =
-      '$apiUrl/tracker-transaction-types/all/:fundId';
+  static String getAccountTrackerTransactionTypeEndpoint(String fundId) =>
+      '$apiUrl/tracker-transaction-types/all/$fundId';
+
+  // TRACKER TRANSACTIONS
+  static String getTransactionByIdEndpoint(String id) => 
+      '$apiUrl/tracker-transactions/get-by-id/$id';
 }
