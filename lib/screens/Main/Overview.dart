@@ -16,6 +16,7 @@ import 'package:uniko/providers/statistics_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import '../../widgets/StatisticsChart.dart';
+import '../../widgets/ClassificationDrawer.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -149,9 +150,10 @@ class _OverviewPageState extends State<OverviewPage>
       UnclassifiedTransaction transaction) {
     final isExpense = transaction.direction.toUpperCase() == 'EXPENSE';
     final amount = _formatAmount(transaction.amount, isExpense);
-    
+
     // Chuyển đổi UTC sang UTC+7
-    final localDateTime = transaction.transactionDateTime.add(const Duration(hours: 7));
+    final localDateTime =
+        transaction.transactionDateTime.add(const Duration(hours: 7));
     final date = DateFormat('HH:mm - dd/MM/yyyy').format(localDateTime);
 
     return GestureDetector(
@@ -293,6 +295,20 @@ class _OverviewPageState extends State<OverviewPage>
         toAccountName: transaction.toAccountName,
         toBankName: transaction.toBankName,
         isIncome: transaction.direction.toUpperCase() != 'EXPENSE',
+        onClassifyPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => ClassificationDrawer(
+              transactionId: transaction.id,
+              onSave: (reason, category, description) {
+                // TODO: Implement save logic
+                Navigator.pop(context);
+              },
+            ),
+          );
+        },
       ),
     );
   }
