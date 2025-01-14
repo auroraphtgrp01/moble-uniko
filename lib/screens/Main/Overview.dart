@@ -1,15 +1,19 @@
-import 'package:flutter/material.dart';
-import '../../config/theme.config.dart';
-import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:uniko/providers/fund_provider.dart';
+import '../../config/theme.config.dart';
 import '../SubScreen/TransactionDetail.dart';
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import '../../widgets/BalanceCard.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
-import 'package:uniko/widgets/FundSelector.dart';
 import '../SubScreen/AccountDetail.dart';
 import '../../widgets/CommonHeader.dart';
+import 'package:provider/provider.dart';
+import 'package:uniko/providers/statistics_provider.dart';
+import 'dart:math';
+import 'package:intl/intl.dart';
+import '../../widgets/StatisticsChart.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -22,7 +26,6 @@ class _OverviewPageState extends State<OverviewPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _selectedIndex = 0;
-  String _selectedFund = 'Tất cả';
 
   @override
   void initState() {
@@ -38,6 +41,21 @@ class _OverviewPageState extends State<OverviewPage>
           });
         }
       });
+  }
+
+  void _fetchStatisticsData() {
+    final now = DateTime.now();
+    final startDay = DateTime(now.year, now.month, 1);
+    final endDay = DateTime(now.year, now.month + 1, 0);
+
+    final fundId = context.read<FundProvider>().selectedFundId;
+    if (fundId != null) {
+      context.read<StatisticsProvider>().fetchStatistics(
+            fundId,
+            startDay,
+            endDay,
+          );
+    }
   }
 
   void _switchTab(int index) {
@@ -61,7 +79,7 @@ class _OverviewPageState extends State<OverviewPage>
 
   Future<void> _onRefresh() async {
     await Future.delayed(const Duration(milliseconds: 1500));
-    
+
     setState(() {
       // Thêm logic cập nhật dữ liệu ở đây
     });
@@ -81,7 +99,8 @@ class _OverviewPageState extends State<OverviewPage>
         child: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
+              padding:
+                  EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
               sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
             // Header
@@ -95,151 +114,7 @@ class _OverviewPageState extends State<OverviewPage>
 
             // Stats Cards
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    // Chi tiêu Card
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _switchTab(0),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _selectedIndex == 0
-                                ? AppTheme.error.withOpacity(0.1)
-                                : AppTheme.cardBackground,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _selectedIndex == 0
-                                  ? AppTheme.error
-                                  : AppTheme.isDarkMode
-                                      ? Colors.white.withOpacity(0.05)
-                                      : AppTheme.borderColor,
-                              width: 1.5,
-                            ),
-                            boxShadow: _selectedIndex == 0
-                                ? [
-                                    BoxShadow(
-                                      color: AppTheme.error.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.trending_down,
-                                    color: _selectedIndex == 0
-                                        ? AppTheme.error
-                                        : AppTheme.textSecondary,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Chi tiêu',
-                                    style: TextStyle(
-                                      color: _selectedIndex == 0
-                                          ? AppTheme.error
-                                          : AppTheme.textSecondary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '8,520,000 đ',
-                                style: TextStyle(
-                                  color: AppTheme.error,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Thu nhập Card
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _switchTab(1),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _selectedIndex == 1
-                                ? const Color(0xFF34C759).withOpacity(0.1)
-                                : AppTheme.cardBackground,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _selectedIndex == 1
-                                  ? const Color(0xFF34C759)
-                                  : AppTheme.isDarkMode
-                                      ? Colors.white.withOpacity(0.05)
-                                      : AppTheme.borderColor,
-                              width: 1.5,
-                            ),
-                            boxShadow: _selectedIndex == 1
-                                ? [
-                                    BoxShadow(
-                                      color: const Color(0xFF34C759)
-                                          .withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.trending_up,
-                                    color: _selectedIndex == 1
-                                        ? const Color(0xFF34C759)
-                                        : AppTheme.textSecondary,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Thu nhập',
-                                    style: TextStyle(
-                                      color: _selectedIndex == 1
-                                          ? const Color(0xFF34C759)
-                                          : AppTheme.textSecondary,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '15,300,000 đ',
-                                style: TextStyle(
-                                  color: const Color(0xFF34C759),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: _buildStatsCards(),
             ),
             const SliverToBoxAdapter(
               child: SizedBox(height: 20),
@@ -263,7 +138,7 @@ class _OverviewPageState extends State<OverviewPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
-                      height: 350,
+                      height: 400,
                       child: TabBarView(
                         controller: _tabController,
                         physics: const BouncingScrollPhysics(),
@@ -366,278 +241,54 @@ class _OverviewPageState extends State<OverviewPage>
   }
 
   Widget _buildExpenseChart() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 200,
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 2,
-                centerSpaceRadius: 40,
-                sections: [
-                  PieChartSectionData(
-                    value: 45,
-                    title: '45%',
-                    color: const Color(0xFF4E73F8),
-                    radius: 45,
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    borderSide:
-                        const BorderSide(color: Colors.white, width: 1.5),
-                  ),
-                  PieChartSectionData(
-                    value: 35,
-                    title: '35%',
-                    color: const Color(0xFF00C48C),
-                    radius: 45,
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    borderSide:
-                        const BorderSide(color: Colors.white, width: 1.5),
-                  ),
-                  PieChartSectionData(
-                    value: 20,
-                    title: '20%',
-                    color: const Color(0xFFFFA26B),
-                    radius: 45,
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    borderSide:
-                        const BorderSide(color: Colors.white, width: 1.5),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCompactLegendItem(
-                  'Ăn uống',
-                  '3,834,000',
-                  const Color(0xFF4E73F8),
-                  '45%',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildCompactLegendItem(
-                  'Di chuyển',
-                  '2,982,000',
-                  const Color(0xFF00C48C),
-                  '35%',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          InkWell(
-            onTap: () => _showCategoriesDrawer(context, isExpense: true),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppTheme.isDarkMode
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Xem thêm danh mục khác',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+    final data = [
+      ChartItemData(
+        label: 'Ăn uống',
+        amount: '3,834,000 đ',
+        percentage: 45,
+        color: const Color(0xFF4E73F8),
       ),
-    );
-  }
+      ChartItemData(
+        label: 'Di chuyển',
+        amount: '2,982,000 đ',
+        percentage: 35,
+        color: const Color(0xFF00C48C),
+      ),
+      ChartItemData(
+        label: 'Khác',
+        amount: '1,704,000 đ',
+        percentage: 20,
+        color: const Color(0xFFFFA26B),
+      ),
+    ];
 
-  Widget _buildCompactLegendItem(
-      String label, String amount, Color color, String percentage) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Text(
-                percentage,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$amount đ',
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
+    return StatisticsChart(
+      isExpense: true,
+      data: data,
+      onViewMore: () => _showCategoriesDrawer(context, isExpense: true),
     );
   }
 
   Widget _buildIncomeChart() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 200,
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 2,
-                centerSpaceRadius: 40,
-                sections: [
-                  PieChartSectionData(
-                    value: 80,
-                    title: '80%',
-                    color: const Color(0xFF00C48C),
-                    radius: 45,
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    borderSide:
-                        const BorderSide(color: Colors.white, width: 1.5),
-                  ),
-                  PieChartSectionData(
-                    value: 20,
-                    title: '20%',
-                    color: const Color(0xFF4E73F8),
-                    radius: 45,
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    borderSide:
-                        const BorderSide(color: Colors.white, width: 1.5),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCompactLegendItem(
-                  'Lương',
-                  '12,240,000',
-                  const Color(0xFF00C48C),
-                  '80%',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildCompactLegendItem(
-                  'Thưởng',
-                  '3,060,000',
-                  const Color(0xFF4E73F8),
-                  '20%',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          InkWell(
-            onTap: () => _showCategoriesDrawer(context, isExpense: false),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppTheme.isDarkMode
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Xem thêm danh mục khác',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+    final data = [
+      ChartItemData(
+        label: 'Lương',
+        amount: '15,300,000 đ',
+        percentage: 80,
+        color: const Color(0xFF00C48C),
       ),
+      ChartItemData(
+        label: 'Khác',
+        amount: '3,825,000 đ',
+        percentage: 20,
+        color: const Color(0xFF4E73F8),
+      ),
+    ];
+
+    return StatisticsChart(
+      isExpense: false,
+      data: data,
+      onViewMore: () => _showCategoriesDrawer(context, isExpense: false),
     );
   }
 
@@ -965,26 +616,349 @@ class _OverviewPageState extends State<OverviewPage>
   }
 
   Widget _buildBalanceCard() {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AccountDetailPage()),
+    return Consumer<StatisticsProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
+          return _buildBalanceCardSkeleton();
+        }
+
+        final balance = provider.statistics?.total.totalBalance ?? 0;
+        final percentChange = provider.statistics?.total.rate ?? 0.0;
+        final random = Random();
+        final chartData = List.generate(
+            7, (index) => FlSpot(index.toDouble(), random.nextDouble() * 100));
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const AccountDetailPage()),
+            );
+          },
+          child: BalanceCard(
+            balance: (balance as num).toDouble(),
+            percentChange: double.tryParse(
+                    provider.statistics?.total.rate.toString() ?? '0') ??
+                0.0,
+            chartData: chartData,
+          ),
         );
       },
-      child: BalanceCard(
-        balance: 67802200,
-        percentChange: 12.5,
-        chartData: const [
-          FlSpot(0, 120),
-          FlSpot(1, 130),
-          FlSpot(2, 125),
-          FlSpot(3, 140),
-          FlSpot(4, 135),
-          FlSpot(5, 150),
-          FlSpot(6, 145),
+    );
+  }
+
+  Widget _buildBalanceCardSkeleton() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppTheme.isDarkMode
+              ? Colors.white.withOpacity(0.05)
+              : AppTheme.borderColor,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: 100,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+              ),
+              Container(
+                width: 80,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: 180,
+            height: 28,
+            decoration: BoxDecoration(
+              color: AppTheme.isDarkMode
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppTheme.isDarkMode
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(24),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatsCardsSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : AppTheme.borderColor,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: AppTheme.isDarkMode
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 100,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: AppTheme.isDarkMode
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppTheme.isDarkMode
+                      ? Colors.white.withOpacity(0.05)
+                      : AppTheme.borderColor,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: AppTheme.isDarkMode
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 100,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: AppTheme.isDarkMode
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsCards() {
+    return Consumer<StatisticsProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
+          return _buildStatsCardsSkeleton();
+        }
+
+        final expense = provider.statistics?.income.totalToday ?? 0;
+        final income = provider.statistics?.expense.totalToday ?? 0;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              // Chi tiêu Card
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _switchTab(0),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _selectedIndex == 0
+                          ? AppTheme.error.withOpacity(0.1)
+                          : AppTheme.cardBackground,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _selectedIndex == 0
+                            ? AppTheme.error
+                            : AppTheme.isDarkMode
+                                ? Colors.white.withOpacity(0.05)
+                                : AppTheme.borderColor,
+                        width: 1.5,
+                      ),
+                      boxShadow: _selectedIndex == 0
+                          ? [
+                              BoxShadow(
+                                color: AppTheme.error.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.trending_down,
+                              color: _selectedIndex == 0
+                                  ? AppTheme.error
+                                  : AppTheme.textSecondary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Chi tiêu',
+                              style: TextStyle(
+                                color: _selectedIndex == 0
+                                    ? AppTheme.error
+                                    : AppTheme.textSecondary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${NumberFormat('#,###', 'vi_VN').format(expense)} đ',
+                          style: TextStyle(
+                            color: AppTheme.error,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Thu nhập Card
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _switchTab(1),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _selectedIndex == 1
+                          ? const Color(0xFF34C759).withOpacity(0.1)
+                          : AppTheme.cardBackground,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _selectedIndex == 1
+                            ? const Color(0xFF34C759)
+                            : AppTheme.isDarkMode
+                                ? Colors.white.withOpacity(0.05)
+                                : AppTheme.borderColor,
+                        width: 1.5,
+                      ),
+                      boxShadow: _selectedIndex == 1
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFF34C759).withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.trending_up,
+                              color: _selectedIndex == 1
+                                  ? const Color(0xFF34C759)
+                                  : AppTheme.textSecondary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Thu nhập',
+                              style: TextStyle(
+                                color: _selectedIndex == 1
+                                    ? const Color(0xFF34C759)
+                                    : AppTheme.textSecondary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${NumberFormat('#,###', 'vi_VN').format(income)} đ',
+                          style: TextStyle(
+                            color: const Color(0xFF34C759),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
