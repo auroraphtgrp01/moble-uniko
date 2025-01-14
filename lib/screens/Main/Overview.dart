@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:uniko/models/statistics.dart';
 import 'package:uniko/providers/fund_provider.dart';
+import 'package:uniko/widgets/TransactionDetailDrawer.dart';
 import '../../config/theme.config.dart';
 import '../SubScreen/TransactionDetail.dart';
 import 'dart:ui';
@@ -85,6 +87,216 @@ class _OverviewPageState extends State<OverviewPage>
     });
   }
 
+  String _formatAmount(num amount, bool isExpense) {
+    final formatter = NumberFormat('#,###', 'vi_VN');
+    return '${isExpense ? "-" : "+"}${formatter.format(amount)} đ';
+  }
+
+  Widget _buildRecentTransactions() {
+    return Consumer<StatisticsProvider>(
+      builder: (context, provider, child) {
+        final transactions =
+            provider.statistics?.unclassifiedTransactions ?? [];
+
+        if (transactions.isEmpty) {
+          return Center(
+            child: Text(
+              'Không có giao dịch chưa phân loại',
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 15,
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Giao dịch chưa phân loại',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '${transactions.length} giao dịch',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...transactions.map((transaction) =>
+                _buildUnclassifiedTransactionItem(transaction)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildUnclassifiedTransactionItem(
+      UnclassifiedTransaction transaction) {
+    final isExpense = transaction.direction.toUpperCase() == 'EXPENSE';
+    final amount = _formatAmount(transaction.amount, isExpense);
+    
+    // Chuyển đổi UTC sang UTC+7
+    final localDateTime = transaction.transactionDateTime.add(const Duration(hours: 7));
+    final date = DateFormat('HH:mm - dd/MM/yyyy').format(localDateTime);
+
+    return GestureDetector(
+      onTap: () => _showTransactionDetail(transaction),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.isDarkMode
+                ? Colors.white.withOpacity(0.05)
+                : AppTheme.borderColor,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Transaction Type Indicator
+            Container(
+              width: 4,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isExpense ? AppTheme.error : const Color(0xFF34C759),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Transaction Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Account Info
+                      Expanded(
+                        child: Text(
+                          transaction.toAccountNo ??
+                              transaction.accountSource?.name ??
+                              "Không xác định",
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Amount
+                      Text(
+                        amount,
+                        style: TextStyle(
+                          color: isExpense
+                              ? AppTheme.error
+                              : const Color(0xFF34C759),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Date and Type
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.schedule,
+                        size: 12,
+                        color: AppTheme.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        date,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 3,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: AppTheme.textSecondary.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: (isExpense
+                                  ? AppTheme.error
+                                  : const Color(0xFF34C759))
+                              .withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isExpense ? 'Chi tiêu' : 'Thu nhập',
+                          style: TextStyle(
+                            color: isExpense
+                                ? AppTheme.error
+                                : const Color(0xFF34C759),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTransactionDetail(UnclassifiedTransaction transaction) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => TransactionDetailDrawer(
+        id: transaction.id,
+        amount: _formatAmount(transaction.amount,
+            transaction.direction.toUpperCase() == 'EXPENSE'),
+        description: transaction.description,
+        date: transaction.transactionDateTime,
+        sourceAccount: transaction.accountSource?.name,
+        toAccountNo: transaction.toAccountNo,
+        toAccountName: transaction.toAccountName,
+        toBankName: transaction.toBankName,
+        isIncome: transaction.direction.toUpperCase() != 'EXPENSE',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -159,63 +371,7 @@ class _OverviewPageState extends State<OverviewPage>
 
             // Recent Transactions
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Giao dịch gần đây',
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'Xem tất cả',
-                            style: TextStyle(
-                              color: AppTheme.primary,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildTransactionItem(
-                      context: context,
-                      icon: Icons.restaurant,
-                      title: 'Ăn trưa',
-                      amount: '-45,000',
-                      date: '12:30',
-                      category: 'Ăn uống',
-                    ),
-                    _buildTransactionItem(
-                      context: context,
-                      icon: Icons.directions_bus,
-                      title: 'Xe buýt',
-                      amount: '-7,000',
-                      date: '09:15',
-                      category: '🚌 Di chuyển',
-                    ),
-                    _buildTransactionItem(
-                      context: context,
-                      icon: Icons.work,
-                      title: 'Lương tháng 3',
-                      amount: '+15,300,000',
-                      date: '01/01 10:00',
-                      category: '💰 Thu nhập',
-                      isIncome: true,
-                    ),
-                  ],
-                ),
-              ),
+              child: _buildRecentTransactions(),
             ),
           ],
         ),

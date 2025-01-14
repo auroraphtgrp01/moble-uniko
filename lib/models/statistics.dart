@@ -1,3 +1,5 @@
+import 'package:uniko/services/core/logger_service.dart';
+
 class Statistics {
   final List<StatItem> incomingTransactionTypeStats;
   final List<StatItem> expenseTransactionTypeStats;
@@ -117,9 +119,9 @@ class UnclassifiedTransaction {
   final String id;
   final String direction;
   final int amount;
-  final String toAccountNo;
-  final String toAccountName;
-  final String toBankName;
+  final String? toAccountNo;
+  final String? toAccountName;
+  final String? toBankName;
   final String currency;
   final String description;
   final DateTime transactionDateTime;
@@ -130,9 +132,9 @@ class UnclassifiedTransaction {
     required this.id,
     required this.direction,
     required this.amount,
-    required this.toAccountNo,
-    required this.toAccountName,
-    required this.toBankName,
+    this.toAccountNo,
+    this.toAccountName,
+    this.toBankName,
     required this.currency,
     required this.description,
     required this.transactionDateTime,
@@ -141,19 +143,25 @@ class UnclassifiedTransaction {
   });
 
   factory UnclassifiedTransaction.fromJson(Map<String, dynamic> json) {
-    return UnclassifiedTransaction(
-      id: json['id'],
-      direction: json['direction'],
-      amount: json['amount'],
-      toAccountNo: json['toAccountNo'],
-      toAccountName: json['toAccountName'],
-      toBankName: json['toBankName'],
-      currency: json['currency'],
-      description: json['description'],
-      transactionDateTime: DateTime.parse(json['transactionDateTime']),
-      accountSource: AccountSource.fromJson(json['accountSource']),
-      ofAccount: OfAccount.fromJson(json['ofAccount']),
-    );
+    try {
+      return UnclassifiedTransaction(
+        id: json['id'] ?? '',
+        direction: json['direction'] ?? '',
+        amount: json['amount'] ?? 0,
+        toAccountNo: json['toAccountNo'],
+        toAccountName: json['toAccountName'],
+        toBankName: json['toBankName'],
+        currency: json['currency'] ?? '',
+        description: json['description'] ?? '',
+        transactionDateTime: DateTime.parse(
+            json['transactionDateTime'] ?? DateTime.now().toIso8601String()),
+        accountSource: AccountSource.fromJson(json['accountSource'] ?? {}),
+        ofAccount: OfAccount.fromJson(json['ofAccount'] ?? {}),
+      );
+    } catch (e) {
+      LoggerService.error('Error parsing UnclassifiedTransaction: $e');
+      rethrow;
+    }
   }
 }
 
