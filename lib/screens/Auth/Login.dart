@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/fund_provider.dart';
+import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/storage_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
 import 'package:uniko/widgets/Avatar.dart';
@@ -78,50 +79,7 @@ class _LoginPageState extends State<LoginPage> {
             _isLoading = false;
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Lỗi',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            response['message'] ?? 'Đăng nhập thất bại',
-                            style: TextStyle(fontSize: 14, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              backgroundColor: Colors.red[600],
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height - 150,
-                left: 20,
-                right: 20,
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              duration: const Duration(seconds: 2),
-              elevation: 8,
-            ),
-          );
+          ToastService.showError(response['message'] ?? 'Đăng nhập thất bại');
           return;
         }
 
@@ -177,22 +135,12 @@ class _LoginPageState extends State<LoginPage> {
             (route) => false,
           );
         } catch (e) {
-          // Xử lý lỗi khi initialize providers
           ToastService.showError('Có lỗi xảy ra khi tải dữ liệu');
         }
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Có lỗi xảy ra, vui lòng thử lại sau'),
-            backgroundColor: Colors.red[400],
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
+        ToastService.showError(
+            'Có lỗi xảy ra khi đăng nhập, vui lòng thử lại sau ${e.toString()}');
       } finally {
         if (mounted) {
           setState(() {
