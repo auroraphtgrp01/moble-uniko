@@ -98,15 +98,20 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response =
-          await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: _currentPage + 1,
         limit: 5,
       );
 
+      // Tạo Set chứa các ID của transactions hiện tại
+      final existingIds = Set<String>.from(_transactions.map((t) => t.id));
+      
+      // Lọc ra các transaction mới chưa tồn tại
+      final newTransactions = response.data.where((t) => !existingIds.contains(t.id)).toList();
+
       setState(() {
-        _transactions.addAll(response.data);
+        _transactions.addAll(newTransactions);
         _transactions.sort((a, b) => b.time.compareTo(a.time));
         _currentPage++;
         _hasMoreData = response.data.length >= 5;
