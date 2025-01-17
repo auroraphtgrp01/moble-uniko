@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pie_chart/pie_chart.dart';
-import '../config/theme.config.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ChartItemData {
   final String label;
@@ -30,12 +29,6 @@ class StatisticsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pieData = Map.fromEntries(
-      data.map((item) => MapEntry(item.label, item.percentage)),
-    );
-
-    final colorList = data.map((item) => item.color).toList();
-
     return Container(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -54,14 +47,14 @@ class StatisticsChart extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: (isExpense ? AppTheme.error : const Color(0xFF34C759))
+                  color: (isExpense ? Colors.red : const Color(0xFF34C759))
                       .withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   _calculateTotal(),
                   style: TextStyle(
-                    color: isExpense ? AppTheme.error : const Color(0xFF34C759),
+                    color: isExpense ? Colors.red : const Color(0xFF34C759),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -70,36 +63,32 @@ class StatisticsChart extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          SizedBox(
-            height: 200,
-            child: PieChart(
-              dataMap: pieData,
-              colorList: colorList,
-              chartType: ChartType.ring,
-              ringStrokeWidth: 40,
-              centerText: _calculateTotal(),
-              legendOptions: const LegendOptions(showLegends: false),
-              chartValuesOptions: const ChartValuesOptions(
-                showChartValues: true,
-                showChartValuesInPercentage: true,
-                showChartValuesOutside: true,
-                decimalPlaces: 1,
-                chartValueStyle: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              animationDuration: const Duration(milliseconds: 800),
-              baseChartColor: Colors.grey.withOpacity(0.15),
+          SfCircularChart(
+            legend: Legend(
+              isVisible: true,
+              overflowMode: LegendItemOverflowMode.wrap,
             ),
+            series: <CircularSeries>[
+              DoughnutSeries<ChartItemData, String>(
+                dataSource: data,
+                xValueMapper: (ChartItemData item, _) => item.label,
+                yValueMapper: (ChartItemData item, _) => item.percentage,
+                pointColorMapper: (ChartItemData item, _) => item.color,
+                dataLabelSettings: const DataLabelSettings(
+                  isVisible: true,
+                  showZeroValue: false,
+                  labelPosition: ChartDataLabelPosition.outside,
+                  textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                innerRadius: '60%',
+              ),
+            ],
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 20),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children:
-                data.map((item) => _buildCompactLegendItem(item)).toList(),
+            children: data.map((item) => _buildCompactLegendItem(item)).toList(),
           ),
         ],
       ),
@@ -156,10 +145,5 @@ class StatisticsChart extends StatelessWidget {
       total += item.percentage;
     }
     return '${total.round()}%';
-  }
-
-  String _formatAmount(String label) {
-    final item = data.firstWhere((element) => element.label == label);
-    return item.amount;
   }
 }

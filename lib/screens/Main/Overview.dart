@@ -96,7 +96,8 @@ class _OverviewPageState extends State<OverviewPage>
   Widget _buildRecentTransactions() {
     return Consumer<StatisticsProvider>(
       builder: (context, provider, child) {
-        final transactions = provider.statistics?.unclassifiedTransactions ?? [];
+        final transactions =
+            provider.statistics?.unclassifiedTransactions ?? [];
 
         if (transactions.isEmpty) {
           return Container(
@@ -234,7 +235,7 @@ class _OverviewPageState extends State<OverviewPage>
                       Expanded(
                         child: Text(
                           transaction.toAccountNo ??
-                              transaction.accountSource?.name ??
+                              transaction.accountSource.name ??
                               "Không xác định",
                           style: TextStyle(
                             color: AppTheme.textPrimary,
@@ -329,7 +330,7 @@ class _OverviewPageState extends State<OverviewPage>
             transaction.direction.toUpperCase() == 'EXPENSE'),
         description: transaction.description,
         date: transaction.transactionDateTime,
-        sourceAccount: transaction.accountSource?.name,
+        sourceAccount: transaction.accountSource.name,
         toAccountNo: transaction.toAccountNo,
         toAccountName: transaction.toAccountName,
         toBankName: transaction.toBankName,
@@ -406,14 +407,20 @@ class _OverviewPageState extends State<OverviewPage>
                   children: [
                     SizedBox(
                       height: 400,
-                      child: TabBarView(
-                        controller: _tabController,
-                        physics: const BouncingScrollPhysics(),
-                        dragStartBehavior: DragStartBehavior.down,
-                        children: [
-                          _buildExpenseChart(),
-                          _buildIncomeChart(),
-                        ],
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: 500,
+                          child: TabBarView(
+                            controller: _tabController,
+                            physics: const BouncingScrollPhysics(),
+                            dragStartBehavior: DragStartBehavior.down,
+                            children: [
+                              _buildExpenseChart(),
+                              _buildIncomeChart(),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -452,55 +459,101 @@ class _OverviewPageState extends State<OverviewPage>
   }
 
   Widget _buildExpenseChart() {
-    final data = [
-      ChartItemData(
-        label: 'Ăn uống',
-        amount: '3,834,000 đ',
-        percentage: 45,
-        color: const Color(0xFF4E73F8),
-      ),
-      ChartItemData(
-        label: 'Di chuyển',
-        amount: '2,982,000 đ',
-        percentage: 35,
-        color: const Color(0xFF00C48C),
-      ),
-      ChartItemData(
-        label: 'Khác',
-        amount: '1,704,000 đ',
-        percentage: 20,
-        color: const Color(0xFFFFA26B),
-      ),
-    ];
+    return Consumer<StatisticsProvider>(builder: (context, provider, child) {
+      final stats = provider.statistics;
+      if (stats == null) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 64,
+                color: AppTheme.textSecondary.withOpacity(0.5),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Chưa có thống kê chi tiêu nào',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
 
-    return StatisticsChart(
-      isExpense: true,
-      data: data,
-      onViewMore: () => _showCategoriesDrawer(context, isExpense: true),
-    );
+      final data = stats.expenseTransactionTypeStats.map((stat) {
+        final totalExpense = stats.expense.totalToday;
+        final percentage = totalExpense > 0
+            ? (stat.value / totalExpense * 100).roundToDouble()
+            : 0.0;
+
+        return ChartItemData(
+          label: stat.name,
+          amount: _formatAmount(stat.value, true),
+          percentage: percentage,
+          color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
+              .withOpacity(1.0),
+        );
+      }).toList();
+
+      return StatisticsChart(
+        isExpense: true,
+        data: data,
+        onViewMore: () => _showCategoriesDrawer(context, isExpense: true),
+      );
+    });
   }
 
   Widget _buildIncomeChart() {
-    final data = [
-      ChartItemData(
-        label: 'Lương',
-        amount: '15,300,000 đ',
-        percentage: 80,
-        color: const Color(0xFF00C48C),
-      ),
-      ChartItemData(
-        label: 'Khác',
-        amount: '3,825,000 đ',
-        percentage: 20,
-        color: const Color(0xFF4E73F8),
-      ),
-    ];
+    return Consumer<StatisticsProvider>(builder: (context, provider, child) {
+      final stats = provider.statistics;
+      if (stats == null) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 64,
+                color: AppTheme.textSecondary.withOpacity(0.5),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Chưa có thống kê thu nhập nào',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
 
-    return StatisticsChart(
-      isExpense: false,
-      data: data,
-      onViewMore: () => _showCategoriesDrawer(context, isExpense: false),
-    );
+      final data = stats.incomingTransactionTypeStats.map((stat) {
+        final totalIncome = stats.income.totalToday;
+        final percentage = totalIncome > 0
+            ? (stat.value / totalIncome * 100).roundToDouble()
+            : 0.0;
+
+        return ChartItemData(
+          label: stat.name,
+          amount: _formatAmount(stat.value, false),
+          percentage: percentage,
+          color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
+              .withOpacity(1.0),
+        );
+      }).toList();
+
+      return StatisticsChart(
+        isExpense: false,
+        data: data,
+        onViewMore: () => _showCategoriesDrawer(context, isExpense: false),
+      );
+    });
   }
 
   void _showCategoriesDrawer(BuildContext context, {required bool isExpense}) {
@@ -510,7 +563,7 @@ class _OverviewPageState extends State<OverviewPage>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => Container(
+      builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
         child: Column(
           children: [
