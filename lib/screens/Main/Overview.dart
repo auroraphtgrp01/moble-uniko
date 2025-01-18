@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:uniko/models/statistics.dart';
 import 'package:uniko/providers/fund_provider.dart';
@@ -7,13 +6,10 @@ import '../../config/theme.config.dart';
 import '../SubScreen/TransactionDetail.dart';
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
-import '../../widgets/BalanceCard.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
-import '../SubScreen/AccountDetail.dart';
 import '../../widgets/CommonHeader.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/statistics_provider.dart';
-import 'dart:math';
 import 'package:intl/intl.dart';
 import '../../widgets/StatisticsChart.dart';
 import '../../widgets/ClassificationDrawer.dart';
@@ -93,7 +89,8 @@ class _OverviewPageState extends State<OverviewPage>
   Widget _buildRecentTransactions() {
     return Consumer<StatisticsProvider>(
       builder: (context, provider, child) {
-        final transactions = provider.statistics?.unclassifiedTransactions ?? [];
+        final transactions =
+            provider.statistics?.unclassifiedTransactions ?? [];
 
         if (transactions.isEmpty) {
           return Container(
@@ -338,7 +335,9 @@ class _OverviewPageState extends State<OverviewPage>
             backgroundColor: Colors.transparent,
             builder: (classifyContext) => ClassificationDrawer(
               transactionId: transaction.id,
-              transactionType: transaction.direction.toUpperCase() != 'EXPENSE' ? 'INCOME' : 'EXPENSE',
+              transactionType: transaction.direction.toUpperCase() != 'EXPENSE'
+                  ? 'INCOME'
+                  : 'EXPENSE',
               onSave: (reason, category, description) {
                 // TODO: Implement save logic
                 Navigator.pop(classifyContext);
@@ -833,25 +832,191 @@ class _OverviewPageState extends State<OverviewPage>
         }
 
         final balance = provider.statistics?.total.totalBalance ?? 0;
-        final percentChange = provider.statistics?.total.rate ?? 0.0;
-        final random = Random();
-        final chartData = List.generate(
-            7, (index) => FlSpot(index.toDouble(), random.nextDouble() * 100));
+        final balanceRate = provider.statistics?.total.rate == "none"
+            ? "0"
+            : (provider.statistics?.total.rate ?? "0");
 
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const AccountDetailPage()),
-            );
-          },
-          child: BalanceCard(
-            balance: (balance as num).toDouble(),
-            percentChange: double.tryParse(
-                    provider.statistics?.total.rate.toString() ?? '0') ??
-                0.0,
-            chartData: chartData,
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppTheme.isDarkMode
+                  ? Colors.white.withOpacity(0.05)
+                  : AppTheme.borderColor,
+              width: 0.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: balance >= 0
+                        ? [
+                            const Color(0xFF00B4DB),
+                            const Color(0xFF0083B0),
+                          ]
+                        : [
+                            const Color(0xFFFF416C),
+                            const Color(0xFFFF4B2B),
+                          ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: balance >= 0
+                          ? const Color(0xFF00B4DB).withOpacity(0.2)
+                          : const Color(0xFFFF416C).withOpacity(0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.account_balance_wallet_outlined,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Số dư hiện tại',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                double.parse(balanceRate) >= 0
+                                    ? Icons.trending_up_rounded
+                                    : Icons.trending_down_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${balanceRate}%',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '${NumberFormat('#,###', 'vi_VN').format(balance)} đ',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Cập nhật ${DateFormat('HH:mm').format(_convertToVietnamTime(DateTime.now()))}',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                height: 1,
+                color: AppTheme.divider.withOpacity(0.3),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSummaryItem(
+                      icon: Icons.arrow_downward_rounded,
+                      label: 'Thu nhập',
+                      amount: NumberFormat('#,###', 'vi_VN').format(provider.statistics?.income.totalToday ?? 0),
+                      isIncome: true,
+                      rate: provider.statistics?.income.rate,
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 50,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    color: AppTheme.divider.withOpacity(0.5),
+                  ),
+                  Expanded(
+                    child: _buildSummaryItem(
+                      icon: Icons.arrow_upward_rounded,
+                      label: 'Chi tiêu',
+                      amount: NumberFormat('#,###', 'vi_VN').format(provider.statistics?.expense.totalToday ?? 0),
+                      isIncome: false,
+                      rate: provider.statistics?.expense.rate,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
@@ -1169,6 +1334,117 @@ class _OverviewPageState extends State<OverviewPage>
           ),
         );
       },
+    );
+  }
+
+  DateTime _convertToVietnamTime(DateTime time) {
+    return time.toUtc().add(const Duration(hours: 7));
+  }
+
+  Widget _buildSummaryItem({
+    required IconData icon,
+    required String label,
+    required String amount,
+    required bool isIncome,
+    String? rate,
+  }) {
+    final color = isIncome ? const Color(0xFF34C759) : AppTheme.error;
+    final safeRate = rate == "none" ? "0" : (rate ?? "0");
+
+    return Column(
+      crossAxisAlignment: isIncome ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      children: [
+        Row(
+          mainAxisAlignment: isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
+          children: [
+            if (!isIncome) ...[
+              Text(
+                label,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 16,
+              ),
+            ),
+            if (isIncome) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '$amount đ',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+        if (rate != null) ...[
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: color.withOpacity(0.2),
+                width: 0.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  double.parse(safeRate) > 0
+                      ? Icons.trending_up_rounded
+                      : Icons.trending_down_rounded,
+                  color: color,
+                  size: 14,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '${safeRate}%',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

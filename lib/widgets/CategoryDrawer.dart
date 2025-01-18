@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uniko/services/core/logger_service.dart';
 import '../config/theme.config.dart';
 import 'AddCategoryDrawer.dart';
 import 'package:uniko/providers/category_provider.dart';

@@ -1,5 +1,5 @@
 class AppConfig {
-  static bool _isDevMode = false;
+  static bool _isDevMode = true;
   static bool get isDevMode => _isDevMode;
 
   static void toggleDevMode() {

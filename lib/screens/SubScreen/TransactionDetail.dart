@@ -44,9 +44,10 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     super.initState();
     _scrollController = ScrollController()
       ..addListener(() {
-        final opacity = (_scrollController.offset / 100).clamp(0, 1);
+        final scrollPosition = _scrollController.offset;
+        final opacity = (scrollPosition / 180).clamp(0.0, 1.0);
         if (opacity != _opacity) {
-          setState(() => _opacity = opacity.toDouble());
+          setState(() => _opacity = opacity);
         }
       });
     _loadTransactionDetail();
@@ -78,239 +79,100 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        flexibleSpace: ClipRect(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ClipRRect(
           child: BackdropFilter(
             filter: ImageFilter.blur(
-              sigmaX: 10 * _opacity,
-              sigmaY: 10 * _opacity,
+              sigmaX: 5,
+              sigmaY: 5,
             ),
             child: Container(
-              color: AppTheme.background.withOpacity(0.8 * _opacity),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(_opacity * 0.8),
+                    Colors.black.withOpacity(_opacity * 0.6),
+                  ],
+                ),
+              ),
+              child: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF27272A).withOpacity(0.8),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.arrow_back_ios_new, size: 18),
+                  ),
+                  color: AppTheme.textPrimary,
+                  onPressed: () => Navigator.pop(context),
+                ),
+                actions: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF27272A).withOpacity(0.8),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.edit_outlined, size: 18),
+                    ),
+                    color: AppTheme.textPrimary,
+                    onPressed: _showEditDrawer,
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF27272A).withOpacity(0.8),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.delete_outline, size: 18),
+                    ),
+                    color: AppTheme.error,
+                    onPressed: () => _showDeleteDialog(context),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+              ),
             ),
           ),
         ),
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.cardBackground.withOpacity(0.8),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.arrow_back_ios_new, size: 18),
-          ),
-          color: AppTheme.textPrimary,
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.cardBackground.withOpacity(0.8),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.edit_outlined, size: 18),
-            ),
-            color: AppTheme.textPrimary,
-            onPressed: _showEditDrawer,
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.cardBackground.withOpacity(0.8),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.delete_outline, size: 18),
-            ),
-            color: AppTheme.error,
-            onPressed: () => _showDeleteDialog(context),
-          ),
-          const SizedBox(width: 16),
-        ],
       ),
       body: _buildDetailContent(),
     );
   }
 
   Widget _buildDetailContent() {
-    if (_isLoading) {
-      return ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // Skeleton cho card thông tin chính
-          Container(
-            margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppTheme.cardBackground,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppTheme.isDarkMode
-                    ? Colors.white.withOpacity(0.05)
-                    : AppTheme.borderColor,
-                width: 1,
-              ),
-            ),
+    return ListView(
+      controller: _scrollController,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + kToolbarHeight + 16,
+      ),
+      children: [
+        if (_isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (_transactionDetail != null) ...[
+          _buildMainInfoCard(_transactionDetail!, widget.isIncome),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Skeleton cho category và type
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: AppTheme.isDarkMode
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    Container(
-                      width: 80,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: AppTheme.isDarkMode
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildTimelineContent(_transactionDetail!),
                 const SizedBox(height: 24),
-
-                // Skeleton cho reason name
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 80,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: AppTheme.isDarkMode
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 200,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: AppTheme.isDarkMode
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Skeleton cho amount
-                Container(
-                  width: 180,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Skeleton cho info chips
-                Row(
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: AppTheme.isDarkMode
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 140,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: AppTheme.isDarkMode
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildStatsCard(),
+                const SizedBox(height: 32),
               ],
             ),
           ),
         ],
-      );
-    }
-
-    if (_transactionDetail == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: AppTheme.error.withOpacity(0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Không tìm thấy thông tin giao dịch',
-              style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final transaction = _transactionDetail!;
-    final isIncome = transaction.transaction.direction == 'INCOMING';
-
-    return ListView(
-      padding: const EdgeInsets.only(top: 100),
-      children: [
-        // Card thông tin chính
-        _buildMainInfoCard(transaction, isIncome),
-
-        // Timeline các thông tin chi tiết
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          child: _buildTimelineContent(transaction),
-        ),
       ],
     );
   }

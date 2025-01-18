@@ -2,19 +2,14 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
-import 'package:uniko/services/core/logger_service.dart';
 import '../../config/theme.config.dart';
-import 'package:uniko/widgets/FundSelector.dart';
-import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:uniko/models/expenditure_fund.dart';
 import '../../services/expenditure_service.dart';
 import '../SubScreen/FundDetail.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/fund_provider.dart';
+import '../../widgets/CommonHeader.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -24,7 +19,6 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  String _selectedFund = 'Tất cả';
   List<ExpenditureFund> _funds = [];
   bool _isLoading = true;
   final _expenditureService = ExpenditureService();
@@ -77,80 +71,7 @@ class _WalletPageState extends State<WalletPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppTheme.isDarkMode
-                        ? AppTheme.background.withOpacity(0.45)
-                        : Colors.white.withOpacity(0.45),
-                    AppTheme.isDarkMode
-                        ? AppTheme.background.withOpacity(0.5)
-                        : Colors.white.withOpacity(0.5),
-                  ],
-                ),
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.03)
-                        : Colors.black.withOpacity(0.03),
-                    width: 0.5,
-                  ),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.isDarkMode
-                        ? Colors.black.withOpacity(0.08)
-                        : Colors.white.withOpacity(0.6),
-                    offset: const Offset(0, 4),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ví & Quỹ',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Tháng ${DateFormat('MM/yyyy').format(DateTime.now())}',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 15,
-                    letterSpacing: -0.2,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-            const FundSelector(),
-          ],
-        ),
-        toolbarHeight: 80,
-      ),
+      appBar: const CommonHeader(title: 'Ví & Quỹ'),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         color: AppTheme.primary,
@@ -158,7 +79,7 @@ class _WalletPageState extends State<WalletPage> {
         edgeOffset: MediaQuery.of(context).padding.top + 80,
         child: Column(
           children: [
-            SizedBox(height: MediaQuery.of(context).padding.top + 80),
+            SizedBox(height: MediaQuery.of(context).padding.top + 70),
             Expanded(
               child: _buildFundsTab(),
             ),
@@ -677,8 +598,9 @@ class _AddFundDrawerState extends State<AddFundDrawer> {
 
         if (mounted) {
           // Refresh FundProvider sau khi tạo quỹ thành công
-          await Provider.of<FundProvider>(context, listen: false).refreshFunds();
-          
+          await Provider.of<FundProvider>(context, listen: false)
+              .refreshFunds();
+
           setState(() => _isLoading = false);
           Navigator.pop(context);
           widget.onSuccess();

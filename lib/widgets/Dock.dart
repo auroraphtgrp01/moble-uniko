@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 
@@ -18,8 +19,10 @@ class CustomBottomNav extends StatelessWidget {
     final itemWidth = (screenWidth - 32) / 5;
 
     return Container(
-      height: 80,
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      height: Platform.isIOS ? 95 : 80,
+      padding: Platform.isIOS
+          ? const EdgeInsets.fromLTRB(16, 4, 16, 32)
+          : const EdgeInsets.fromLTRB(16, 4, 16, 16),
       decoration: BoxDecoration(
         color: AppTheme.darkBottomNav,
         border: Border.all(
@@ -68,7 +71,7 @@ class CustomBottomNav extends StatelessWidget {
                 index: 3,
                 icon: Icons.insert_chart_outlined,
                 activeIcon: Icons.insert_chart_rounded,
-                label: 'TT tài chính',
+                label: 'Ví & Quỹ',
                 width: itemWidth,
               ),
               _buildNavItem(
@@ -195,7 +198,7 @@ class CustomBottomNav extends StatelessWidget {
 
   Widget _buildAddButton({required double width}) {
     final isSelected = currentIndex == 2;
-    
+
     return SizedBox(
       width: width,
       child: GestureDetector(
@@ -214,19 +217,21 @@ class CustomBottomNav extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: [
                     isSelected ? AppTheme.primary : const Color(0xFF27272A),
-                    isSelected 
-                      ? AppTheme.primary.withOpacity(0.9)
-                      : const Color(0xFF27272A).withOpacity(0.9),
+                    isSelected
+                        ? AppTheme.primary.withOpacity(0.9)
+                        : const Color(0xFF27272A).withOpacity(0.9),
                   ],
                 ),
                 shape: BoxShape.circle,
-                boxShadow: isSelected ? [
-                  BoxShadow(
-                    color: AppTheme.primary.withOpacity(0.25),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ] : [],
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppTheme.primary.withOpacity(0.25),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : [],
               ),
               child: Stack(
                 children: [
@@ -258,7 +263,7 @@ class CustomBottomNav extends StatelessWidget {
                         },
                       ),
                   },
-                  
+
                   // Center icon with animations
                   Center(
                     child: TweenAnimationBuilder<double>(
@@ -270,11 +275,8 @@ class CustomBottomNav extends StatelessWidget {
                           angle: value * 0.125 * 3.14,
                           child: Icon(
                             Icons.add_rounded,
-                            color: Color.lerp(
-                              Colors.white.withOpacity(0.9),
-                              Colors.white,
-                              value
-                            ),
+                            color: Color.lerp(Colors.white.withOpacity(0.9),
+                                Colors.white, value),
                             size: 24 + (value * 2),
                           ),
                         );
