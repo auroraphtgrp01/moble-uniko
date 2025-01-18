@@ -31,11 +31,18 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
   @override
   void initState() {
     super.initState();
+    updateCategories();
+    searchController.addListener(() {
+      filterCategories();
+    });
+  }
+
+  void updateCategories() {
     final categories = context
         .read<CategoryProvider>()
-        .categories
-        .where((cat) => cat.type == (widget.isExpense ? 'EXPENSE' : 'INCOMING'))
+        .getCategoriesByType(widget.isExpense ? 'EXPENSE' : 'INCOMING')
         .toList();
+
     filteredCategories = categories
         .map((cat) => CategoryItem(
               emoji: cat.name.split(' ')[0],
@@ -43,40 +50,46 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
               color: widget.isExpense ? Colors.red : const Color(0xFF34C759),
             ))
         .toList();
-
-    searchController.addListener(() {
-      filterCategories();
-    });
+    print(filteredCategories.toString());
   }
 
   void filterCategories() {
     final query = searchController.text.toLowerCase();
-    setState(() {
-      final uniqueCategories = filteredCategories.toSet().toList();
+    final allCategories = context
+        .read<CategoryProvider>()
+        .getCategoriesByType(widget.isExpense ? 'EXPENSE' : 'INCOMING')
+        .toList();
 
-      filteredCategories = uniqueCategories
+    setState(() {
+      filteredCategories = allCategories
+          .map((cat) => CategoryItem(
+                emoji: cat.name.split(' ')[0],
+                name: cat.name,
+                color: widget.isExpense ? Colors.red : const Color(0xFF34C759),
+              ))
           .where((category) => category.name.toLowerCase().contains(query))
           .toList();
     });
   }
 
   List<CategoryItem> get recentCategories {
-    addedCategories.clear();
-    return filteredCategories.take(3).toList();
+    return filteredCategories.take(5).toList();
   }
 
   List<CategoryItem> get remainingCategories {
-    addedCategories.addAll(recentCategories.map((e) => e.name));
-
-    return filteredCategories
-        .where((category) => !addedCategories.contains(category.name))
-        .toList();
+    return filteredCategories;
   }
 
   @override
   void dispose() {
     searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    updateCategories();
   }
 
   @override
@@ -341,9 +354,13 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                         Text(
                           name,
                           style: TextStyle(
-                            color: isSelected ? category.color : AppTheme.textPrimary,
+                            color: isSelected
+                                ? category.color
+                                : AppTheme.textPrimary,
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.w500
+                                : FontWeight.normal,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -355,6 +372,52 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecentCategories() {
+    return Column(children: []);
+  }
+
+  Widget _buildCategoryList() {
+    return Column(
+      children: filteredCategories
+          .map((category) => _buildCategoryTile(category))
+          .toList(),
+    );
+  }
+
+  Widget _buildCategoryTile(CategoryItem category) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: FilterChip(
+        selected: category.name == widget.currentCategory,
+        showCheckmark: false,
+        avatar: Text(category.emoji),
+        label: Text(category.name),
+        labelStyle: TextStyle(
+          color: category.name == widget.currentCategory
+              ? Colors.white
+              : AppTheme.textPrimary,
+          fontSize: 13,
+        ),
+        backgroundColor: AppTheme.cardBackground,
+        selectedColor: category.color,
+        side: BorderSide(
+          color: category.name == widget.currentCategory
+              ? category.color
+              : AppTheme.isDarkMode
+                  ? Colors.white.withOpacity(0.05)
+                  : AppTheme.borderColor,
+          width: 0.5,
+        ),
+        onSelected: (_) {
+          widget.onCategorySelected(category.name);
+          if (widget.autoPopOnSelect) {
+            Navigator.pop(context);
+          }
+        },
       ),
     );
   }
