@@ -11,9 +11,7 @@ class CategoryProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   List<Category> getCategoriesByType(String type) {
-    return _categories.where((category) => 
-      category.type == type && category.trackerType == 'DEFAULT'
-    ).toList();
+    return _categories.where((cat) => cat.type == type).toList();
   }
 
   Future<void> fetchCategories(String fundId) async {

@@ -1363,7 +1363,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       isScrollControlled: true,
       builder: (context) => CategoryDrawer(
         currentCategory: currentCategory,
-        categories: categories,
         onCategorySelected: (category) {
           // TODO: Xử lý khi category được chọn
           Navigator.pop(context);

@@ -81,11 +81,8 @@ class _OverviewPageState extends State<OverviewPage>
   }
 
   Future<void> _onRefresh() async {
+    _fetchStatisticsData();
     await Future.delayed(const Duration(milliseconds: 1500));
-
-    setState(() {
-      // Thêm logic cập nhật dữ liệu ở đây
-    });
   }
 
   String _formatAmount(num amount, bool isExpense) {
@@ -323,7 +320,7 @@ class _OverviewPageState extends State<OverviewPage>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => TransactionDetailDrawer(
+      builder: (detailContext) => TransactionDetailDrawer(
         id: transaction.id,
         amount: _formatAmount(transaction.amount,
             transaction.direction.toUpperCase() == 'EXPENSE'),
@@ -336,14 +333,15 @@ class _OverviewPageState extends State<OverviewPage>
         isIncome: transaction.direction.toUpperCase() != 'EXPENSE',
         onClassifyPressed: () {
           showModalBottomSheet(
-            context: context,
+            context: detailContext,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            builder: (context) => ClassificationDrawer(
+            builder: (classifyContext) => ClassificationDrawer(
               transactionId: transaction.id,
+              transactionType: transaction.direction.toUpperCase() != 'EXPENSE' ? 'INCOME' : 'EXPENSE',
               onSave: (reason, category, description) {
                 // TODO: Implement save logic
-                Navigator.pop(context);
+                Navigator.pop(classifyContext);
               },
             ),
           );

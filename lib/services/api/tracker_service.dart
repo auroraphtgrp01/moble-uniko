@@ -44,4 +44,42 @@ class TrackerService {
       rethrow;
     }
   }
+
+  static Future<Map<String, dynamic>> classify({
+    required String transactionId,
+    required String trackerTypeId,
+    required String reasonName,
+    required String fundId,
+    String? description,
+  }) async {
+    try {
+      final Map<String, dynamic> payload = {
+        'transactionId': transactionId,
+        'trackerTypeId': trackerTypeId,
+        'reasonName': reasonName,
+        'fundId': fundId,
+      };
+
+      // Thêm description nếu có
+      if (description != null && description.isNotEmpty) {
+        payload['description'] = description;
+      }
+
+      final response = await ApiService.call(
+        '/tracker-transactions/classify',
+        method: 'POST',
+        body: payload,
+      );
+
+      if (response.statusCode == 201) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to classify transaction: ${response.statusCode}');
+      }
+
+    } catch (e) {
+      LoggerService.error('Classify Transaction Error: $e');
+      rethrow;
+    }
+  }
 } 

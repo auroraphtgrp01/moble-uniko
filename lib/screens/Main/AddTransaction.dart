@@ -760,7 +760,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
           return CategoryDrawer(
             currentCategory: _selectedCategory,
-            categories: categories,
             onCategorySelected: (categoryName) {
               FocusScope.of(context).unfocus();
               setState(() {

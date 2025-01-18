@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/widgets/ClassificationDrawer.dart';
 import '../config/theme.config.dart';
 import 'package:intl/intl.dart';
 
@@ -178,7 +179,21 @@ class TransactionDetailDrawer extends StatelessWidget {
             ),
             child: SafeArea(
               child: ElevatedButton(
-                onPressed: onClassifyPressed,
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (classifyContext) => ClassificationDrawer(
+                      transactionId: id,
+                      transactionType: isIncome ? 'INCOME' : 'EXPENSE',
+                      onSave: (reason, category, description) {
+                        // TODO: Implement save logic
+                        Navigator.pop(classifyContext);
+                      },
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primary,
                   foregroundColor: Colors.white,

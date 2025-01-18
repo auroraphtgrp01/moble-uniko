@@ -751,7 +751,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
           return CategoryDrawer(
             currentCategory: _selectedCategory,
-            categories: allCategories,
             onCategorySelected: (categoryName) {
               setState(() => _selectedCategory = categoryName);
               Navigator.pop(context);
@@ -924,7 +923,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
       isScrollControlled: true,
       builder: (context) => CategoryDrawer(
         currentCategory: currentCategory,
-        categories: _categories,
         onCategorySelected: (category) {
           Navigator.pop(context);
         },

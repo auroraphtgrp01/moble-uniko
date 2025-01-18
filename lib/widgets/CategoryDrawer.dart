@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/services/core/logger_service.dart';
 import '../config/theme.config.dart';
 import 'AddCategoryDrawer.dart';
+import 'package:uniko/providers/category_provider.dart';
+import 'package:provider/provider.dart';
 
 class CategoryDrawer extends StatefulWidget {
   final String currentCategory;
-  final List<CategoryItem> categories;
   final Function(String) onCategorySelected;
   final bool isExpense;
+  final bool autoPopOnSelect;
 
   const CategoryDrawer({
     super.key,
     required this.currentCategory,
-    required this.categories,
     required this.onCategorySelected,
     required this.isExpense,
+    this.autoPopOnSelect = true,
   });
 
   @override
@@ -28,8 +31,19 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
   @override
   void initState() {
     super.initState();
-    filteredCategories = widget.categories.toSet().toList();
-    
+    final categories = context
+        .read<CategoryProvider>()
+        .categories
+        .where((cat) => cat.type == (widget.isExpense ? 'EXPENSE' : 'INCOMING'))
+        .toList();
+    filteredCategories = categories
+        .map((cat) => CategoryItem(
+              emoji: cat.name.split(' ')[0],
+              name: cat.name,
+              color: widget.isExpense ? Colors.red : const Color(0xFF34C759),
+            ))
+        .toList();
+
     searchController.addListener(() {
       filterCategories();
     });
@@ -38,8 +52,8 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
   void filterCategories() {
     final query = searchController.text.toLowerCase();
     setState(() {
-      final uniqueCategories = widget.categories.toSet().toList();
-      
+      final uniqueCategories = filteredCategories.toSet().toList();
+
       filteredCategories = uniqueCategories
           .where((category) => category.name.toLowerCase().contains(query))
           .toList();
@@ -48,15 +62,15 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
 
   List<CategoryItem> get recentCategories {
     addedCategories.clear();
-    return widget.categories.take(3).toList();
+    return filteredCategories.take(3).toList();
   }
 
   List<CategoryItem> get remainingCategories {
     addedCategories.addAll(recentCategories.map((e) => e.name));
-    
-    return filteredCategories.where((category) => 
-      !addedCategories.contains(category.name)
-    ).toList();
+
+    return filteredCategories
+        .where((category) => !addedCategories.contains(category.name))
+        .toList();
   }
 
   @override
@@ -233,7 +247,9 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                     ),
                     onSelected: (_) {
                       widget.onCategorySelected(category.name);
-                      Navigator.pop(context);
+                      if (widget.autoPopOnSelect) {
+                        Navigator.pop(context);
+                      }
                     },
                   ),
                 );
@@ -280,11 +296,15 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
               itemBuilder: (context, index) {
                 final category = remainingCategories[index];
                 final isSelected = category.name == widget.currentCategory;
+                final emoji = category.name.split(' ')[0];
+                final name = category.name.split(' ').skip(1).join(' ');
 
                 return InkWell(
                   onTap: () {
                     widget.onCategorySelected(category.name);
-                    Navigator.pop(context);
+                    if (widget.autoPopOnSelect) {
+                      Navigator.pop(context);
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -313,21 +333,17 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                             shape: BoxShape.circle,
                           ),
                           child: Text(
-                            category.emoji,
+                            emoji,
                             style: const TextStyle(fontSize: 24),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          category.name,
+                          name,
                           style: TextStyle(
-                            color: isSelected
-                                ? category.color
-                                : AppTheme.textPrimary,
+                            color: isSelected ? category.color : AppTheme.textPrimary,
                             fontSize: 12,
-                            fontWeight: isSelected
-                                ? FontWeight.w500
-                                : FontWeight.normal,
+                            fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                           ),
                           textAlign: TextAlign.center,
                         ),
