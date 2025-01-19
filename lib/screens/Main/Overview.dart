@@ -383,45 +383,45 @@ class _OverviewPageState extends State<OverviewPage>
 
             // Stats Cards
             SliverToBoxAdapter(
-              child: _buildStatsCards(),
-            ),
+                // child: _buildStatsCards(),
+                ),
             const SliverToBoxAdapter(
               child: SizedBox(height: 20),
             ),
 
             // Chart Content
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: AppTheme.cardBackground,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.05)
-                        : AppTheme.borderColor,
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: 400,
-                      child: TabBarView(
-                        controller: _tabController,
-                        physics: const BouncingScrollPhysics(),
-                        dragStartBehavior: DragStartBehavior.down,
-                        children: [
-                          _buildExpenseChart(),
-                          _buildIncomeChart(),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // SliverToBoxAdapter(
+            //   child: Container(
+            //     margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            //     padding: const EdgeInsets.symmetric(vertical: 20),
+            //     decoration: BoxDecoration(
+            //       color: AppTheme.cardBackground,
+            //       borderRadius: BorderRadius.circular(24),
+            //       border: Border.all(
+            //         color: AppTheme.isDarkMode
+            //             ? Colors.white.withOpacity(0.05)
+            //             : AppTheme.borderColor,
+            //       ),
+            //     ),
+            //     child: Column(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         SizedBox(
+            //           height: 400,
+            //           child: TabBarView(
+            //             controller: _tabController,
+            //             physics: const BouncingScrollPhysics(),
+            //             dragStartBehavior: DragStartBehavior.down,
+            //             children: [
+            //               _buildExpenseChart(),
+            //               _buildIncomeChart(),
+            //             ],
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
             SliverToBoxAdapter(
               child: SizedBox(height: MediaQuery.of(context).padding.bottom),
             ),
