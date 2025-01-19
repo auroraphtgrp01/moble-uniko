@@ -97,6 +97,29 @@ class AccountSourceService {
     }
   }
 
+  Future<void> deleteAccountSource(String accountSourceId) async {
+    try {
+      LoggerService.info('DELETE_ACCOUNT_SOURCE Request for ID: $accountSourceId');
+
+      final response = await ApiService.call(
+        '/account-sources/remove-one/$accountSourceId',
+        method: 'DELETE',
+      );
+
+      LoggerService.info('DELETE_ACCOUNT_SOURCE Response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        ToastService.showSuccess('Xóa ví thành công');
+      } else {
+        ToastService.showError('Xóa ví thất bại - Vui lòng thử lại');
+        throw Exception('Failed to delete account source: ${response.statusCode}');
+      }
+    } catch (e) {
+      ToastService.showError('Có lỗi xảy ra: $e');
+      throw Exception('Failed to delete account source: $e');
+    }
+  }
+
   Future<AccountSourceResponse> getAdvancedAccountSources(String fundId) async {
     try {
       final response =

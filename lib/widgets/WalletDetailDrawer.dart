@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:uniko/services/account_source_service.dart';
+import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/widgets/EditWalletDrawer.dart';
 import '../config/theme.config.dart';
 import '../models/account_source.dart';
@@ -480,8 +482,15 @@ class _WalletDetailDrawerState extends State<WalletDetailDrawer> {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: () {
-              // TODO: Implement delete
+            onPressed: () async {
+              try {
+                await AccountSourceService().deleteAccountSource(wallet.id);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              } catch (e) {
+                LoggerService.error('Failed to delete wallet: $e');
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
