@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "245986889211",
+    "project_id": "uniko-479fd",
+    "storage_bucket": "uniko-479fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:245986889211:android:ed53470c13c5da4c698f5e",
+        "android_client_info": {
+          "package_name": "com.example.uniko"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFRUvJlsazvxpUj38bUAepJNm7rEFvUEA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
