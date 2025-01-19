@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uniko/screens/Main/Wallet.dart';
+import 'package:uniko/screens/Main/Center.dart';
 import '../../widgets/Dock.dart';
 import 'Overview.dart';
 import 'Transactions.dart';
@@ -13,7 +14,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late PageController _pageController;
   int _selectedIndex = 0;
 
@@ -21,7 +23,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     OverviewPage(),
     TransactionsPage(),
     AddTransactionPage(),
-    WalletPage(),
+    CenterPage(),
     ProfilePage(),
   ];
 
