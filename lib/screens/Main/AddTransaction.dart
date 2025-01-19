@@ -94,13 +94,18 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
                 // Custom Tab với animation
                 Container(
-                  height: 40,
+                  height: 48,
                   margin: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                   decoration: BoxDecoration(
                     color: AppTheme.isDarkMode
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(10),
+                        ? Colors.black.withOpacity(0.2)
+                        : Colors.black.withOpacity(0.03),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.isDarkMode 
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.05),
+                    ),
                   ),
                   child: Stack(
                     children: [
@@ -113,10 +118,19 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                         curve: Curves.easeInOut,
                         child: Container(
                           width: (MediaQuery.of(context).size.width - 40) / 2,
+                          margin: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color:
-                                _currentIndex == 0 ? Colors.red : Colors.green,
-                            borderRadius: BorderRadius.circular(10),
+                            color: _currentIndex == 0 
+                                ? Colors.red.withOpacity(0.9)
+                                : Colors.green.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (_currentIndex == 0 ? Colors.red : Colors.green).withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -129,20 +143,36 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () => setState(() => _currentIndex = 0),
-                                splashColor: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                splashColor: Colors.red.withOpacity(0.1),
                                 highlightColor: Colors.transparent,
                                 child: Center(
-                                  child: AnimatedDefaultTextStyle(
-                                    duration: const Duration(milliseconds: 250),
-                                    curve: Curves.easeInOut,
-                                    style: TextStyle(
-                                      color: _currentIndex == 0
-                                          ? Colors.white
-                                          : AppTheme.textSecondary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    child: const Text('Chi tiêu'),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.remove_circle_outline,
+                                        size: 16,
+                                        color: _currentIndex == 0
+                                            ? Colors.white
+                                            : AppTheme.textSecondary.withOpacity(0.7),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      AnimatedDefaultTextStyle(
+                                        duration: const Duration(milliseconds: 250),
+                                        curve: Curves.easeInOut,
+                                        style: TextStyle(
+                                          color: _currentIndex == 0
+                                              ? Colors.white
+                                              : AppTheme.textSecondary.withOpacity(0.7),
+                                          fontSize: 14,
+                                          fontWeight: _currentIndex == 0
+                                              ? FontWeight.w600
+                                              : FontWeight.w500,
+                                        ),
+                                        child: const Text('Chi tiêu'),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -153,20 +183,36 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () => setState(() => _currentIndex = 1),
-                                splashColor: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                splashColor: Colors.green.withOpacity(0.1),
                                 highlightColor: Colors.transparent,
                                 child: Center(
-                                  child: AnimatedDefaultTextStyle(
-                                    duration: const Duration(milliseconds: 250),
-                                    curve: Curves.easeInOut,
-                                    style: TextStyle(
-                                      color: _currentIndex == 1
-                                          ? Colors.white
-                                          : AppTheme.textSecondary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    child: const Text('Thu nhập'),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_circle_outline,
+                                        size: 16,
+                                        color: _currentIndex == 1
+                                            ? Colors.white
+                                            : AppTheme.textSecondary.withOpacity(0.7),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      AnimatedDefaultTextStyle(
+                                        duration: const Duration(milliseconds: 250),
+                                        curve: Curves.easeInOut,
+                                        style: TextStyle(
+                                          color: _currentIndex == 1
+                                              ? Colors.white
+                                              : AppTheme.textSecondary.withOpacity(0.7),
+                                          fontSize: 14,
+                                          fontWeight: _currentIndex == 1
+                                              ? FontWeight.w600
+                                              : FontWeight.w500,
+                                        ),
+                                        child: const Text('Thu nhập'),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -210,39 +256,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     return Column(
       children: [
         // Số tiền
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          decoration: BoxDecoration(
-            color: AppTheme.cardBackground,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppTheme.borderColor,
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Số tiền',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildAmountField(),
-            ],
-          ),
-        ),
+        _buildAmountField(),
         const SizedBox(height: 20),
 
         // Lí do và phân loại
@@ -265,11 +279,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
           child: Column(
             children: [
               // Lí do
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                child: _buildReasonField(),
-              ),
-              Divider(color: AppTheme.borderColor.withOpacity(0.5), height: 1),
+              _buildReasonField(),
 
               // Phân loại
               Padding(
@@ -318,7 +328,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                   ),
                 ),
               ),
-              Divider(color: AppTheme.borderColor.withOpacity(0.5), height: 1),
 
               // Ngày giao dịch
               Padding(
@@ -432,87 +441,70 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                   ),
                 ),
               ),
+
+              // Ghi chú - thêm mới
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    margin: const EdgeInsets.only(left: 0, top: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.description_outlined,
+                      color: Colors.deepOrange,
+                      size: 20,
+                    ),
+                  ),
+                  title: Container(
+                    margin: const EdgeInsets.only(top: 5),
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      focusNode: _descriptionFocusNode,
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 15,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Thêm ghi chú (tùy chọn)',
+                        hintStyle: TextStyle(
+                          color: AppTheme.textSecondary.withOpacity(0.5),
+                          fontSize: 15,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: AppTheme.borderColor),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: AppTheme.borderColor.withOpacity(0.5)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: AppTheme.primary),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
 
         const SizedBox(height: 20),
 
-        // Description field với thiết kế mới
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppTheme.cardBackground,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppTheme.borderColor,
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Mô tả',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 3,
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 15,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Thêm mô tả (tùy chọn)',
-                  hintStyle: TextStyle(
-                    color: AppTheme.textSecondary.withOpacity(0.5),
-                    fontSize: 15,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppTheme.borderColor.withOpacity(0.5),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppTheme.borderColor.withOpacity(0.5),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: isExpense ? Colors.red : Colors.green,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 32),
-
         // Button với thiết kế mới
         Container(
           width: double.infinity,
-          height: 56,
+          height: 48,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -557,97 +549,184 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   }
 
   Widget _buildAmountField() {
-    return TextFormField(
-      controller: _amountController,
-      focusNode: _amountFocusNode,
-      keyboardType: TextInputType.number,
-      autofocus: false,
-      style: TextStyle(
-        color: AppTheme.textPrimary,
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-      ),
-      decoration: InputDecoration(
-        border: InputBorder.none,
-        hintText: '0',
-        suffixText: 'đ',
-        suffixStyle: TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: (isExpense ? const Color.fromARGB(255, 211, 60, 49) : Colors.green).withOpacity(0.25),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: (isExpense ? Colors.red : Colors.green).withOpacity(0.3),
         ),
       ),
-      onEditingComplete: () {
-        _reasonFocusNode.requestFocus();
-      },
-      onTapOutside: (event) {
-        if (_amountController.text.isNotEmpty) {
-          _reasonFocusNode.requestFocus();
-        }
-      },
-      onChanged: (value) {
-        // Lưu vị trí con trỏ hiện tại
-        final cursorPos = _amountController.selection;
-        // Format số tiền
-        final formattedValue = _formatNumber(value);
-
-        // Cập nhật text và vị trí con trỏ
-        _amountController.value = TextEditingValue(
-          text: formattedValue,
-          selection: TextSelection.collapsed(
-            offset: formattedValue.length,
+      child: Column(
+        children: [
+          // Label và Icon
+          Padding(
+            padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: (isExpense ? Colors.red : Colors.green).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.payments_outlined,
+                    color: isExpense ? Colors.red : Colors.green,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Số tiền',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
-        );
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Vui lòng nhập số tiền';
-        }
-        final amount = double.tryParse(value.replaceAll(RegExp(r'[^0-9]'), ''));
-        if (amount == null || amount <= 0) {
-          return 'Số tiền không hợp lệ';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        if (value != null) {
-          _amount = double.parse(value.replaceAll(RegExp(r'[^0-9]'), ''));
-        }
-      },
+          
+          // Input số tiền
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _amountController,
+                    focusNode: _amountFocusNode,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '0',
+                      hintStyle: TextStyle(
+                        color: AppTheme.textSecondary.withOpacity(0.5),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                      isDense: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      CurrencyInputFormatter(),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _amount = double.parse(value.replaceAll(RegExp(r'[.,]'), ''));
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Vui lòng nhập số tiền';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      if (value != null && value.isNotEmpty) {
+                        _amount = double.parse(value.replaceAll(RegExp(r'[.,]'), ''));
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'đ',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildReasonField() {
-    return TextFormField(
-      controller: _noteController,
-      focusNode: _reasonFocusNode,
-      style: TextStyle(
-        color: AppTheme.textPrimary,
-        fontSize: 15,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.only(left: 0, top: 5),
+          decoration: BoxDecoration(
+            color: (isExpense ? Colors.red : Colors.green).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            isExpense ? Icons.shopping_bag : Icons.attach_money,
+            color: isExpense ? Colors.red : Colors.green,
+            size: 20,
+          ),
+        ),
+        title: Container(
+          margin: const EdgeInsets.only(top: 5),
+          child: TextFormField(
+            controller: _noteController,
+            focusNode: _reasonFocusNode,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 15,
+            ),
+            decoration: InputDecoration(
+              hintText: isExpense ? 'Lí do chi tiêu' : 'Lí do thu nhập',
+              hintStyle: TextStyle(
+                color: AppTheme.textSecondary.withOpacity(0.5),
+                fontSize: 15,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppTheme.borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppTheme.borderColor.withOpacity(0.5)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppTheme.primary),
+              ),
+            ),
+            onEditingComplete: () {
+              _reasonFocusNode.unfocus();
+              _showCategoryDrawer(_currentIndex == 0);
+            },
+            onTapOutside: (event) {
+              _reasonFocusNode.unfocus();
+              if (_noteController.text.isNotEmpty) {
+                _showCategoryDrawer(_currentIndex == 0);
+              }
+            },
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Vui lòng nhập lý do';
+              }
+              return null;
+            },
+            onSaved: (value) {
+              _reasonName = value ?? '';
+            },
+          ),
+        ),
       ),
-      decoration: InputDecoration(
-        border: InputBorder.none,
-        hintText: isExpense ? 'Lí do chi tiêu' : 'Lí do thu nhập',
-      ),
-      onEditingComplete: () {
-        _reasonFocusNode.unfocus();
-        _showCategoryDrawer(_currentIndex == 0);
-      },
-      onTapOutside: (event) {
-        _reasonFocusNode.unfocus();
-        if (_noteController.text.isNotEmpty) {
-          _showCategoryDrawer(_currentIndex == 0);
-        }
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Vui lòng nhập lý do';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        _reasonName = value ?? '';
-      },
     );
   }
 
@@ -889,6 +968,22 @@ class _AddTransactionPageState extends State<AddTransactionPage>
           _showWalletDrawer(context);
         },
       ),
+    );
+  }
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) return newValue;
+    
+    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (number == null) return oldValue;
+    
+    final formatted = NumberFormat("#,###", "vi_VN").format(number);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
