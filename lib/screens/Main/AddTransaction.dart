@@ -17,6 +17,7 @@ import 'package:uniko/models/category.dart';
 import 'package:uniko/widgets/CategoryDrawer.dart';
 import 'package:uniko/services/api/tracker_service.dart';
 import 'package:uniko/widgets/DatePickerDrawer.dart';
+import 'package:uniko/widgets/SelectWalletDrawer.dart';
 
 class AddTransactionPage extends StatefulWidget {
   const AddTransactionPage({super.key});
@@ -102,7 +103,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                         : Colors.black.withOpacity(0.03),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppTheme.isDarkMode 
+                      color: AppTheme.isDarkMode
                           ? Colors.white.withOpacity(0.1)
                           : Colors.black.withOpacity(0.05),
                     ),
@@ -120,13 +121,16 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                           width: (MediaQuery.of(context).size.width - 40) / 2,
                           margin: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: _currentIndex == 0 
+                            color: _currentIndex == 0
                                 ? Colors.red.withOpacity(0.9)
                                 : Colors.green.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
-                                color: (_currentIndex == 0 ? Colors.red : Colors.green).withOpacity(0.2),
+                                color: (_currentIndex == 0
+                                        ? Colors.red
+                                        : Colors.green)
+                                    .withOpacity(0.2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -155,16 +159,19 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                         size: 16,
                                         color: _currentIndex == 0
                                             ? Colors.white
-                                            : AppTheme.textSecondary.withOpacity(0.7),
+                                            : AppTheme.textSecondary
+                                                .withOpacity(0.7),
                                       ),
                                       const SizedBox(width: 8),
                                       AnimatedDefaultTextStyle(
-                                        duration: const Duration(milliseconds: 250),
+                                        duration:
+                                            const Duration(milliseconds: 250),
                                         curve: Curves.easeInOut,
                                         style: TextStyle(
                                           color: _currentIndex == 0
                                               ? Colors.white
-                                              : AppTheme.textSecondary.withOpacity(0.7),
+                                              : AppTheme.textSecondary
+                                                  .withOpacity(0.7),
                                           fontSize: 14,
                                           fontWeight: _currentIndex == 0
                                               ? FontWeight.w600
@@ -195,16 +202,19 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                                         size: 16,
                                         color: _currentIndex == 1
                                             ? Colors.white
-                                            : AppTheme.textSecondary.withOpacity(0.7),
+                                            : AppTheme.textSecondary
+                                                .withOpacity(0.7),
                                       ),
                                       const SizedBox(width: 8),
                                       AnimatedDefaultTextStyle(
-                                        duration: const Duration(milliseconds: 250),
+                                        duration:
+                                            const Duration(milliseconds: 250),
                                         curve: Curves.easeInOut,
                                         style: TextStyle(
                                           color: _currentIndex == 1
                                               ? Colors.white
-                                              : AppTheme.textSecondary.withOpacity(0.7),
+                                              : AppTheme.textSecondary
+                                                  .withOpacity(0.7),
                                           fontSize: 14,
                                           fontWeight: _currentIndex == 1
                                               ? FontWeight.w600
@@ -476,7 +486,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                           color: AppTheme.textSecondary.withOpacity(0.5),
                           fontSize: 15,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         isDense: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -484,7 +495,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.borderColor.withOpacity(0.5)),
+                          borderSide: BorderSide(
+                              color: AppTheme.borderColor.withOpacity(0.5)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -552,7 +564,9 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: (isExpense ? const Color.fromARGB(255, 211, 60, 49) : Colors.green).withOpacity(0.25),
+        color:
+            (isExpense ? const Color.fromARGB(255, 211, 60, 49) : Colors.green)
+                .withOpacity(0.25),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: (isExpense ? Colors.red : Colors.green).withOpacity(0.3),
@@ -568,7 +582,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: (isExpense ? Colors.red : Colors.green).withOpacity(0.1),
+                    color: (isExpense ? Colors.red : Colors.green)
+                        .withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -589,7 +604,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
               ],
             ),
           ),
-          
+
           // Input số tiền
           Padding(
             padding: const EdgeInsets.all(16),
@@ -624,7 +639,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                     ],
                     onChanged: (value) {
                       setState(() {
-                        _amount = double.parse(value.replaceAll(RegExp(r'[.,]'), ''));
+                        _amount =
+                            double.parse(value.replaceAll(RegExp(r'[.,]'), ''));
                       });
                     },
                     validator: (value) {
@@ -635,7 +651,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                     },
                     onSaved: (value) {
                       if (value != null && value.isNotEmpty) {
-                        _amount = double.parse(value.replaceAll(RegExp(r'[.,]'), ''));
+                        _amount =
+                            double.parse(value.replaceAll(RegExp(r'[.,]'), ''));
                       }
                     },
                   ),
@@ -690,7 +707,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                 color: AppTheme.textSecondary.withOpacity(0.5),
                 fontSize: 15,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               isDense: true,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -698,7 +716,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: AppTheme.borderColor.withOpacity(0.5)),
+                borderSide:
+                    BorderSide(color: AppTheme.borderColor.withOpacity(0.5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -736,115 +755,11 @@ class _AddTransactionPageState extends State<AddTransactionPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Consumer<AccountSourceProvider>(
-        builder: (context, provider, child) {
-          final wallets = provider.accountSources;
-
-          return Container(
-            decoration: BoxDecoration(
-              color: AppTheme.cardBackground,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(top: 12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.isDarkMode
-                        ? Colors.white.withOpacity(0.2)
-                        : Colors.black.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Chọn nguồn tiền',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                if (provider.isLoading)
-                  const CircularProgressIndicator()
-                else if (wallets.isEmpty)
-                  SizedBox(
-                    width: double.infinity,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 24, horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.account_balance_wallet_outlined,
-                            size: 48,
-                            color: AppTheme.textSecondary.withOpacity(0.5),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Chưa có nguồn tiền nào',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Vui lòng thêm ví hoặc tài khoản ngân hàng',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary.withOpacity(0.7),
-                              fontSize: 13,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  ...List.generate(
-                    wallets.length,
-                    (index) => ListTile(
-                      leading: Icon(
-                        Icons.account_balance_wallet_outlined,
-                        color: _selectedWallet == wallets[index].id
-                            ? AppTheme.primary
-                            : AppTheme.textSecondary,
-                      ),
-                      title: Text(
-                        wallets[index].name,
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontWeight: _selectedWallet == wallets[index].id
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                        ),
-                      ),
-                      trailing: _selectedWallet == wallets[index].id
-                          ? Icon(
-                              Icons.check_circle,
-                              color: AppTheme.primary,
-                            )
-                          : null,
-                      onTap: () {
-                        FocusScope.of(context).unfocus();
-                        setState(() => _selectedWallet = wallets[index].id);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          );
+      builder: (context) => SelectWalletDrawer(
+        currentWallet: _selectedWallet,
+        onSelect: (walletId) {
+          setState(() => _selectedWallet = walletId);
+          Navigator.pop(context);
         },
       ),
     );
@@ -974,12 +889,14 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
 class CurrencyInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     if (newValue.text.isEmpty) return newValue;
-    
-    final number = int.tryParse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
+
+    final number =
+        int.tryParse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
     if (number == null) return oldValue;
-    
+
     final formatted = NumberFormat("#,###", "vi_VN").format(number);
     return TextEditingValue(
       text: formatted,

@@ -6,11 +6,13 @@ import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 class DatePickerDrawer extends StatefulWidget {
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
+  final bool autoPopOnSelect;
 
   const DatePickerDrawer({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
+    this.autoPopOnSelect = true,
   });
 
   @override
@@ -275,7 +277,9 @@ class _DatePickerDrawerState extends State<DatePickerDrawer> {
               child: ElevatedButton(
                 onPressed: () {
                   widget.onDateSelected(_selectedDateTime);
-                  Navigator.pop(context);
+                  if (widget.autoPopOnSelect) {
+                    Navigator.pop(context);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primary,

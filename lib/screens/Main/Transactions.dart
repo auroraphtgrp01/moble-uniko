@@ -98,7 +98,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
       final fundId = context.read<FundProvider>().selectedFundId;
       if (fundId == null) return;
 
-      final response = await _trackerTransactionService.getAdvancedTrackerTransactions(
+      final response =
+          await _trackerTransactionService.getAdvancedTrackerTransactions(
         fundId,
         page: _currentPage + 1,
         limit: 5,
@@ -106,9 +107,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
       // Tạo Set chứa các ID của transactions hiện tại
       final existingIds = Set<String>.from(_transactions.map((t) => t.id));
-      
+
       // Lọc ra các transaction mới chưa tồn tại
-      final newTransactions = response.data.where((t) => !existingIds.contains(t.id)).toList();
+      final newTransactions =
+          response.data.where((t) => !existingIds.contains(t.id)).toList();
 
       setState(() {
         _transactions.addAll(newTransactions);
@@ -265,7 +267,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     final income = stats?.income.totalToday ?? 0;
                     final expense = stats?.expense.totalToday ?? 0;
                     final balance = stats?.total.totalBalance ?? 0;
-                    final balanceRate = stats?.total.rate == "none" ? "0" : (stats?.total.rate ?? "0");
+                    final balanceRate = stats?.total.rate == "none"
+                        ? "0"
+                        : (stats?.total.rate ?? "0");
 
                     return Column(
                       children: [
