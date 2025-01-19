@@ -145,16 +145,16 @@ class UnclassifiedTransaction {
   factory UnclassifiedTransaction.fromJson(Map<String, dynamic> json) {
     try {
       return UnclassifiedTransaction(
-        id: json['id'] ?? '',
-        direction: json['direction'] ?? '',
+        id: json['id']?.toString() ?? '',
+        direction: json['direction']?.toString() ?? '',
         amount: json['amount'] ?? 0,
-        toAccountNo: json['toAccountNo'],
-        toAccountName: json['toAccountName'],
-        toBankName: json['toBankName'],
-        currency: json['currency'] ?? '',
-        description: json['description'] ?? '',
+        toAccountNo: json['toAccountNo']?.toString(),
+        toAccountName: json['toAccountName']?.toString(),
+        toBankName: json['toBankName']?.toString(),
+        currency: json['currency']?.toString() ?? '',
+        description: json['description']?.toString() ?? '',
         transactionDateTime: DateTime.parse(
-            json['transactionDateTime'] ?? DateTime.now().toIso8601String()),
+            json['transactionDateTime']?.toString() ?? DateTime.now().toIso8601String()),
         accountSource: AccountSource.fromJson(json['accountSource'] ?? {}),
         ofAccount: OfAccount.fromJson(json['ofAccount'] ?? {}),
       );
@@ -176,8 +176,8 @@ class AccountSource {
 
   factory AccountSource.fromJson(Map<String, dynamic> json) {
     return AccountSource(
-      name: json['name'],
-      accountBank: AccountBank.fromJson(json['accountBank']),
+      name: json['name']?.toString() ?? '',
+      accountBank: AccountBank.fromJson(json['accountBank'] ?? {}),
     );
   }
 }
@@ -189,8 +189,8 @@ class AccountBank {
 
   factory AccountBank.fromJson(Map<String, dynamic> json) {
     return AccountBank(
-      accounts: (json['accounts'] as List)
-          .map((item) => BankAccount.fromJson(item))
+      accounts: ((json['accounts'] as List?) ?? [])
+          .map((item) => BankAccount.fromJson(item ?? {}))
           .toList(),
     );
   }
@@ -203,7 +203,7 @@ class BankAccount {
 
   factory BankAccount.fromJson(Map<String, dynamic> json) {
     return BankAccount(
-      accountNo: json['accountNo'],
+      accountNo: json['accountNo']?.toString() ?? '',
     );
   }
 }
@@ -221,9 +221,9 @@ class OfAccount {
 
   factory OfAccount.fromJson(Map<String, dynamic> json) {
     return OfAccount(
-      id: json['id'],
-      accountNo: json['accountNo'],
-      accountBankId: json['accountBankId'],
+      id: json['id']?.toString() ?? '',
+      accountNo: json['accountNo']?.toString() ?? '',
+      accountBankId: json['accountBankId']?.toString() ?? '',
     );
   }
 }

@@ -15,6 +15,8 @@ class StatisticsService {
       },
     );
 
+    print(response);
+
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       LoggerService.api('/tracker-transactions/statistics/$fundId', jsonData);
