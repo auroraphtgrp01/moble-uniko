@@ -227,9 +227,14 @@ class _OverviewPageState extends State<OverviewPage>
                       // Account Info
                       Expanded(
                         child: Text(
-                          transaction.toAccountNo ??
-                              transaction.accountSource?.name ??
-                              "Không xác định",
+                          (transaction.toAccountNo?.trim().isEmpty ?? true)
+                              ? ((transaction.accountSource?.name
+                                          ?.trim()
+                                          .isEmpty ??
+                                      true)
+                                  ? "Không xác định"
+                                  : transaction.accountSource!.name!)
+                              : transaction.toAccountNo!,
                           style: TextStyle(
                             color: AppTheme.textPrimary,
                             fontSize: 15,
@@ -994,7 +999,8 @@ class _OverviewPageState extends State<OverviewPage>
                     child: _buildSummaryItem(
                       icon: Icons.arrow_downward_rounded,
                       label: 'Thu nhập',
-                      amount: NumberFormat('#,###', 'vi_VN').format(provider.statistics?.income.totalToday ?? 0),
+                      amount: NumberFormat('#,###', 'vi_VN')
+                          .format(provider.statistics?.income.totalToday ?? 0),
                       isIncome: true,
                       rate: provider.statistics?.income.rate,
                     ),
@@ -1009,7 +1015,8 @@ class _OverviewPageState extends State<OverviewPage>
                     child: _buildSummaryItem(
                       icon: Icons.arrow_upward_rounded,
                       label: 'Chi tiêu',
-                      amount: NumberFormat('#,###', 'vi_VN').format(provider.statistics?.expense.totalToday ?? 0),
+                      amount: NumberFormat('#,###', 'vi_VN')
+                          .format(provider.statistics?.expense.totalToday ?? 0),
                       isIncome: false,
                       rate: provider.statistics?.expense.rate,
                     ),
@@ -1352,10 +1359,12 @@ class _OverviewPageState extends State<OverviewPage>
     final safeRate = rate == "none" ? "0" : (rate ?? "0");
 
     return Column(
-      crossAxisAlignment: isIncome ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      crossAxisAlignment:
+          isIncome ? CrossAxisAlignment.start : CrossAxisAlignment.end,
       children: [
         Row(
-          mainAxisAlignment: isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
+          mainAxisAlignment:
+              isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
           children: [
             if (!isIncome) ...[
               Text(
