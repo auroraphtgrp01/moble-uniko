@@ -357,10 +357,10 @@ class _CenterPageState extends State<CenterPage>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.1),
+                    color: Color(0xFF00C48C).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppTheme.primary.withOpacity(0.2),
+                      color: Color(0xFF00C48C).withOpacity(0.2),
                       width: 1,
                     ),
                   ),
@@ -369,14 +369,14 @@ class _CenterPageState extends State<CenterPage>
                     children: [
                       Icon(
                         Icons.add,
-                        color: AppTheme.primary,
+                        color: Color(0xFF00C48C),
                         size: 16,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Thêm mới',
                         style: TextStyle(
-                          color: AppTheme.primary,
+                          color: Color(0xFF00C48C),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -433,7 +433,7 @@ class _CenterPageState extends State<CenterPage>
                         symbol: fund.currency,
                         decimalDigits: 0,
                       ).format(fund.currentAmount),
-                      color: AppTheme.primary,
+                      color: _getFundColor(index),
                       description: fund.description ?? 'Không có mô tả',
                       members: fund.participants
                           .map((p) => Member(
@@ -450,19 +450,7 @@ class _CenterPageState extends State<CenterPage>
                     ),
                   );
                 },
-                child: _buildFundItem(
-                  index,
-                  fund.name,
-                  NumberFormat.currency(
-                    locale: 'vi_VN',
-                    symbol: fund.currency,
-                    decimalDigits: 0,
-                  ).format(fund.currentAmount),
-                  _getIconForFund(fund),
-                  _getFundColor(index),
-                  '${fund.countParticipants} thành viên',
-                  fund.description ?? 'Không có mô tả',
-                ),
+                child: _buildFundItem(fund, index),
               );
             },
           ),
@@ -836,15 +824,12 @@ class _CenterPageState extends State<CenterPage>
     );
   }
 
-  Widget _buildFundItem(
-    int index,
-    String name,
-    String amount,
-    IconData icon,
-    Color color,
-    String members,
-    String description,
-  ) {
+  Widget _buildFundItem(ExpenditureFund fund, int index) {
+    final color = _getFundColor(index);
+    // TODO: get wallet count
+    final walletCount = 4;
+    final memberCount = fund.participants?.length ?? 0;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -856,42 +841,54 @@ class _CenterPageState extends State<CenterPage>
               : AppTheme.borderColor,
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              // Icon container
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  icon,
+                  _getIconForFund(fund),
                   color: color,
-                  size: 24,
+                  size: 22,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
+              // Fund info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      name,
+                      fund.name ?? 'Không có tên',
                       style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      description,
+                      fund.description ?? 'Không có mô tả',
                       style: TextStyle(
                         color: AppTheme.textSecondary,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -905,42 +902,85 @@ class _CenterPageState extends State<CenterPage>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Số dư
               Text(
-                amount,
+                NumberFormat('#,###', 'vi_VN').format(fund.currentAmount ?? 0) +
+                    ' đ',
                 style: TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.group,
-                      color: color,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      members,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+              // Badges
+              Row(
+                children: [
+                  // Badge số lượng thành viên
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: color.withOpacity(0.2),
+                        width: 1,
                       ),
                     ),
-                  ],
-                ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.group_outlined,
+                          color: color,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$memberCount thành viên',
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Badge số lượng ví
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: color.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: color,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$walletCount nguồn tiền',
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
