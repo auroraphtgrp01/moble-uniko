@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "245986889211-rcuts6fgvijvoa315uu8j9kntigj2qrg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.uniko",
+            "certificate_hash": "704d827c39d0835d4ab09bcdb1fee7a97c3d437d"
+          }
+        },
+        {
           "client_id": "245986889211-k1flp5vorlvc8p7qkung80damqstkevc.apps.googleusercontent.com",
           "client_type": 3
         }
