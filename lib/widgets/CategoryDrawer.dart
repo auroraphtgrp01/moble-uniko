@@ -171,13 +171,16 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () {
-                      showModalBottomSheet(
+                    onTap: () async {
+                      final result = await showModalBottomSheet(
                         context: context,
                         backgroundColor: Colors.transparent,
                         isScrollControlled: true,
                         builder: (context) => const AddCategoryDrawer(),
                       );
+                      if (result == true) {
+                        updateCategories();
+                      }
                     },
                     borderRadius: BorderRadius.circular(20),
                     child: Container(

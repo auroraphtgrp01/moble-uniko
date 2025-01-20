@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../config/theme.config.dart';
 import '../constants/emoji_categories.dart';
+import '../services/category_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/fund_provider.dart';
+import '../providers/category_provider.dart';
 
 class AddCategoryDrawer extends StatefulWidget {
   const AddCategoryDrawer({super.key});
@@ -9,7 +13,8 @@ class AddCategoryDrawer extends StatefulWidget {
   State<AddCategoryDrawer> createState() => _AddCategoryDrawerState();
 }
 
-class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTickerProviderStateMixin {
+class _AddCategoryDrawerState extends State<AddCategoryDrawer>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -17,6 +22,8 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTicker
   String _selectedEmoji = '🏷️';
   late AnimationController _animationController;
   late Animation<double> _animation;
+  final _categoryService = CategoryService();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -96,7 +103,7 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTicker
         color: AppTheme.cardBackground,
         border: Border(
           bottom: BorderSide(
-            color: AppTheme.isDarkMode 
+            color: AppTheme.isDarkMode
                 ? Colors.white.withOpacity(0.05)
                 : Colors.grey.withOpacity(0.1),
           ),
@@ -408,7 +415,7 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTicker
         ],
       ),
       child: ElevatedButton(
-        onPressed: _handleSubmit,
+        onPressed: _isLoading ? null : _handleSubmit,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.primary,
           foregroundColor: Colors.white,
@@ -418,14 +425,24 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTicker
           ),
           elevation: 0,
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_circle_outline, size: 20),
-            SizedBox(width: 8),
+            if (_isLoading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            else
+              const Icon(Icons.add_circle_outline, size: 20),
+            const SizedBox(width: 8),
             Text(
-              'Thêm danh mục',
-              style: TextStyle(
+              _isLoading ? 'Đang tạo...' : 'Thêm danh mục',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -436,10 +453,48 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTicker
     );
   }
 
-  void _handleSubmit() {
+  void _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement category creation
-      Navigator.pop(context);
+      setState(() => _isLoading = true);
+      try {
+        final fundProvider = Provider.of<FundProvider>(context, listen: false);
+        final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+        final fundId = fundProvider.selectedFundId;
+
+        if (fundId == null) {
+          throw Exception('Không tìm thấy Fund ID');
+        }
+
+        final categoryName = '$_selectedEmoji${_nameController.text}';
+
+        await _categoryService.createCategory(
+          name: categoryName,
+          type: _selectedType == 'Chi tiêu' ? 'EXPENSE' : 'INCOME',
+          fundId: fundId,
+          description: _descriptionController.text.isEmpty
+              ? null
+              : _descriptionController.text,
+          onSuccess: () {
+            categoryProvider.fetchCategories(fundId);
+          },
+        );
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Không thể tạo danh mục: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
@@ -503,12 +558,12 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTicker
             labelColor: AppTheme.primary,
             unselectedLabelColor: AppTheme.textSecondary,
             indicatorColor: AppTheme.primary,
-            tabs: categories.keys.map((category) => 
-              Tab(
-                text: category,
-                height: 40,
-              )
-            ).toList(),
+            tabs: categories.keys
+                .map((category) => Tab(
+                      text: category,
+                      height: 40,
+                    ))
+                .toList(),
           ),
           Expanded(
             child: TabBarView(
@@ -551,4 +606,3 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer> with SingleTicker
     );
   }
 }
-

@@ -475,7 +475,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                     child: TextFormField(
                       controller: _descriptionController,
                       focusNode: _descriptionFocusNode,
-                      maxLines: 2,
                       style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 15,
@@ -486,22 +485,8 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                           color: AppTheme.textSecondary.withOpacity(0.5),
                           fontSize: 15,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                        border: InputBorder.none,
                         isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.borderColor),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                              color: AppTheme.borderColor.withOpacity(0.5)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.primary),
-                        ),
                       ),
                     ),
                   ),
@@ -707,22 +692,10 @@ class _AddTransactionPageState extends State<AddTransactionPage>
                 color: AppTheme.textSecondary.withOpacity(0.5),
                 fontSize: 15,
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+
               isDense: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: AppTheme.borderColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide:
-                    BorderSide(color: AppTheme.borderColor.withOpacity(0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: AppTheme.primary),
-              ),
+              border: InputBorder.none, // Bỏ border mặc định
+              enabledBorder: InputBorder.none, // Bỏ border khi enabled
             ),
             onEditingComplete: () {
               _reasonFocusNode.unfocus();
@@ -766,7 +739,6 @@ class _AddTransactionPageState extends State<AddTransactionPage>
   }
 
   void _handleSubmit() async {
-    // Unfocus tất cả input trước khi submit
     _amountFocusNode.unfocus();
     _reasonFocusNode.unfocus();
     _descriptionFocusNode.unfocus();
@@ -806,18 +778,15 @@ class _AddTransactionPageState extends State<AddTransactionPage>
 
         LoadingDialog.hide(context);
 
-        // Clear form và đảm bảo không focus
         _amountController.clear();
         _noteController.clear();
         _descriptionController.clear();
         setState(() {
           _selectedCategory = '';
           _selectedWallet = '';
-          // Đảm bảo không có input nào được focus
           FocusScope.of(context).unfocus();
         });
 
-        // Thêm unfocus một lần nữa sau khi hoàn tất mọi thứ
         WidgetsBinding.instance.addPostFrameCallback((_) {
           FocusScope.of(context).unfocus();
         });
