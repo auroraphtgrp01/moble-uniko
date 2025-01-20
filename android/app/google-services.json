@@ -12,7 +12,20 @@
           "package_name": "com.example.uniko"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "245986889211-ddocl45rfuc866120kqb4e5ird81d3np.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.uniko",
+            "certificate_hash": "6b845671dc288ce6030c0ebbb725561455dd9390"
+          }
+        },
+        {
+          "client_id": "245986889211-k1flp5vorlvc8p7qkung80damqstkevc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBFRUvJlsazvxpUj38bUAepJNm7rEFvUEA"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "245986889211-k1flp5vorlvc8p7qkung80damqstkevc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "245986889211-23783p5ac6ibj6tj4ut41rtr6ighugro.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.uniko"
+              }
+            }
+          ]
         }
       }
     }

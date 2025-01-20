@@ -716,8 +716,106 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 24),
                         OutlinedButton(
-                          onPressed: () {
-                            // TODO: Implement Google login
+                          onPressed: () async {
+                            setState(() {
+                              _isLoading = true;
+                            });
+
+                            try {
+                              // 1. Login with Google
+                              final response =
+                                  await _authService.loginWithGoogle();
+
+                              if (!mounted) return;
+
+                              if (!response['success']) {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+
+                                ToastService.showError(response['message'] ??
+                                    'Đăng nhập Google thất bại');
+                                return;
+                              }
+
+                              // 2. Save login info
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.setString('token', 'mock_token');
+                              await prefs.setString(
+                                  'userName', 'Lê Minh Tuấn 1');
+                              await prefs.setString(
+                                  'userEmail', 'minhtuanledng@gmail.com');
+
+                              if (!mounted) return;
+
+                              // 3. Initialize required providers
+                              try {
+                                final fundProvider = Provider.of<FundProvider>(
+                                    context,
+                                    listen: false);
+                                final categoryProvider =
+                                    Provider.of<CategoryProvider>(context,
+                                        listen: false);
+                                final accountSourceProvider =
+                                    Provider.of<AccountSourceProvider>(context,
+                                        listen: false);
+                                final statisticsProvider =
+                                    Provider.of<StatisticsProvider>(context,
+                                        listen: false);
+
+                                // Call all required APIs
+                                await Future.wait([
+                                  fundProvider.initializeFunds(),
+                                  // After getting selectedFundId from fundProvider
+                                  Future.delayed(Duration(milliseconds: 100))
+                                      .then((_) async {
+                                    final selectedFundId =
+                                        fundProvider.selectedFundId;
+                                    if (selectedFundId != null) {
+                                      await Future.wait([
+                                        categoryProvider
+                                            .fetchCategories(selectedFundId),
+                                        accountSourceProvider
+                                            .fetchAccountSources(
+                                                selectedFundId),
+                                        statisticsProvider.fetchStatistics(
+                                          selectedFundId,
+                                          DateTime.now().subtract(
+                                              const Duration(days: 30)),
+                                          DateTime.now(),
+                                        ),
+                                      ]);
+                                    }
+                                  }),
+                                ]);
+
+                                // 4. Navigate to Home when complete
+                                if (!mounted) return;
+
+                                ToastService.showSuccess(
+                                    'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomePage(),
+                                  ),
+                                  (route) => false,
+                                );
+                              } catch (e) {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                ToastService.showError(
+                                    'Có lỗi xảy ra khi khởi tạo dữ liệu');
+                              }
+                            } catch (e) {
+                              setState(() {
+                                _isLoading = false;
+                              });
+                              ToastService.showError(
+                                  'Đăng nhập Google thất bại');
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 56),
@@ -749,101 +847,15 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              GestureDetector(
-                                onTap: () async {
-                                  // try {
-                                  //   final response =
-                                  //       await AuthService().signInWithGoogle();
-                                  //   if (response != null) {
-                                  //     // Lưu thông tin đăng nhập
-                                  //     final prefs =
-                                  //         await SharedPreferences.getInstance();
-                                  //     await prefs.setString(
-                                  //         'token', 'mock_token');
-                                  //     await prefs.setString(
-                                  //         'userName', 'Lê Minh Tuấn 1');
-                                  //     await prefs.setString('userEmail',
-                                  //         'minhtuanledng@gmail.com');
-
-                                  //     if (!mounted) return;
-
-                                  //     // Initialize providers
-                                  //     try {
-                                  //       final fundProvider =
-                                  //           Provider.of<FundProvider>(context,
-                                  //               listen: false);
-                                  //       final categoryProvider =
-                                  //           Provider.of<CategoryProvider>(
-                                  //               context,
-                                  //               listen: false);
-                                  //       final accountSourceProvider =
-                                  //           Provider.of<AccountSourceProvider>(
-                                  //               context,
-                                  //               listen: false);
-                                  //       final statisticsProvider =
-                                  //           Provider.of<StatisticsProvider>(
-                                  //               context,
-                                  //               listen: false);
-
-                                  //       await Future.wait([
-                                  //         fundProvider.initializeFunds(),
-                                  //         Future.delayed(
-                                  //                 Duration(milliseconds: 100))
-                                  //             .then((_) async {
-                                  //           final selectedFundId =
-                                  //               fundProvider.selectedFundId;
-                                  //           if (selectedFundId != null) {
-                                  //             await Future.wait([
-                                  //               categoryProvider
-                                  //                   .fetchCategories(
-                                  //                       selectedFundId),
-                                  //               accountSourceProvider
-                                  //                   .fetchAccountSources(
-                                  //                       selectedFundId),
-                                  //               statisticsProvider
-                                  //                   .fetchStatistics(
-                                  //                 selectedFundId,
-                                  //                 DateTime.now().subtract(
-                                  //                     const Duration(days: 30)),
-                                  //                 DateTime.now(),
-                                  //               ),
-                                  //             ]);
-                                  //           }
-                                  //         }),
-                                  //       ]);
-
-                                  //       if (!mounted) return;
-
-                                  //       ToastService.showSuccess(
-                                  //           'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
-                                  //       Navigator.pushAndRemoveUntil(
-                                  //         context,
-                                  //         MaterialPageRoute(
-                                  //           builder: (context) =>
-                                  //               const HomePage(),
-                                  //         ),
-                                  //         (route) => false,
-                                  //       );
-                                  //     } catch (e) {
-                                  //       ToastService.showError(
-                                  //           'Có lỗi xảy ra khi tải dữ liệu');
-                                  //     }
-                                  //   }
-                                  // } catch (e) {
-                                  //   ToastService.showError(
-                                  //       'Đăng nhập với Google thất bại');
-                                  // }
-                                },
-                                child: Text(
-                                  'Đăng nhập với Google',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDarkMode
-                                        ? Colors.white
-                                        : Colors.black87,
-                                    fontFamily: 'Poppins',
-                                  ),
+                              Text(
+                                'Đăng nhập với Google',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDarkMode
+                                      ? Colors.white
+                                      : Colors.black87,
+                                  fontFamily: 'Poppins',
                                 ),
                               ),
                             ],

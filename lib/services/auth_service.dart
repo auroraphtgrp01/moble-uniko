@@ -1,6 +1,7 @@
 import 'dart:convert';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'package:local_auth/local_auth.dart';
@@ -11,6 +12,7 @@ import 'core/logger_service.dart';
 
 class AuthService {
   static final LocalAuthentication _localAuth = LocalAuthentication();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   static Future<bool> isBiometricEnabled() async {
     try {
@@ -48,6 +50,60 @@ class AuthService {
 // // finally, lets sign in
 //     return await FirebaseAuth.instance.signInWithCredential(credential);
 //   }
+
+  Future<Map<String, dynamic>> loginWithGoogle() async {
+    try {
+      // Begin Google Sign In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        return {'success': false, 'message': 'Đăng nhập Google bị hủy'};
+      }
+
+      // Get auth details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Call login API with Google token
+      final response = await http.post(
+        Uri.parse('${AppConfig.apiUrl}/auth/login/google'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'access_token': googleAuth.accessToken,
+        }),
+      );
+
+      final data = json.decode(response.body);
+      LoggerService.api('POST /auth/login/google', data);
+
+      if (response.statusCode == 201) {
+        final token = data['data']['accessToken'];
+
+        // Save access token
+        await StorageService.saveAccessToken(token);
+
+        // Get user info
+        final userInfo = await getMe();
+        if (userInfo['success']) {
+          await StorageService.saveAuthData(data['data']);
+          return {
+            'success': true,
+            'message': 'Đăng nhập Google thành công',
+            'data': data['data']
+          };
+        } else {
+          return userInfo;
+        }
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Đăng nhập Google thất bại'
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Lỗi kết nối, vui lòng thử lại sau'};
+    }
+  }
 
   // Login
   Future<Map<String, dynamic>> login(String email, String password) async {
