@@ -339,7 +339,7 @@ class _CenterPageState extends State<CenterPage>
                       size: 20,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 3),
                   Text(
                     'Danh sách quỹ chi tiêu',
                     style: TextStyle(
@@ -354,8 +354,8 @@ class _CenterPageState extends State<CenterPage>
               GestureDetector(
                 onTap: () => _showAddFundDrawer(context),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  constraints: BoxConstraints(maxWidth: 120), // Add max width constraint
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Reduce horizontal padding
                   decoration: BoxDecoration(
                     color: Color(0xFF00C48C).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -366,20 +366,22 @@ class _CenterPageState extends State<CenterPage>
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center, // Center contents
                     children: [
                       Icon(
                         Icons.add,
                         color: Color(0xFF00C48C),
-                        size: 16,
+                        size: 14, // Slightly reduce icon size
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 2), // Reduce spacing
                       Text(
                         'Thêm mới',
                         style: TextStyle(
                           color: Color(0xFF00C48C),
-                          fontSize: 13,
+                          fontSize: 12, // Slightly reduce font size
                           fontWeight: FontWeight.w500,
                         ),
+                        overflow: TextOverflow.ellipsis, // Handle text overflow
                       ),
                     ],
                   ),
@@ -937,7 +939,7 @@ class _CenterPageState extends State<CenterPage>
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$memberCount thành viên',
+                          '$memberCount',
                           style: TextStyle(
                             color: color,
                             fontSize: 12,
@@ -970,7 +972,7 @@ class _CenterPageState extends State<CenterPage>
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$walletCount nguồn tiền',
+                          '$walletCount',
                           style: TextStyle(
                             color: color,
                             fontSize: 12,
