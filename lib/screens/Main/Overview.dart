@@ -364,12 +364,12 @@ class _OverviewPageState extends State<OverviewPage>
         onRefresh: _onRefresh,
         color: AppTheme.primary,
         backgroundColor: AppTheme.cardBackground,
-        edgeOffset: MediaQuery.of(context).padding.top + 80,
+        edgeOffset: MediaQuery.of(context).padding.top + 50,
         child: CustomScrollView(
           slivers: [
             SliverPadding(
               padding:
-                  EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
+                  EdgeInsets.only(top: MediaQuery.of(context).padding.top + 50),
               sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
             // Header

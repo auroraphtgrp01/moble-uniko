@@ -124,28 +124,6 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
                             cursor: SystemMouseCursors.click,
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              decoration: BoxDecoration(
-                                color: isDarkMode
-                                    ? Colors.white.withOpacity(0.07)
-                                    : Color(0xFFF8F9FC),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: isDarkMode
-                                      ? Colors.white.withOpacity(0.12)
-                                      : Color(0xFF4A4E69).withOpacity(0.12),
-                                  width: 1,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: isDarkMode
-                                        ? Colors.black.withOpacity(0.2)
-                                        : Colors.black.withOpacity(0.05),
-                                    offset: const Offset(0, 2),
-                                    blurRadius: 8,
-                                    spreadRadius: 0,
-                                  ),
-                                ],
-                              ),
                               child: const FundSelector(),
                             ),
                           );

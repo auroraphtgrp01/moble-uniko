@@ -237,7 +237,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
           controller: _scrollController,
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.only(top: 120),
+              padding: EdgeInsets.only(top: 100),
               sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
             SliverToBoxAdapter(

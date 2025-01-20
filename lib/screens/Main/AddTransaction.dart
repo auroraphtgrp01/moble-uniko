@@ -91,7 +91,7 @@ class _AddTransactionPageState extends State<AddTransactionPage>
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
                 // Custom Tab với animation
                 Container(
