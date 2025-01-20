@@ -112,7 +112,7 @@ class AccountSourceService {
         ToastService.showSuccess('Xóa ví thành công');
       } else {
         ToastService.showError('Xóa ví thất bại - Vui lòng thử lại');
-        throw Exception('Failed to delete account source: ${response.statusCode}');
+        throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to get account sources');
       }
     } catch (e) {
       ToastService.showError('Có lỗi xảy ra: $e');

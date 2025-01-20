@@ -400,6 +400,8 @@ class _EditWalletDrawerState extends State<EditWalletDrawer> {
       // Thông báo và cập nhật UI
       widget.onSave(updatedWallet);
       Navigator.pop(context);
+      Navigator.pop(context);
+      Navigator.pop(context);
     } catch (e) {
       ToastService.showError('Có lỗi xảy ra khi lưu: $e');
     }

@@ -751,88 +751,88 @@ class _LoginPageState extends State<LoginPage> {
                               const SizedBox(width: 12),
                               GestureDetector(
                                 onTap: () async {
-                                  try {
-                                    final response =
-                                        await AuthService().signInWithGoogle();
-                                    if (response != null) {
-                                      // Lưu thông tin đăng nhập
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-                                      await prefs.setString(
-                                          'token', 'mock_token');
-                                      await prefs.setString(
-                                          'userName', 'Lê Minh Tuấn 1');
-                                      await prefs.setString('userEmail',
-                                          'minhtuanledng@gmail.com');
+                                  // try {
+                                  //   final response =
+                                  //       await AuthService().signInWithGoogle();
+                                  //   if (response != null) {
+                                  //     // Lưu thông tin đăng nhập
+                                  //     final prefs =
+                                  //         await SharedPreferences.getInstance();
+                                  //     await prefs.setString(
+                                  //         'token', 'mock_token');
+                                  //     await prefs.setString(
+                                  //         'userName', 'Lê Minh Tuấn 1');
+                                  //     await prefs.setString('userEmail',
+                                  //         'minhtuanledng@gmail.com');
 
-                                      if (!mounted) return;
+                                  //     if (!mounted) return;
 
-                                      // Initialize providers
-                                      try {
-                                        final fundProvider =
-                                            Provider.of<FundProvider>(context,
-                                                listen: false);
-                                        final categoryProvider =
-                                            Provider.of<CategoryProvider>(
-                                                context,
-                                                listen: false);
-                                        final accountSourceProvider =
-                                            Provider.of<AccountSourceProvider>(
-                                                context,
-                                                listen: false);
-                                        final statisticsProvider =
-                                            Provider.of<StatisticsProvider>(
-                                                context,
-                                                listen: false);
+                                  //     // Initialize providers
+                                  //     try {
+                                  //       final fundProvider =
+                                  //           Provider.of<FundProvider>(context,
+                                  //               listen: false);
+                                  //       final categoryProvider =
+                                  //           Provider.of<CategoryProvider>(
+                                  //               context,
+                                  //               listen: false);
+                                  //       final accountSourceProvider =
+                                  //           Provider.of<AccountSourceProvider>(
+                                  //               context,
+                                  //               listen: false);
+                                  //       final statisticsProvider =
+                                  //           Provider.of<StatisticsProvider>(
+                                  //               context,
+                                  //               listen: false);
 
-                                        await Future.wait([
-                                          fundProvider.initializeFunds(),
-                                          Future.delayed(
-                                                  Duration(milliseconds: 100))
-                                              .then((_) async {
-                                            final selectedFundId =
-                                                fundProvider.selectedFundId;
-                                            if (selectedFundId != null) {
-                                              await Future.wait([
-                                                categoryProvider
-                                                    .fetchCategories(
-                                                        selectedFundId),
-                                                accountSourceProvider
-                                                    .fetchAccountSources(
-                                                        selectedFundId),
-                                                statisticsProvider
-                                                    .fetchStatistics(
-                                                  selectedFundId,
-                                                  DateTime.now().subtract(
-                                                      const Duration(days: 30)),
-                                                  DateTime.now(),
-                                                ),
-                                              ]);
-                                            }
-                                          }),
-                                        ]);
+                                  //       await Future.wait([
+                                  //         fundProvider.initializeFunds(),
+                                  //         Future.delayed(
+                                  //                 Duration(milliseconds: 100))
+                                  //             .then((_) async {
+                                  //           final selectedFundId =
+                                  //               fundProvider.selectedFundId;
+                                  //           if (selectedFundId != null) {
+                                  //             await Future.wait([
+                                  //               categoryProvider
+                                  //                   .fetchCategories(
+                                  //                       selectedFundId),
+                                  //               accountSourceProvider
+                                  //                   .fetchAccountSources(
+                                  //                       selectedFundId),
+                                  //               statisticsProvider
+                                  //                   .fetchStatistics(
+                                  //                 selectedFundId,
+                                  //                 DateTime.now().subtract(
+                                  //                     const Duration(days: 30)),
+                                  //                 DateTime.now(),
+                                  //               ),
+                                  //             ]);
+                                  //           }
+                                  //         }),
+                                  //       ]);
 
-                                        if (!mounted) return;
+                                  //       if (!mounted) return;
 
-                                        ToastService.showSuccess(
-                                            'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const HomePage(),
-                                          ),
-                                          (route) => false,
-                                        );
-                                      } catch (e) {
-                                        ToastService.showError(
-                                            'Có lỗi xảy ra khi tải dữ liệu');
-                                      }
-                                    }
-                                  } catch (e) {
-                                    ToastService.showError(
-                                        'Đăng nhập với Google thất bại');
-                                  }
+                                  //       ToastService.showSuccess(
+                                  //           'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
+                                  //       Navigator.pushAndRemoveUntil(
+                                  //         context,
+                                  //         MaterialPageRoute(
+                                  //           builder: (context) =>
+                                  //               const HomePage(),
+                                  //         ),
+                                  //         (route) => false,
+                                  //       );
+                                  //     } catch (e) {
+                                  //       ToastService.showError(
+                                  //           'Có lỗi xảy ra khi tải dữ liệu');
+                                  //     }
+                                  //   }
+                                  // } catch (e) {
+                                  //   ToastService.showError(
+                                  //       'Đăng nhập với Google thất bại');
+                                  // }
                                 },
                                 child: Text(
                                   'Đăng nhập với Google',

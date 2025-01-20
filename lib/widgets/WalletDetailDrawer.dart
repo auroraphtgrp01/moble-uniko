@@ -487,6 +487,7 @@ class _WalletDetailDrawerState extends State<WalletDetailDrawer> {
                 await AccountSourceService().deleteAccountSource(wallet.id);
                 if (context.mounted) {
                   Navigator.pop(context);
+                  Navigator.pop(context);
                 }
               } catch (e) {
                 LoggerService.error('Failed to delete wallet: $e');
