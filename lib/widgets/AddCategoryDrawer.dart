@@ -458,29 +458,30 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
       setState(() => _isLoading = true);
       try {
         final fundProvider = Provider.of<FundProvider>(context, listen: false);
-        final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+        final categoryProvider =
+            Provider.of<CategoryProvider>(context, listen: false);
         final fundId = fundProvider.selectedFundId;
 
         if (fundId == null) {
           throw Exception('Không tìm thấy Fund ID');
         }
 
-        final categoryName = '$_selectedEmoji${_nameController.text}';
+        final categoryName = '${_selectedEmoji} ${_nameController.text}';
 
         await _categoryService.createCategory(
           name: categoryName,
-          type: _selectedType == 'Chi tiêu' ? 'EXPENSE' : 'INCOME',
+          type: _selectedType == 'Chi tiêu' ? 'EXPENSE' : 'INCOMING',
           fundId: fundId,
           description: _descriptionController.text.isEmpty
               ? null
               : _descriptionController.text,
-          onSuccess: () {
-            categoryProvider.fetchCategories(fundId);
+          onSuccess: () async {
+            await categoryProvider.fetchCategories(fundId);
+            if (mounted) {
+              Navigator.pop(context, true);
+            }
           },
         );
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
