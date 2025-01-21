@@ -49,16 +49,16 @@ android {
         //     keyPassword "mtuan4869"
         // }
         debug {
-            storeFile file("my-release-key.jks")
-            storePassword "your-password"
-            keyAlias "my-key-alias"
-            keyPassword "your-password"
+            storeFile file("uniko-release-key.jks")
+            storePassword "123456"
+            keyAlias "key-alias"
+            keyPassword "123456"
         }
         release {
-            storeFile file("my-release-key.jks")
-            storePassword "your-password"
-            keyAlias "my-key-alias"
-            keyPassword "your-password"
+            storeFile file("uniko-release-key.jks")
+            storePassword "123456"
+            keyAlias "key-alias"
+            keyPassword "123456"
         }
     }
 }
