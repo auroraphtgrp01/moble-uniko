@@ -53,6 +53,11 @@ class AuthService {
 
   Future<Map<String, dynamic>> loginWithGoogle() async {
     try {
+      // Chỉ sign out, không cần disconnect
+      await _googleSignIn.signOut().catchError((e) {
+        LoggerService.warning('Pre-login Sign Out Error $e');
+      });
+
       // Begin Google Sign In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
@@ -212,6 +217,30 @@ class AuthService {
     } catch (e) {
       LoggerService.error('Register Error', e);
       return {'success': false, 'message': 'Lỗi kết nối, vui lòng thử lại sau'};
+    }
+  }
+
+  Future<void> signOut() async {
+    try {
+      // Sign out from Google
+      if (await _googleSignIn.isSignedIn()) {
+        try {
+          await _googleSignIn.signOut();
+        } catch (e) {
+          LoggerService.warning('Google Sign Out Error');
+        }
+
+        try {
+          await _googleSignIn.disconnect();
+        } catch (e) {
+          // Bỏ qua lỗi disconnect vì không ảnh hưởng đến flow đăng xuất
+          LoggerService.warning('Google Disconnect Error');
+        }
+      }
+
+        // Clear local storage
+    } catch (e) {
+      LoggerService.error('Sign Out Error', e);
     }
   }
 }

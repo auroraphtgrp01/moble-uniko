@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:uniko/screens/Auth/Login.dart';
+import 'package:uniko/services/auth_service.dart';
 import '../../config/theme.config.dart';
 import '../../providers/theme_provider.dart';
 import 'package:local_auth/local_auth.dart';
@@ -249,7 +250,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               final prefs =
                                   await SharedPreferences.getInstance();
                               await prefs.clear();
-
+                              await AuthService().signOut();
                               if (!mounted) return;
 
                               // Chuyển về màn Login và xóa stack
