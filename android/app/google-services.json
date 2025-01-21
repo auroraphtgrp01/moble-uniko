@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "245986889211-7h1f0gbmf4gjaaqlvf90gfe6aen1ctcf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.uniko",
+            "certificate_hash": "1534d30cad0bb4dd0aeeeab4c4dc0da65c8b534e"
+          }
+        },
+        {
           "client_id": "245986889211-ddocl45rfuc866120kqb4e5ird81d3np.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
