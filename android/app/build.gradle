@@ -42,11 +42,23 @@ android {
     }
 
     signingConfigs {
+        // release {
+        //     storeFile file("upload-keystore.jks")
+        //     storePassword "mtuan4869"
+        //     keyAlias "upload"
+        //     keyPassword "mtuan4869"
+        // }
+        debug {
+            storeFile file("my-release-key.jks")
+            storePassword "your-password"
+            keyAlias "my-key-alias"
+            keyPassword "your-password"
+        }
         release {
-            storeFile file("upload-keystore.jks")
-            storePassword "mtuan4869"
-            keyAlias "upload"
-            keyPassword "mtuan4869"
+            storeFile file("my-release-key.jks")
+            storePassword "your-password"
+            keyAlias "my-key-alias"
+            keyPassword "your-password"
         }
     }
 }
