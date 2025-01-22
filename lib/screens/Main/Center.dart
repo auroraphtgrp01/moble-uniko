@@ -470,7 +470,7 @@ class _CenterPageState extends State<CenterPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header với icon, title và button xem chi tiết
+            // Header với icon và title
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -490,7 +490,7 @@ class _CenterPageState extends State<CenterPage>
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Phân tích chi tiêu',
+                      'Phân tích tài chính',
                       style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 18,
@@ -544,64 +544,7 @@ class _CenterPageState extends State<CenterPage>
 
             const SizedBox(height: 16),
 
-            // Grid các danh mục chi tiêu
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: 4, // Số lượng item
-              itemBuilder: (context, index) {
-                final categories = [
-                  {
-                    'title': '🍔 Ăn uống',
-                    'amount': 3500000,
-                    'percentage': 0.3,
-                    'color': const Color(0xFF4E73F8),
-                    'icon': Icons.restaurant_rounded,
-                  },
-                  {
-                    'title': '🚗 Di chuyển',
-                    'amount': 2000000,
-                    'percentage': 0.2,
-                    'color': const Color(0xFF00C48C),
-                    'icon': Icons.directions_car_rounded,
-                  },
-                  {
-                    'title': '🛍️ Mua sắm',
-                    'amount': 1500000,
-                    'percentage': 0.15,
-                    'color': const Color(0xFFFFA26B),
-                    'icon': Icons.shopping_bag_rounded,
-                  },
-                  {
-                    'title': '🏠 Nhà cửa',
-                    'amount': 2500000,
-                    'percentage': 0.25,
-                    'color': const Color(0xFF7F3DFF),
-                    'icon': Icons.home_rounded,
-                  },
-                ];
-
-                final category = categories[index];
-                return _buildCategoryCard(
-                  category['title'] as String,
-                  category['amount'] as int,
-                  category['percentage'] as double,
-                  category['color'] as Color,
-                  category['icon'] as IconData,
-                );
-              },
-            ),
-
-            const SizedBox(height: 16), // Khoảng cách giữa lưới và biểu đồ
-
-            // Biểu đồ tổng quan
+            // Thống kê tổng quan
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -621,34 +564,179 @@ class _CenterPageState extends State<CenterPage>
                 ],
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Tổng quan chi tiêu',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          'Thu nhập',
+                          '12,500,000₫',
+                          Icons.arrow_upward_rounded,
+                          const Color(0xFF00C48C),
+                          '+15.2%',
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Chi tiêu',
+                          '8,500,000₫',
+                          Icons.arrow_downward_rounded,
+                          const Color(0xFFFF6B6B),
+                          '-12.4%',
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  _buildProgressBar(
-                      'Ăn uống', 3500000, 0.3, const Color(0xFF4E73F8)),
-                  const SizedBox(height: 12),
-                  _buildProgressBar(
-                      'Di chuyển', 2000000, 0.2, const Color(0xFF00C48C)),
-                  const SizedBox(height: 12),
-                  _buildProgressBar(
-                      'Mua sắm', 1500000, 0.15, const Color(0xFFFFA26B)),
-                  const SizedBox(height: 12),
-                  _buildProgressBar(
-                      'Nhà cửa', 2500000, 0.25, const Color(0xFF7F3DFF)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          'Tiết kiệm',
+                          '4,000,000₫',
+                          Icons.savings_outlined,
+                          const Color(0xFF4E73F8),
+                          '+32.1%',
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Đầu tư',
+                          '2,500,000₫',
+                          Icons.trending_up_rounded,
+                          const Color(0xFFFFA26B),
+                          '+8.5%',
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // Grid các danh mục
+            _buildCategoryGrid(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String amount, IconData icon, Color color, String percentage) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            amount,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              percentage,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryGrid() {
+    final categories = [
+      {
+        'title': '🍔 Ăn uống',
+        'amount': 3500000,
+        'percentage': 0.3,
+        'color': const Color(0xFF4E73F8),
+        'icon': Icons.restaurant_rounded,
+        'type': 'expense',
+      },
+      {
+        'title': '💼 Lương',
+        'amount': 12000000,
+        'percentage': 0.8,
+        'color': const Color(0xFF00C48C),
+        'icon': Icons.work_outline_rounded,
+        'type': 'income',
+      },
+      {
+        'title': '🚗 Di chuyển',
+        'amount': 2000000,
+        'percentage': 0.2,
+        'color': const Color(0xFFFFA26B),
+        'icon': Icons.directions_car_rounded,
+        'type': 'expense',
+      },
+      {
+        'title': '💰 Đầu tư',
+        'amount': 500000,
+        'percentage': 0.1,
+        'color': const Color(0xFF7F3DFF),
+        'icon': Icons.trending_up_rounded,
+        'type': 'income',
+      },
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 1.5,
+      ),
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        return _buildCategoryCard(
+          category['title'] as String,
+          category['amount'] as int,
+          category['percentage'] as double,
+          category['color'] as Color,
+          category['icon'] as IconData,
+          category['type'] as String,
+        );
+      },
     );
   }
 
@@ -658,6 +746,7 @@ class _CenterPageState extends State<CenterPage>
     double percentage,
     Color color,
     IconData icon,
+    String type,
   ) {
     return GestureDetector(
       onTap: () {
@@ -756,43 +845,6 @@ class _CenterPageState extends State<CenterPage>
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildProgressBar(
-      String label, int amount, double percentage, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Stack(
-          children: [
-            Container(
-              height: 8,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            Container(
-              height: 8,
-              width: MediaQuery.of(context).size.width * percentage,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
