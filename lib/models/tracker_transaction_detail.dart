@@ -21,14 +21,14 @@ class TrackerTransactionDetail {
 
   factory TrackerTransactionDetail.fromJson(Map<String, dynamic> json) {
     return TrackerTransactionDetail(
-      id: json['id'],
-      reasonName: json['reasonName'],
+      id: json['id'] ?? '',
+      reasonName: json['reasonName'] ?? '',
       description: json['description'],
-      trackerType: TrackerTypeDetail.fromJson(json['TrackerType']),
-      transaction: TransactionDetail.fromJson(json['Transaction']),
-      participant: ParticipantDetail.fromJson(json['participant']),
-      fund: FundDetail.fromJson(json['fund']),
-      time: DateTime.parse(json['time']),
+      trackerType: TrackerTypeDetail.fromJson(json['TrackerType'] ?? {}),
+      transaction: TransactionDetail.fromJson(json['Transaction'] ?? {}),
+      participant: ParticipantDetail.fromJson(json['participant'] ?? {}),
+      fund: FundDetail.fromJson(json['fund'] ?? {}),
+      time: json['time'] != null ? DateTime.parse(json['time']) : DateTime.now(),
     );
   }
 }
@@ -48,10 +48,10 @@ class TrackerTypeDetail {
 
   factory TrackerTypeDetail.fromJson(Map<String, dynamic> json) {
     return TrackerTypeDetail(
-      id: json['id'],
-      name: json['name'],
-      type: json['type'],
-      description: json['description'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      type: json['type'] ?? '',
+      description: json['description'] ?? '',
     );
   }
 }
@@ -83,10 +83,12 @@ class TransactionDetail {
 
   factory TransactionDetail.fromJson(Map<String, dynamic> json) {
     return TransactionDetail(
-      id: json['id'],
-      amount: json['amount'],
-      direction: json['direction'],
-      transactionDateTime: DateTime.parse(json['transactionDateTime']),
+      id: json['id'] ?? '',
+      amount: json['amount'] ?? 0,
+      direction: json['direction'] ?? '',
+      transactionDateTime: json['transactionDateTime'] != null
+          ? DateTime.parse(json['transactionDateTime'])
+          : DateTime.now(),
       toAccountName: json['toAccountName'],
       toAccountNo: json['toAccountNo'],
       toBankName: json['toBankName'],
@@ -94,7 +96,7 @@ class TransactionDetail {
       ofAccount: json['ofAccount'] != null
           ? AccountDetail.fromJson(json['ofAccount'])
           : null,
-      accountSource: AccountSourceDetail.fromJson(json['accountSource']),
+      accountSource: AccountSourceDetail.fromJson(json['accountSource'] ?? {}),
     );
   }
 }
@@ -105,7 +107,7 @@ class AccountDetail {
   AccountDetail({required this.accountNo});
 
   factory AccountDetail.fromJson(Map<String, dynamic> json) {
-    return AccountDetail(accountNo: json['accountNo']);
+    return AccountDetail(accountNo: json['accountNo'] ?? '');
   }
 }
 
@@ -128,12 +130,12 @@ class AccountSourceDetail {
 
   factory AccountSourceDetail.fromJson(Map<String, dynamic> json) {
     return AccountSourceDetail(
-      id: json['id'],
-      name: json['name'],
-      type: json['type'],
-      initAmount: json['initAmount'],
-      currency: json['currency'],
-      currentAmount: json['currentAmount'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      type: json['type'] ?? '',
+      initAmount: json['initAmount'] ?? 0,
+      currency: json['currency'] ?? '',
+      currentAmount: json['currentAmount'] ?? 0,
     );
   }
 }
@@ -149,8 +151,8 @@ class ParticipantDetail {
 
   factory ParticipantDetail.fromJson(Map<String, dynamic> json) {
     return ParticipantDetail(
-      id: json['id'],
-      user: UserDetail.fromJson(json['user']),
+      id: json['id'] ?? '',
+      user: UserDetail.fromJson(json['user'] ?? {}),
     );
   }
 }
@@ -168,9 +170,9 @@ class UserDetail {
 
   factory UserDetail.fromJson(Map<String, dynamic> json) {
     return UserDetail(
-      id: json['id'],
-      fullName: json['fullName'],
-      email: json['email'],
+      id: json['id'] ?? '',
+      fullName: json['fullName'] ?? '',
+      email: json['email'] ?? '',
     );
   }
 }
@@ -186,8 +188,8 @@ class FundDetail {
 
   factory FundDetail.fromJson(Map<String, dynamic> json) {
     return FundDetail(
-      id: json['id'],
-      name: json['name'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
     );
   }
 }
