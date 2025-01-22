@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/fund_provider.dart';
-import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/storage_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
 import 'package:uniko/widgets/Avatar.dart';
@@ -28,9 +27,10 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController =
       TextEditingController(text: 'minhtuandng001@gmail.com');
   final TextEditingController _passwordController =
-      TextEditingController(text: '123');
+      TextEditingController(text: '');
   bool _obscurePassword = true;
-  bool _isLoading = false;
+  bool _isLoginLoading = false;
+  bool _isGoogleLoginLoading = false;
   final _authService = AuthService();
   bool _showPasswordLogin = false;
   String? _savedUserName;
@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true;
+        _isLoginLoading = true;
       });
 
       try {
@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!response['success']) {
           setState(() {
-            _isLoading = false;
+            _isLoginLoading = false;
           });
 
           ToastService.showError(response['message'] ?? 'Đăng nhập thất bại');
@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
       } finally {
         if (mounted) {
           setState(() {
-            _isLoading = false;
+            _isLoginLoading = false;
           });
         }
       }
@@ -187,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleBiometricLogin() async {
     final isAuthenticated = await AuthService.authenticateWithBiometrics();
     if (isAuthenticated && mounted) {
-      setState(() => _isLoading = true);
+      setState(() => _isLoginLoading = true);
 
       try {
         if (!mounted) return;
@@ -232,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } finally {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isLoginLoading = false);
         }
       }
     }
@@ -241,12 +241,9 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildLoginForm() {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDarkMode ? AppTheme.cardDark : AppTheme.cardLight;
-    final textColor =
-        isDarkMode ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
-    final subtextColor =
-        isDarkMode ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
-    final inputFillColor =
-        isDarkMode ? AppTheme.surfaceDark : AppTheme.surfaceLight;
+    final textColor = isDarkMode ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
+    final subtextColor = isDarkMode ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
+    final inputFillColor = isDarkMode ? AppTheme.surfaceDark : AppTheme.surfaceLight;
 
     // Trường hợp đã có thông tin người dùng
     if (_savedUserName != null && !_showPasswordLogin) {
@@ -256,17 +253,12 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
               color: isDarkMode
-                  ? Colors.black.withOpacity(0.2)
-                  : Colors.grey.withOpacity(0.1),
-              spreadRadius: 0,
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.grey.withOpacity(0.2),
               blurRadius: 30,
               offset: const Offset(0, 10),
             ),
@@ -274,7 +266,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         child: Column(
           children: [
-            // Avatar với hiệu ứng gradient border
+            // Avatar với hiệu ứng gradient glow
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
@@ -285,6 +277,13 @@ class _LoginPageState extends State<LoginPage> {
                     AppTheme.primary.withOpacity(0.3),
                   ],
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
               child: Avatar(
                 avatarId: _savedAvatarId,
@@ -365,6 +364,13 @@ class _LoginPageState extends State<LoginPage> {
                         AppTheme.primary.withOpacity(0.05),
                       ],
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 0,
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -400,16 +406,11 @@ class _LoginPageState extends State<LoginPage> {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.2)
-                : Colors.grey.withOpacity(0.1),
-            spreadRadius: 0,
+                ? Colors.black.withOpacity(0.3)
+                : Colors.grey.withOpacity(0.2),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -418,7 +419,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header với gradient text
+          // Header với gradient text và glow effect
           ShaderMask(
             shaderCallback: (bounds) => LinearGradient(
               colors: [
@@ -448,30 +449,23 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 40),
 
           // Input fields với animation và hiệu ứng
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            child: Column(
-              children: [
-                _buildInputField(
-                  controller: _emailController,
-                  label: 'Email',
-                  icon: Icons.email_outlined,
-                  validator: _validateEmail,
-                  isDarkMode: isDarkMode,
-                  inputFillColor: inputFillColor!,
-                  textColor: textColor,
-                  subtextColor: subtextColor,
-                ),
-                const SizedBox(height: 20),
-                _buildPasswordField(
-                  controller: _passwordController,
-                  isDarkMode: isDarkMode,
-                  inputFillColor: inputFillColor,
-                  textColor: textColor,
-                  subtextColor: subtextColor,
-                ),
-              ],
-            ),
+          _buildInputField(
+            controller: _emailController,
+            label: 'Email',
+            icon: Icons.email_outlined,
+            validator: _validateEmail,
+            isDarkMode: isDarkMode,
+            inputFillColor: inputFillColor,
+            textColor: textColor,
+            subtextColor: subtextColor,
+          ),
+          const SizedBox(height: 20),
+          _buildPasswordField(
+            controller: _passwordController,
+            isDarkMode: isDarkMode,
+            inputFillColor: inputFillColor,
+            textColor: textColor,
+            subtextColor: subtextColor,
           ),
 
           // Quên mật khẩu với hiệu ứng hover
@@ -497,6 +491,13 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                     color: AppTheme.primary.withOpacity(0.1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        blurRadius: 8,
+                        spreadRadius: 0,
+                      ),
+                    ],
                   ),
                   child: Text(
                     'Quên mật khẩu?',
@@ -515,7 +516,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Helper method để tạo input field chung
+  // Helper method để tạo input field chung với thiết kế mới
   Widget _buildInputField({
     required TextEditingController controller,
     required String label,
@@ -524,7 +525,7 @@ class _LoginPageState extends State<LoginPage> {
     required bool isDarkMode,
     required Color inputFillColor,
     required Color textColor,
-    required Color? subtextColor,
+    required Color subtextColor,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -574,10 +575,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
-              width: 1,
-            ),
+            borderSide: BorderSide.none,
           ),
           errorStyle: TextStyle(
             color: Colors.red[400],
@@ -588,13 +586,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Helper method cho password field
+  // Helper method cho password field với thiết kế mới
   Widget _buildPasswordField({
     required TextEditingController controller,
     required bool isDarkMode,
     required Color inputFillColor,
     required Color textColor,
-    required Color? subtextColor,
+    required Color subtextColor,
   }) {
     return StatefulBuilder(
       builder: (context, setState) {
@@ -635,14 +633,11 @@ class _LoginPageState extends State<LoginPage> {
               suffixIcon: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
-                  onTap: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+                  onTap: () => setState(() => _obscurePassword = !_obscurePassword),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
                       key: ValueKey<bool>(_obscurePassword),
                       color: subtextColor,
                       size: 22,
@@ -665,10 +660,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(
-                  color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
-                  width: 1,
-                ),
+                borderSide: BorderSide.none,
               ),
               errorStyle: TextStyle(
                 color: Colors.red[400],
@@ -771,7 +763,7 @@ class _LoginPageState extends State<LoginPage> {
                                       snapshot.data?['isFaceId'] ?? false;
                                   return Expanded(
                                     child: ElevatedButton(
-                                      onPressed: _isLoading
+                                      onPressed: _isLoginLoading
                                           ? null
                                           : _handleBiometricLogin,
                                       style: ElevatedButton.styleFrom(
@@ -784,7 +776,7 @@ class _LoginPageState extends State<LoginPage> {
                                         ),
                                         elevation: isDarkMode ? 4 : 0,
                                       ),
-                                      child: _isLoading
+                                      child: _isLoginLoading
                                           ? const SizedBox(
                                               height: 20,
                                               width: 20,
@@ -829,7 +821,7 @@ class _LoginPageState extends State<LoginPage> {
                             Expanded(
                               flex: 5,
                               child: ElevatedButton(
-                                onPressed: _isLoading ? null : _handleLogin,
+                                onPressed: _isLoginLoading ? null : _handleLogin,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primary,
                                   minimumSize: const Size(double.infinity, 56),
@@ -838,7 +830,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   elevation: isDarkMode ? 4 : 0,
                                 ),
-                                child: _isLoading
+                                child: _isLoginLoading
                                     ? const SizedBox(
                                         height: 20,
                                         width: 20,
@@ -862,26 +854,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       // Điều kiện hiển thị UI khác nhau dựa vào trạng thái đăng nhập
                       if (_savedUserName != null && !_showPasswordLogin) ...[
-                        const SizedBox(height: 24),
-                        Center(
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _savedUserName = null;
-                                _savedUserEmail = null;
-                                _emailController.clear();
-                                _passwordController.clear();
-                              });
-                            },
-                            child: Text(
-                              'Hoặc đăng nhập với tài khoản khác',
-                              style: TextStyle(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
+                       
                       ] else ...[
                         // Hiển thị UI gốc với Google login và đăng ký
                         const SizedBox(height: 24),
@@ -892,205 +865,209 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        OutlinedButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () async {
-                                  setState(() {
-                                    _isLoading = true;
-                                  });
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDarkMode 
+                                  ? AppTheme.shadowColor.withOpacity(0.2)
+                                  : AppTheme.shadowColor.withOpacity(0.1),
+                                spreadRadius: 0,
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _isGoogleLoginLoading ? null : () async {
+                                setState(() {
+                                  _isGoogleLoginLoading = true;
+                                });
+                                try {
+                                  // 1. Login with Google
+                                  final response =
+                                      await _authService.loginWithGoogle();
+
+                                  if (!mounted) return;
+
+                                  if (!response['success']) {
+                                    setState(() {
+                                      _isGoogleLoginLoading = false;
+                                    });
+
+                                    ToastService.showError(
+                                        response['message'] ??
+                                            'Đăng nhập Google thất bại');
+                                    return;
+                                  }
+
+                                  // 2. Save login info
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  await prefs.setString(
+                                      'token', 'mock_token');
+                                  await prefs.setString(
+                                      'userName', 'Lê Minh Tuấn 1');
+                                  await prefs.setString(
+                                      'userEmail', 'minhtuanledng@gmail.com');
+
+                                  if (!mounted) return;
+
+                                  // 3. Initialize required providers
                                   try {
-                                    // 1. Login with Google
-                                    final response =
-                                        await _authService.loginWithGoogle();
+                                    final fundProvider =
+                                        Provider.of<FundProvider>(context,
+                                            listen: false);
+                                    final categoryProvider =
+                                        Provider.of<CategoryProvider>(context,
+                                            listen: false);
+                                    final accountSourceProvider =
+                                        Provider.of<AccountSourceProvider>(
+                                            context,
+                                            listen: false);
+                                    final statisticsProvider =
+                                        Provider.of<StatisticsProvider>(
+                                            context,
+                                            listen: false);
 
+                                    // Call all required APIs
+                                    await Future.wait([
+                                      fundProvider.initializeFunds(),
+                                      // After getting selectedFundId from fundProvider
+                                      Future.delayed(
+                                              Duration(milliseconds: 100))
+                                          .then((_) async {
+                                        final selectedFundId =
+                                            fundProvider.selectedFundId;
+                                        if (selectedFundId != null) {
+                                          await Future.wait([
+                                            categoryProvider.fetchCategories(
+                                                selectedFundId),
+                                            accountSourceProvider
+                                                .fetchAccountSources(
+                                                    selectedFundId),
+                                            statisticsProvider
+                                                .fetchStatistics(
+                                              selectedFundId,
+                                              DateTime.now().subtract(
+                                                  const Duration(days: 30)),
+                                              DateTime.now(),
+                                            ),
+                                          ]);
+                                        }
+                                      }),
+                                    ]);
+
+                                    // 4. Navigate to Home when complete
                                     if (!mounted) return;
 
-                                    if (!response['success']) {
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-
-                                      ToastService.showError(
-                                          response['message'] ??
-                                              'Đăng nhập Google thất bại');
-                                      return;
-                                    }
-
-                                    // 2. Save login info
-                                    final prefs =
-                                        await SharedPreferences.getInstance();
-                                    await prefs.setString(
-                                        'token', 'mock_token');
-                                    await prefs.setString(
-                                        'userName', 'Lê Minh Tuấn 1');
-                                    await prefs.setString(
-                                        'userEmail', 'minhtuanledng@gmail.com');
-
-                                    if (!mounted) return;
-
-                                    // 3. Initialize required providers
-                                    try {
-                                      final fundProvider =
-                                          Provider.of<FundProvider>(context,
-                                              listen: false);
-                                      final categoryProvider =
-                                          Provider.of<CategoryProvider>(context,
-                                              listen: false);
-                                      final accountSourceProvider =
-                                          Provider.of<AccountSourceProvider>(
-                                              context,
-                                              listen: false);
-                                      final statisticsProvider =
-                                          Provider.of<StatisticsProvider>(
-                                              context,
-                                              listen: false);
-
-                                      // Call all required APIs
-                                      await Future.wait([
-                                        fundProvider.initializeFunds(),
-                                        // After getting selectedFundId from fundProvider
-                                        Future.delayed(
-                                                Duration(milliseconds: 100))
-                                            .then((_) async {
-                                          final selectedFundId =
-                                              fundProvider.selectedFundId;
-                                          if (selectedFundId != null) {
-                                            await Future.wait([
-                                              categoryProvider.fetchCategories(
-                                                  selectedFundId),
-                                              accountSourceProvider
-                                                  .fetchAccountSources(
-                                                      selectedFundId),
-                                              statisticsProvider
-                                                  .fetchStatistics(
-                                                selectedFundId,
-                                                DateTime.now().subtract(
-                                                    const Duration(days: 30)),
-                                                DateTime.now(),
-                                              ),
-                                            ]);
-                                          }
-                                        }),
-                                      ]);
-
-                                      // 4. Navigate to Home when complete
-                                      if (!mounted) return;
-
-                                      ToastService.showSuccess(
-                                          'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
-                                      Navigator.pushAndRemoveUntil(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const HomePage(),
-                                        ),
-                                        (route) => false,
-                                      );
-                                    } catch (e) {
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                      ToastService.showError(
-                                          'Có lỗi xảy ra khi khởi tạo dữ liệu');
-                                    }
+                                    ToastService.showSuccess(
+                                        'Đăng nhập thành công - Chào mừng bạn đến với Uniko');
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const HomePage(),
+                                      ),
+                                      (route) => false,
+                                    );
                                   } catch (e) {
                                     setState(() {
-                                      _isLoading = false;
+                                      _isGoogleLoginLoading = false;
                                     });
                                     ToastService.showError(
-                                        'Đăng nhập Google thất bại');
+                                        'Có lỗi xảy ra khi khởi tạo dữ liệu');
                                   }
-                                },
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 56),
-                            shape: RoundedRectangleBorder(
+                                } catch (e) {
+                                  setState(() {
+                                    _isGoogleLoginLoading = false;
+                                  });
+                                  ToastService.showError(
+                                      'Đăng nhập Google thất bại');
+                                }
+                              },
                               borderRadius: BorderRadius.circular(15),
-                            ),
-                            side: BorderSide(
-                              color: isDarkMode
-                                  ? Colors.grey[700]!
-                                  : Colors.grey[300]!,
-                              width: 1.5,
-                            ),
-                            backgroundColor: isDarkMode
-                                ? Colors.grey[850]!.withOpacity(0.8)
-                                : Colors.white,
-                            elevation: 0,
-                            padding: EdgeInsets.zero,
-                          ),
-                          child: Ink(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: isDarkMode
-                                    ? [
-                                        Colors.grey[850]!,
-                                        Colors.grey[900]!,
-                                      ]
-                                    : [
-                                        Colors.white,
-                                        Colors.grey[50]!,
-                                      ],
-                              ),
-                            ),
-                            child: Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              height: 56,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Image.asset(
-                                      'assets/images/google.webp',
-                                      height: 24,
-                                      width: 24,
-                                    ),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  color: isDarkMode ? AppTheme.cardDark : AppTheme.cardLight,
+                                  border: Border.all(
+                                    color: isDarkMode 
+                                      ? Colors.white.withOpacity(0.08)
+                                      : Colors.black.withOpacity(0.06),
+                                    width: 0.5,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Text(
-                                    'Tiếp tục với Google',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                  boxShadow: [
+                                    BoxShadow(
                                       color: isDarkMode
-                                          ? Colors.white
-                                          : Colors.black87,
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                                  if (_isLoading) ...[
-                                    const SizedBox(width: 12),
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          isDarkMode
-                                              ? Colors.white
-                                              : Colors.black54,
-                                        ),
-                                      ),
+                                          ? Colors.black.withOpacity(0.2)
+                                          : Colors.white.withOpacity(0.8),
+                                      spreadRadius: 0,
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 1),
                                     ),
                                   ],
-                                ],
+                                ),
+                                child: Container(
+                                  height: 56,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Google Logo với hiệu ứng shadow nhẹ
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(10),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppTheme.shadowColor.withOpacity(0.05),
+                                              spreadRadius: 1,
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Image.asset(
+                                          'assets/images/google.webp',
+                                          height: 20,
+                                          width: 20,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Text(
+                                        'Tiếp tục với Google',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDarkMode 
+                                            ? AppTheme.textPrimaryDark 
+                                            : AppTheme.textPrimaryLight,
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                      if (_isGoogleLoginLoading) ...[
+                                        const SizedBox(width: 16),
+                                        SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                              isDarkMode 
+                                                ? AppTheme.textSecondaryDark 
+                                                : AppTheme.textSecondaryLight,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
