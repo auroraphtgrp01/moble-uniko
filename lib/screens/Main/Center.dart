@@ -177,7 +177,7 @@ class _CenterPageState extends State<CenterPage>
               ),
             ),
             SliverToBoxAdapter(
-              child: Container(
+              child: SizedBox(
                 height: MediaQuery.of(context).size.height - 280,
                 child: TabBarView(
                   controller: _tabController,
@@ -354,8 +354,10 @@ class _CenterPageState extends State<CenterPage>
               GestureDetector(
                 onTap: () => _showAddFundDrawer(context),
                 child: Container(
-                  constraints: BoxConstraints(maxWidth: 120), // Add max width constraint
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Reduce horizontal padding
+                  constraints:
+                      BoxConstraints(maxWidth: 120), // Add max width constraint
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 6), // Reduce horizontal padding
                   decoration: BoxDecoration(
                     color: Color(0xFF00C48C).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -366,7 +368,8 @@ class _CenterPageState extends State<CenterPage>
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center, // Center contents
+                    mainAxisAlignment:
+                        MainAxisAlignment.center, // Center contents
                     children: [
                       Icon(
                         Icons.add,
@@ -830,7 +833,7 @@ class _CenterPageState extends State<CenterPage>
     final color = _getFundColor(index);
     // TODO: get wallet count
     final walletCount = 4;
-    final memberCount = fund.participants?.length ?? 0;
+    final memberCount = fund.participants.length ?? 0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -906,8 +909,7 @@ class _CenterPageState extends State<CenterPage>
             children: [
               // Số dư
               Text(
-                NumberFormat('#,###', 'vi_VN').format(fund.currentAmount ?? 0) +
-                    ' đ',
+                '${NumberFormat('#,###', 'vi_VN').format(fund.currentAmount ?? 0)} đ',
                 style: TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 16,
@@ -1019,8 +1021,9 @@ class _CenterPageState extends State<CenterPage>
     return colors[index % colors.length];
   }
 
-  void _navigateToScreen(Widget screen) {
-    Navigator.push(
+  Future<bool?> _navigateToScreen(Widget screen) async {
+    final result = await Navigator.push(
+      // Get the result
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => screen,
@@ -1042,6 +1045,12 @@ class _CenterPageState extends State<CenterPage>
         reverseTransitionDuration: const Duration(milliseconds: 300),
       ),
     );
+
+    // If result is true, reload funds
+    if (result == true) {
+      _loadFunds();
+    }
+    return null;
   }
 
   void _showAddFundDrawer(BuildContext context) {

@@ -1,9 +1,13 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:uniko/models/account_source.dart';
+import 'package:uniko/providers/fund_provider.dart';
 import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
+import 'package:uniko/services/expenditure_service.dart';
+import 'package:uniko/widgets/EditFundDrawer.dart';
 import '../../config/theme.config.dart';
 import 'package:flutter/rendering.dart';
 import '../../widgets/WalletsList.dart';
@@ -15,14 +19,14 @@ import 'package:uniko/widgets/WalletDetailDrawer.dart';
 
 class FundDetail extends StatefulWidget {
   final String fundId;
-  final String name;
+  String name;
   final String amount;
   final Color color;
-  final String description;
+  String description;
   final List<Member> members;
   final List<Wallet> wallets;
 
-  const FundDetail({
+  FundDetail({
     super.key,
     required this.fundId,
     required this.name,
@@ -58,7 +62,7 @@ class _FundDetailState extends State<FundDetail> {
       });
     } catch (e) {
       LoggerService.error('Error loading account sources: $e');
-      if(mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
       if (mounted) {
         ToastService.showError('Không thể tải nguồn tiền');
       }
@@ -265,7 +269,7 @@ class _FundDetailState extends State<FundDetail> {
               color: AppTheme.textPrimary,
               size: 20,
             ),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, true),
           ),
           centerTitle: true,
           title: Text(
@@ -412,6 +416,7 @@ class _FundDetailState extends State<FundDetail> {
                     //   ],
                     // ),
                     const SizedBox(height: 12),
+                    _buildActions(context),
                     // _buildRecentTransactions(),
                   ],
                 ),
@@ -420,6 +425,83 @@ class _FundDetailState extends State<FundDetail> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildActions(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => EditFundDrawer(
+                  id: widget.fundId,
+                  name: widget.name,
+                  description: widget.description,
+                  onSave: (name, description) async {
+                    try {
+                      await ExpenditureService().updateFund(
+                        id: widget.fundId,
+                        name: name,
+                        status: 'ACTIVE',
+                        description: description,
+                      );
+                      setState(() {
+                        widget.name = name;
+                        widget.description = description;
+                      });
+                      ToastService.showSuccess(
+                          'Quỹ đã được cập nhật thành công.');
+                    } catch (e) {
+                      ToastService.showError('Cập nhật quỹ thất bại: $e');
+                    }
+                  },
+                ),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: widget.color,
+              side: BorderSide(color: widget.color),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Chỉnh sửa'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () async {
+              try {
+                await ExpenditureService().deleteFund(widget.fundId);
+                if (context.mounted) {
+                  await Provider.of<FundProvider>(context, listen: false)
+                      .refreshFunds();
+                  Navigator.pop(context, true);
+                  ToastService.showSuccess('Quỹ đã được xóa thành công.');
+                }
+              } catch (e) {
+                ToastService.showError('Xóa quỹ thất bại: $e');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Xóa'),
+          ),
+        ),
+      ],
     );
   }
 
@@ -472,18 +554,16 @@ class _FundDetailState extends State<FundDetail> {
       ),
       child: Column(
         children: [
-          ...members
-              .map((member) => Column(
-                    children: [
-                      MemberItem(member: member),
-                      if (members.indexOf(member) != members.length - 1)
-                        Divider(
-                          color: AppTheme.borderColor,
-                          height: 1,
-                        ),
-                    ],
-                  ))
-              .toList(),
+          ...members.map((member) => Column(
+                children: [
+                  MemberItem(member: member),
+                  if (members.indexOf(member) != members.length - 1)
+                    Divider(
+                      color: AppTheme.borderColor,
+                      height: 1,
+                    ),
+                ],
+              )),
           Divider(color: AppTheme.borderColor, height: 1),
           ListTile(
             onTap: () => _showInviteDialog(context),
@@ -883,9 +963,7 @@ class _MemberItemState extends State<MemberItem> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                ...widget.member.history
-                    .map((item) => _buildHistoryItem(item))
-                    .toList(),
+                ...widget.member.history.map((item) => _buildHistoryItem(item)),
               ],
             ),
           ),
