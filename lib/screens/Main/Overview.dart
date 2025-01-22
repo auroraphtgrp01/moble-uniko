@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:uniko/config/app_config.dart';
 import 'package:uniko/models/statistics.dart';
 import 'package:uniko/providers/fund_provider.dart';
 import 'package:uniko/services/core/toast_service.dart';
 import 'package:uniko/widgets/TransactionDetailDrawer.dart';
 import '../../config/theme.config.dart';
-import '../SubScreen/TransactionDetail.dart';
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
@@ -13,8 +11,8 @@ import '../../widgets/CommonHeader.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/providers/statistics_provider.dart';
 import 'package:intl/intl.dart';
-import '../../widgets/StatisticsChart.dart';
 import '../../widgets/ClassificationDrawer.dart';
+import '../../widgets/LoadingOverlay.dart';
 
 // Thư viện socket_io_client
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -150,13 +148,13 @@ class _OverviewPageState extends State<OverviewPage>
     switch (status) {
       case 'NO_NEW_TRANSACTION':
         // Hiển thị toast success
-        ToastService.showSuccess(message);
+        ToastService.showSuccess('Không có giao dịch mới !');
         break;
 
       case 'NEW_TRANSACTION':
         // Reset/unclassify/fetchStatistics => tương tự web
         _fetchStatisticsData();
-        ToastService.showSuccess(message);
+        ToastService.showSuccess('Tìm thấy giao dịch mới !');
         break;
 
       default:
@@ -175,12 +173,12 @@ class _OverviewPageState extends State<OverviewPage>
     // data có thể là 1 string hoặc 1 object. Tuỳ backend
     final message = data is String
         ? data
-        : (data['messages'] ?? 'Refetch failed for unknown reason');
+        : (data['messages'] ?? 'Không thể tạo yêu cầu: lỗi không xác định');
 
     ToastService.showError(message);
   }
 
-  /// Gọi API lấy số liệu thống kê
+  /// Gọi API lấy số liệu thốnng kê
   void _fetchStatisticsData() {
     final now = DateTime.now();
     final startDay = DateTime(now.year, now.month, 1);
@@ -221,19 +219,19 @@ class _OverviewPageState extends State<OverviewPage>
     final lastCalled = _lastRefetchTime?.millisecondsSinceEpoch ?? 0;
 
     if (now - lastCalled < _timeLimit.inMilliseconds) {
-      ToastService.showError("Please wait a while before refetching");
+      ToastService.showError("Vui lòng đợi 10s trước khi tạo yêu cầu mới!");
       return;
     }
 
     // Nếu user đang pending, không tiếp tục
     if (isGetMeUserPending) {
-      ToastService.showError("User data is loading. Please wait...");
+      ToastService.showError("Dữ liệu user đang được tải. Vui lòng đợi...");
       return;
     }
 
     // userPayload (như code web)
     if (user == null) {
-      ToastService.showError("Cannot refetch: user is null");
+      ToastService.showError("Không thể tạo yêu cầu: user không tồn tại");
       return;
     }
 
@@ -244,7 +242,7 @@ class _OverviewPageState extends State<OverviewPage>
         "roleId": user?.roleId ?? '',
         "email": user?.email ?? '',
         "fullName": user?.fullName ?? '',
-        "status": user?.status.toString().split('.').last, // EUserStatus.ACTIVE => "ACTIVE"
+        "status": user?.status.toString().split('.').last,
         "fundId": fundId
       };
 
@@ -255,14 +253,13 @@ class _OverviewPageState extends State<OverviewPage>
         _isRefetching = true; // bật loading
       });
 
-      ToastService.showInfo("Sending request... Please wait until it is completed!");
-
       // Gửi sự kiện REFETCH_STARTED + user payload
       socket?.emit(EPaymentEvents.REFETCH_STARTED, {
         'user': userPayload,
       });
     } else {
-      ToastService.showError("Cannot refetch: socket/fundId is null");
+      ToastService.showError(
+          "Không thể tạo yêu cầu: socket/fundId không tồn tại");
     }
   }
 
@@ -365,7 +362,8 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  Widget _buildUnclassifiedTransactionItem(UnclassifiedTransaction transaction) {
+  Widget _buildUnclassifiedTransactionItem(
+      UnclassifiedTransaction transaction) {
     final isExpense = transaction.direction.toUpperCase() == 'EXPENSE';
     final amount = _formatAmount(transaction.amount, isExpense);
 
@@ -433,8 +431,9 @@ class _OverviewPageState extends State<OverviewPage>
                       Text(
                         amount,
                         style: TextStyle(
-                          color:
-                              isExpense ? AppTheme.error : const Color(0xFF34C759),
+                          color: isExpense
+                              ? AppTheme.error
+                              : const Color(0xFF34C759),
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -540,7 +539,6 @@ class _OverviewPageState extends State<OverviewPage>
 
   @override
   Widget build(BuildContext context) {
-    // Dùng Stack để hiển thị loading overlay
     return Stack(
       children: [
         Scaffold(
@@ -568,7 +566,8 @@ class _OverviewPageState extends State<OverviewPage>
                 ),
                 // Thêm các phần khác nếu cần
                 SliverToBoxAdapter(
-                  child: SizedBox(height: MediaQuery.of(context).padding.bottom),
+                  child:
+                      SizedBox(height: MediaQuery.of(context).padding.bottom),
                 ),
                 SliverToBoxAdapter(
                   child: _buildRecentTransactions(),
@@ -582,9 +581,19 @@ class _OverviewPageState extends State<OverviewPage>
             children: [
               // FAB refresh => refetchStarted
               FloatingActionButton(
-                onPressed: _onRefetchTransaction,
+                onPressed: _isRefetching ? null : _onRefetchTransaction,
                 backgroundColor: AppTheme.primary,
-                child: const Icon(Icons.refresh, color: Colors.white),
+                child: _isRefetching
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.refresh, color: Colors.white),
               ),
               const SizedBox(height: 10),
               FloatingActionButton(
@@ -592,7 +601,8 @@ class _OverviewPageState extends State<OverviewPage>
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const ChatbotScreen()),
                   );
                 },
                 backgroundColor: AppTheme.primary,
@@ -602,15 +612,11 @@ class _OverviewPageState extends State<OverviewPage>
           ),
         ),
 
-        // Overlay loading khi _isRefetching = true
+        // Loading Overlay
         if (_isRefetching)
-          Container(
-            color: Colors.black54,
-            child: const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
+          LoadingOverlay(
+            message: 'Đang cập nhật dữ liệu...\nVui lòng đợi trong giây lát',
+            color: AppTheme.primary,
           ),
       ],
     );
@@ -902,7 +908,8 @@ class _OverviewPageState extends State<OverviewPage>
           isIncome ? CrossAxisAlignment.start : CrossAxisAlignment.end,
       children: [
         Row(
-          mainAxisAlignment: isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
+          mainAxisAlignment:
+              isIncome ? MainAxisAlignment.start : MainAxisAlignment.end,
           children: [
             if (!isIncome) ...[
               Text(

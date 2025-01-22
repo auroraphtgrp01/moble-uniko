@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/storage_service.dart';
 import 'core/api_service.dart';
@@ -241,6 +242,37 @@ class AuthService {
         // Clear local storage
     } catch (e) {
       LoggerService.error('Sign Out Error', e);
+    }
+  }
+
+  static Future<Map<String, dynamic>> getBiometricDetails() async {
+    try {
+      final LocalAuthentication auth = LocalAuthentication();
+      final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+      final bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+      
+      if (!canAuthenticate) {
+        return {
+          'isAvailable': false,
+          'isFaceId': false,
+        };
+      }
+
+      final List<BiometricType> availableBiometrics = await auth.getAvailableBiometrics();
+      
+      final bool isFaceId = availableBiometrics.contains(BiometricType.face);
+      final bool isBiometricEnabled = await SharedPreferences.getInstance()
+          .then((prefs) => prefs.getBool('biometric_enabled') ?? false);
+
+      return {
+        'isAvailable': isBiometricEnabled,
+        'isFaceId': isFaceId,
+      };
+    } catch (e) {
+      return {
+        'isAvailable': false,
+        'isFaceId': false,
+      };
     }
   }
 }

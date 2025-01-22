@@ -80,73 +80,78 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBodyBehindAppBar: true,
+
+      // Simplified AppBar with new design
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: ClipRRect(
           child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: 5,
-              sigmaY: 5,
-            ),
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(_opacity * 0.8),
-                    Colors.black.withOpacity(_opacity * 0.6),
+                    AppTheme.cardBackground.withOpacity(0.8),
+                    AppTheme.cardBackground.withOpacity(0.0),
                   ],
                 ),
               ),
               child: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                leading: IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF27272A).withOpacity(0.8),
-                      shape: BoxShape.circle,
+                centerTitle: true,
+                title: AnimatedOpacity(
+                  opacity: _opacity,
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    'Chi tiết giao dịch',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new, size: 18),
                   ),
-                  color: AppTheme.textPrimary,
-                  onPressed: () => Navigator.pop(context),
                 ),
-                actions: [
-                  IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF27272A).withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.edit_outlined, size: 18),
-                    ),
-                    color: AppTheme.textPrimary,
-                    onPressed: _showEditDrawer,
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF27272A).withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.delete_outline, size: 18),
-                    ),
-                    color: AppTheme.error,
-                    onPressed: () => _showDeleteDialog(context),
-                  ),
-                  const SizedBox(width: 16),
-                ],
               ),
             ),
           ),
         ),
       ),
+
+      // Updated floating action buttons with larger size
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton(
+              heroTag: 'edit',
+              backgroundColor: AppTheme.cardBackground,
+              onPressed: _showEditDrawer,
+              child: Icon(
+                Icons.edit_outlined,
+                color: AppTheme.textPrimary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FloatingActionButton(
+              heroTag: 'delete',
+              backgroundColor: AppTheme.error,
+              onPressed: () => _showDeleteDialog(context),
+              child: const Icon(
+                Icons.delete_outline,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+
       body: _buildDetailContent(),
     );
   }

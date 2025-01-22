@@ -240,12 +240,15 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildLoginForm() {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDarkMode ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final subtextColor = isDarkMode ? Colors.grey[400] : Colors.grey[600];
-    final inputFillColor = isDarkMode ? Colors.grey[800] : Colors.grey[50];
+    final cardColor = isDarkMode ? AppTheme.cardDark : AppTheme.cardLight;
+    final textColor =
+        isDarkMode ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
+    final subtextColor =
+        isDarkMode ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
+    final inputFillColor =
+        isDarkMode ? AppTheme.surfaceDark : AppTheme.surfaceLight;
 
-    // Trường hợp đã có thông tin người dùng giữ nguyên
+    // Trường hợp đã có thông tin người dùng
     if (_savedUserName != null && !_showPasswordLogin) {
       return Container(
         width: double.infinity,
@@ -254,23 +257,35 @@ class _LoginPageState extends State<LoginPage> {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: isDarkMode
-                  ? Colors.black.withOpacity(0.3)
+                  ? Colors.black.withOpacity(0.2)
                   : Colors.grey.withOpacity(0.1),
-              spreadRadius: 5,
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              spreadRadius: 0,
+              blurRadius: 30,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
         child: Column(
           children: [
-            // Avatar với hiệu ứng gradient
+            // Avatar với hiệu ứng gradient border
             Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withOpacity(0.8),
+                    AppTheme.primary.withOpacity(0.3),
+                  ],
+                ),
+              ),
               child: Avatar(
                 avatarId: _savedAvatarId,
                 size: 90,
@@ -278,9 +293,10 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 24),
 
-            // Tên người dùng với animation
+            // Thông tin người dùng với animation mượt mà
             TweenAnimationBuilder(
-              duration: const Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOutCubic,
               tween: Tween<double>(begin: 0, end: 1),
               builder: (context, double value, child) {
                 return Opacity(
@@ -294,19 +310,21 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 children: [
                   Text(
-                    'Xin chào,',
+                    'Chào mừng trở lại,',
                     style: TextStyle(
                       fontSize: 16,
                       color: subtextColor,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _savedUserName!,
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: textColor,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -315,6 +333,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: 14,
                       color: subtextColor,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ],
@@ -323,34 +342,50 @@ class _LoginPageState extends State<LoginPage> {
 
             const SizedBox(height: 32),
 
-            // Nút đăng nhập bằng mật khẩu
-            TextButton.icon(
-              onPressed: () {
-                setState(() {
-                  _showPasswordLogin = true;
-                });
-              },
-              icon: Icon(
-                Icons.lock_outline,
-                color: AppTheme.primary,
-                size: 20,
-              ),
-              label: Text(
-                'Đăng nhập bằng mật khẩu',
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                backgroundColor: AppTheme.primary.withOpacity(0.1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            // Nút đăng nhập với mật khẩu được thiết kế lại
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _showPasswordLogin = true;
+                  });
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primary.withOpacity(0.15),
+                        AppTheme.primary.withOpacity(0.05),
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.lock_outline,
+                        color: AppTheme.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Đăng nhập với mật khẩu',
+                        style: TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -359,181 +394,124 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
 
-    // Form đăng nhập lần đầu với UI mới
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Card chính
-        Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isDarkMode
-                    ? Colors.black.withOpacity(0.2)
-                    : Colors.grey.withOpacity(0.1),
-                spreadRadius: 0,
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
+    // Form đăng nhập mới với thiết kế hiện đại
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.2)
+                : Colors.grey.withOpacity(0.1),
+            spreadRadius: 0,
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header với animation
-              ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [
-                    AppTheme.primary,
-                    AppTheme.primary.withOpacity(0.8),
-                  ],
-                ).createShader(bounds),
-                child: Text(
-                  'Đăng nhập',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header với gradient text
+          ShaderMask(
+            shaderCallback: (bounds) => LinearGradient(
+              colors: [
+                AppTheme.primary,
+                AppTheme.primary.withOpacity(0.7),
+              ],
+            ).createShader(bounds),
+            child: const Text(
+              'Đăng nhập',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Chào mừng bạn đến với Uniko',
+            style: TextStyle(
+              fontSize: 16,
+              color: subtextColor,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 40),
+
+          // Input fields với animation và hiệu ứng
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            child: Column(
+              children: [
+                _buildInputField(
+                  controller: _emailController,
+                  label: 'Email',
+                  icon: Icons.email_outlined,
+                  validator: _validateEmail,
+                  isDarkMode: isDarkMode,
+                  inputFillColor: inputFillColor!,
+                  textColor: textColor,
+                  subtextColor: subtextColor,
+                ),
+                const SizedBox(height: 20),
+                _buildPasswordField(
+                  controller: _passwordController,
+                  isDarkMode: isDarkMode,
+                  inputFillColor: inputFillColor,
+                  textColor: textColor,
+                  subtextColor: subtextColor,
+                ),
+              ],
+            ),
+          ),
+
+          // Quên mật khẩu với hiệu ứng hover
+          Align(
+            alignment: Alignment.centerRight,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ForgotPasswordPage(),
+                    ),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Chào mừng bạn đến với Uniko',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: subtextColor,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              const SizedBox(height: 40),
-
-              // Email field với animation và hiệu ứng
-              TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 500),
-                tween: Tween(begin: 0, end: 1),
-                builder: (context, value, child) {
-                  return Transform.translate(
-                    offset: Offset(0, 20 * (1 - value)),
-                    child: Opacity(
-                      opacity: value,
-                      child: _buildInputField(
-                        controller: _emailController,
-                        label: 'Email',
-                        icon: Icons.email_outlined,
-                        validator: _validateEmail,
-                        isDarkMode: isDarkMode,
-                        inputFillColor: inputFillColor!,
-                        textColor: textColor,
-                        subtextColor: subtextColor,
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              // Password field với animation delay
-              TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 500),
-                tween: Tween(begin: 0, end: 1),
-                curve: Curves.easeOutCubic,
-                builder: (context, value, child) {
-                  return Transform.translate(
-                    offset: Offset(0, 20 * (1 - value)),
-                    child: Opacity(
-                      opacity: value,
-                      child: _buildPasswordField(
-                        controller: _passwordController,
-                        isDarkMode: isDarkMode,
-                        inputFillColor: inputFillColor!,
-                        textColor: textColor,
-                        subtextColor: subtextColor,
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              // Quên mật khẩu với hover effect
-              Align(
-                alignment: Alignment.centerRight,
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.only(top: 16),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgotPasswordPage(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        'Quên mật khẩu?',
-                        style: TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.primary.withOpacity(0.1),
+                  ),
+                  child: Text(
+                    'Quên mật khẩu?',
+                    style: TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-
-        // Decorative elements
-        Positioned(
-          top: -15,
-          right: -15,
-          child: Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  AppTheme.primary.withOpacity(0.1),
-                  AppTheme.primary.withOpacity(0.05),
-                ],
-              ),
             ),
           ),
-        ),
-
-        Positioned(
-          bottom: -10,
-          left: -10,
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  AppTheme.primary.withOpacity(0.08),
-                  AppTheme.primary.withOpacity(0.03),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -717,11 +695,13 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
-        isDarkMode ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final subtextColor = isDarkMode ? Colors.grey[400] : Colors.grey[600];
+        isDarkMode ? AppTheme.backgroundDark : AppTheme.backgroundLight;
+    final subtextColor =
+        isDarkMode ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor:
+          isDarkMode ? AppTheme.backgroundDark : AppTheme.backgroundLight,
       body: Stack(
         children: [
           // Background design
@@ -783,18 +763,12 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           if (_savedUserName != null && !_showPasswordLogin)
                             // Chỉ hiển thị button vân tay khi có thông tin user đã lưu
-                            FutureBuilder<bool>(
-                              future: Future.wait([
-                                AuthService.isBiometricEnabled(),
-                                SharedPreferences.getInstance().then((prefs) =>
-                                    prefs.getBool('biometric_enabled') ??
-                                    false),
-                              ]).then((results) =>
-                                  results[0] &&
-                                  results[1]), // Kiểm tra cả 2 điều kiện
+                            FutureBuilder<Map<String, dynamic>>(
+                              future: AuthService.getBiometricDetails(),
                               builder: (context, snapshot) {
-                                if (snapshot.data == true) {
-                                  // Chỉ hiển thị khi cả 2 điều kiện đều true
+                                if (snapshot.data?['isAvailable'] == true) {
+                                  final bool isFaceId =
+                                      snapshot.data?['isFaceId'] ?? false;
                                   return Expanded(
                                     child: ElevatedButton(
                                       onPressed: _isLoading
@@ -823,12 +797,19 @@ class _LoginPageState extends State<LoginPage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.fingerprint_rounded,
+                                                Icon(
+                                                    isFaceId
+                                                        ? Icons
+                                                            .face_unlock_rounded
+                                                        : Icons
+                                                            .fingerprint_rounded,
                                                     size: 28,
                                                     color: Colors.white),
                                                 const SizedBox(width: 8),
                                                 Text(
-                                                  'Đăng nhập bằng vân tay',
+                                                  isFaceId
+                                                      ? 'Đăng nhập bằng Face ID'
+                                                      : 'Đăng nhập bằng vân tay',
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w600,
