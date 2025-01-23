@@ -10,6 +10,7 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? actions;
   final bool showFundSelector;
+  final bool showBackButton;
   final IconData? leadingIcon;
   final VoidCallback? onLeadingIconPressed;
 
@@ -18,6 +19,7 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.actions,
     this.showFundSelector = true,
+    this.showBackButton = false,
     this.leadingIcon,
     this.onLeadingIconPressed,
   }) : super(key: key);
@@ -58,6 +60,20 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Back Button
+                  if (showBackButton)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.arrow_back_ios,
+                          size: 24,
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+
                   // Leading Icon
                   if (leadingIcon != null)
                     Padding(

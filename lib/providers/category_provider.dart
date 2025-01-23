@@ -18,6 +18,14 @@ class CategoryProvider with ChangeNotifier {
     return _categories.where((cat) => cat.type == type).toList();
   }
 
+  Future<List<Category>> getCustomCategory(String fundId) async {
+    await this.fetchCategories(fundId);
+    final categoriesCustom =
+        _categories.where((cat) => cat.trackerType == 'CUSTOM').toList();
+    print('categoriesCustom: ${categoriesCustom.length}');
+    return categoriesCustom;
+  }
+
   Future<void> fetchCategories(String fundId) async {
     _isLoading = true;
     notifyListeners();
@@ -36,6 +44,48 @@ class CategoryProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> updateCategory({
+    required String id,
+    required String name,
+    String? description,
+    required String fundId,
+    String? type,
+  }) async {
+    try {
+      await CategoryService().updateCategory(
+        id: id,
+        name: name,
+        description: description,
+        type: type,
+        onSuccess: () async {
+          // Refresh categories list after successful update
+          await fetchCategories(fundId);
+        },
+      );
+    } catch (e) {
+      LoggerService.error('Failed to update category: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteCategory({
+    required String id,
+    required String fundId,
+  }) async {
+    try {
+      await CategoryService().deleteCategory(
+        id: id,
+        onSuccess: () async {
+          // Refresh categories list after successful deletion
+          await fetchCategories(fundId);
+        },
+      );
+    } catch (e) {
+      LoggerService.error('Failed to delete category: $e');
+      rethrow;
     }
   }
 }

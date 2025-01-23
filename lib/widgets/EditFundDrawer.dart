@@ -22,190 +22,226 @@ class EditFundDrawer extends StatefulWidget {
 }
 
 class _EditFundDrawerState extends State<EditFundDrawer> {
-  late TextEditingController nameController;
-  late TextEditingController descriptionController;
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  bool _isLoading = false;
   final _expenditureService = ExpenditureService();
 
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.name);
-    descriptionController = TextEditingController(text: widget.description);
+    _nameController = TextEditingController(text: widget.name);
+    _descriptionController = TextEditingController(text: widget.description);
   }
 
   @override
   void dispose() {
-    nameController.dispose();
-    descriptionController.dispose();
+    _nameController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.4,
-                decoration: BoxDecoration(
-                  color: AppTheme.cardBackground,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: Column(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Drawer Handle
-                    Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(top: 12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.textSecondary.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
+                    Text(
+                      'Cập nhật quỹ',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-
-                    // Header
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Text(
-                        'Chỉnh sửa thông tin quỹ',
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-
-                    // Form Content
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildTextField(
-                              'Tên quỹ',
-                              nameController,
-                              Icons.edit_outlined,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              'Mô tả',
-                              descriptionController,
-                              Icons.description_outlined,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Actions
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppTheme.textSecondary,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                side: BorderSide(
-                                  color: AppTheme.borderColor.withOpacity(0.3),
-                                ),
-                              ),
-                              child: const Text('Hủy'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: _handleSave,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.textSecondary.withOpacity(0.8),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text('Lưu'),
-                            ),
-                          ),
-                        ],
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(
+                        Icons.close,
+                        color: AppTheme.textSecondary,
+                        size: 24,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 24),
+
+              // Form Fields
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name Field
+                    Text(
+                      'Tên quỹ',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.borderColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _nameController,
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Nhập tên quỹ',
+                          hintStyle: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 15,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: InputBorder.none,
+                          prefixIcon: Icon(
+                            Icons.account_balance_wallet_outlined,
+                            color: AppTheme.primary,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Description Field
+                    Text(
+                      'Mô tả',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.borderColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _descriptionController,
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                        ),
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Nhập mô tả quỹ',
+                          hintStyle: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 15,
+                          ),
+                          contentPadding: const EdgeInsets.all(16),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Save Button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            if (_nameController.text.trim().isEmpty) {
+                              return;
+                            }
+                            setState(() => _isLoading = true);
+                            await widget.onSave(
+                              _nameController.text.trim(),
+                              _descriptionController.text.trim(),
+                            );
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                              Navigator.pop(context);
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isLoading
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Lưu thay đổi',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData prefixIcon) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppTheme.textSecondary,
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          style: TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 15,
-          ),
-          decoration: InputDecoration(
-            prefixIcon: Icon(
-              prefixIcon,
-              color: AppTheme.textSecondary.withOpacity(0.5),
-              size: 20,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            filled: true,
-            fillColor: AppTheme.textSecondary.withOpacity(0.05),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: AppTheme.textSecondary.withOpacity(0.1),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: AppTheme.textSecondary.withOpacity(0.3),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   void _handleSave() async {
-    final name = nameController.text;
-    final description = descriptionController.text;
+    final name = _nameController.text.trim();
+    final description = _descriptionController.text.trim();
 
     if (name.isEmpty || description.isEmpty) {
       // Handle validation if needed
@@ -220,7 +256,6 @@ class _EditFundDrawerState extends State<EditFundDrawer> {
         description: description,
       );
       widget.onSave(name, description);
-      Navigator.pop(context);
     } catch (e) {
       // Handle error
     }

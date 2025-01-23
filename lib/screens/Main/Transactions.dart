@@ -969,6 +969,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 40),
               Icon(
                 Icons.receipt_long_outlined,
                 size: 64,

@@ -402,6 +402,7 @@ class _CenterPageState extends State<CenterPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const SizedBox(height: 50),
                 Icon(
                   Icons.account_balance_wallet_outlined,
                   size: 64,
@@ -446,7 +447,7 @@ class _CenterPageState extends State<CenterPage>
                           .map((p) => Member(
                                 name: p.user.fullName,
                                 email: p.user.email,
-                                avatar: p.user.avatarId != null
+                                avatarId: p.user.avatarId != null
                                     ? p.user.avatarId!
                                     : 'https://i.pravatar.cc/150?img=1',
                                 status: p.status,
@@ -513,7 +514,8 @@ class _CenterPageState extends State<CenterPage>
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppTheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -629,7 +631,8 @@ class _CenterPageState extends State<CenterPage>
     );
   }
 
-  Widget _buildStatCard(String title, String amount, IconData icon, Color color, String percentage) {
+  Widget _buildStatCard(String title, String amount, IconData icon, Color color,
+      String percentage) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

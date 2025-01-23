@@ -396,7 +396,7 @@ class _WalletPageState extends State<WalletPage> {
                 .map((p) => Member(
                       name: p.user.fullName,
                       email: p.user.email,
-                      avatar: p.user.avatarId != null
+                      avatarId: p.user.avatarId != null
                           ? p.user.avatarId!
                           : 'https://i.pravatar.cc/150?img=1',
                       status: p.status,

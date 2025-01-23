@@ -139,7 +139,7 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                   ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: widget.isExpense 
+                      colors: widget.isExpense
                           ? [Colors.red.shade400, Colors.red.shade600]
                           : [const Color(0xFF34C759), const Color(0xFF2FB750)],
                     ),
@@ -148,7 +148,7 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                   child: Row(
                     children: [
                       Icon(
-                        widget.isExpense 
+                        widget.isExpense
                             ? Icons.remove_circle_outline
                             : Icons.add_circle_outline,
                         color: Colors.white,
@@ -176,7 +176,7 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                         context: context,
                         backgroundColor: Colors.transparent,
                         isScrollControlled: true,
-                        builder: (context) => const AddCategoryDrawer(),
+                        builder: (context) => AddCategoryDrawer(),
                       );
                       if (result == true) {
                         updateCategories();
@@ -454,8 +454,8 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: category.color.withOpacity(
-                                  isSelected ? 0.2 : 0.1),
+                              color: category.color
+                                  .withOpacity(isSelected ? 0.2 : 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Text(

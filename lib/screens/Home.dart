@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:uniko/screens/Main/Wallet.dart';
+import 'package:uniko/screens/Main/Center.dart';
 import '../../widgets/Dock.dart';
 import 'Main/Overview.dart';
 import 'Main/Transactions.dart';
@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage>
     OverviewPage(),
     TransactionsPage(),
     AddTransactionPage(),
-    WalletPage(),
+    CenterPage(),
     ProfilePage(),
   ];
 

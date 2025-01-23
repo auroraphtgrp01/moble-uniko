@@ -127,7 +127,7 @@ class WalletsList extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      wallet.type == 'WALLET' ? 'Tiền mặt' : 'Tài khoản ngân hàng',
+                      wallet.type == 'WALLET' ? 'Tiền mặt' : 'Ngân hàng',
                       style: TextStyle(
                         color: color,
                         fontSize: 12,

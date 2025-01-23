@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uniko/models/account_source.dart';
 import 'package:uniko/providers/fund_provider.dart';
+import 'package:uniko/screens/Home.dart';
 import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
 import 'package:uniko/services/expenditure_service.dart';
+import 'package:uniko/widgets/CommonHeader.dart';
 import 'package:uniko/widgets/EditFundDrawer.dart';
 import '../../config/theme.config.dart';
 import 'package:flutter/rendering.dart';
@@ -16,6 +18,11 @@ import '../../services/account_source_service.dart';
 import 'package:intl/intl.dart';
 import 'package:uniko/screens/SubScreen/WalletDetail.dart';
 import 'package:uniko/widgets/WalletDetailDrawer.dart';
+import 'package:uniko/providers/category_provider.dart';
+import 'package:uniko/models/category.dart';
+import 'package:uniko/widgets/AddCategoryDrawer.dart';
+import 'package:uniko/widgets/EditCategoryDrawer.dart';
+import 'package:uniko/widgets/Avatar.dart';
 
 class FundDetail extends StatefulWidget {
   final String fundId;
@@ -45,11 +52,13 @@ class _FundDetailState extends State<FundDetail> {
   final _accountSourceService = AccountSourceService();
   List<AccountSource> _accountSources = [];
   bool _isLoading = true;
+  List<Category> _categories = [];
 
   @override
   void initState() {
     super.initState();
     _loadAccountSources();
+    _loadCategories();
   }
 
   Future<void> _loadAccountSources() async {
@@ -65,6 +74,25 @@ class _FundDetailState extends State<FundDetail> {
       if (mounted) setState(() => _isLoading = false);
       if (mounted) {
         ToastService.showError('Không thể tải nguồn tiền');
+      }
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      if (mounted) {
+        final categoryProvider =
+            Provider.of<CategoryProvider>(context, listen: false);
+        final customCategories =
+            await categoryProvider.getCustomCategory(widget.fundId);
+        setState(() {
+          _categories = customCategories;
+        });
+      }
+    } catch (e) {
+      LoggerService.error('Error loading categories: $e');
+      if (mounted) {
+        ToastService.showError('Không thể tải danh mục');
       }
     }
   }
@@ -161,7 +189,6 @@ class _FundDetailState extends State<FundDetail> {
     }
   }
 
-  // Trong TabBarView, thêm tab Nguồn Tiền
   Widget _buildSourcesTab() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -239,269 +266,174 @@ class _FundDetailState extends State<FundDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomHeight = bottomPadding + kBottomNavigationBarHeight + 100;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBodyBehindAppBar: true,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          flexibleSpace: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.background.withOpacity(0.7),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: AppTheme.primary.withOpacity(0.1),
-                      width: 1,
-                    ),
+      appBar: CommonHeader(
+        title: widget.name,
+        showFundSelector: false,
+        showBackButton: true,
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: widget.color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Số dư quỹ',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${widget.amount} đ',
+                              style: TextStyle(
+                                color: widget.color,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildStatItem(
+                                  'Thu',
+                                  '+2,500,000 đ',
+                                  Icons.arrow_upward,
+                                  Colors.green,
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: AppTheme.borderColor,
+                                ),
+                                _buildStatItem(
+                                  'Chi',
+                                  '-1,800,000 đ',
+                                  Icons.arrow_downward,
+                                  Colors.red,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Nguồn tiền',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildWalletsList(),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Thành viên',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildMembersList(context, widget.members),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Danh mục tuỳ chỉnh',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildCategoriesList(),
+                      const SizedBox(height: 120),
+                      SizedBox(height: bottomHeight),
+                    ]),
                   ),
                 ),
-              ),
+              ],
             ),
-          ),
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: AppTheme.textPrimary,
-              size: 20,
-            ),
-            onPressed: () => Navigator.pop(context, true),
-          ),
-          centerTitle: true,
-          title: Text(
-            widget.name,
-            style: TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // TODO: Thêm logic refresh data
-          await Future.delayed(const Duration(milliseconds: 1500));
-        },
-        color: AppTheme.primary,
-        backgroundColor: AppTheme.cardBackground,
-        edgeOffset: MediaQuery.of(context).padding.top + 80,
-        child: CustomScrollView(
-          slivers: [
-            // Thêm padding cho content
-            SliverPadding(
-              padding:
-                  EdgeInsets.only(top: MediaQuery.of(context).padding.top + 70),
-              sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
-
-            // Content
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Fund Balance Card
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: widget.color.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Số dư quỹ',
-                            style: TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${widget.amount} đ',
-                            style: TextStyle(
-                              color: widget.color,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildStatItem(
-                                'Thu',
-                                '+2,500,000 đ',
-                                Icons.arrow_upward,
-                                Colors.green,
-                              ),
-                              Container(
-                                width: 1,
-                                height: 40,
-                                color: AppTheme.borderColor,
-                              ),
-                              _buildStatItem(
-                                'Chi',
-                                '-1,800,000 đ',
-                                Icons.arrow_downward,
-                                Colors.red,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Thêm phần Nguồn Tiền
-                    Text(
-                      'Nguồn tiền',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildWalletsList(),
-
-                    const SizedBox(height: 24),
-
-                    // Members Section
-                    Text(
-                      'Thành viên',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildMembersList(context, widget.members),
-
-                    const SizedBox(height: 24),
-
-                    // Recent Transactions
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     Text(
-                    //       'Giao dịch gần đây',
-                    //       style: TextStyle(
-                    //         color: AppTheme.textPrimary,
-                    //         fontSize: 17,
-                    //         fontWeight: FontWeight.w600,
-                    //       ),
-                    //     ),
-                    //     TextButton(
-                    //       onPressed: () {
-                    //         // TODO: Navigate to all transactions
-                    //       },
-                    //       child: Text(
-                    //         'Xem tất cả',
-                    //         style: TextStyle(
-                    //           color: widget.color,
-                    //           fontSize: 14,
-                    //           fontWeight: FontWeight.w500,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                    const SizedBox(height: 12),
-                    _buildActions(context),
-                    // _buildRecentTransactions(),
-                  ],
-                ),
+            Positioned(
+              right: 16,
+              bottom: bottomPadding + 16,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'edit',
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => EditFundDrawer(
+                          id: widget.fundId,
+                          name: widget.name,
+                          description: widget.description,
+                          onSave: (name, description) async {
+                            try {
+                              await ExpenditureService().updateFund(
+                                id: widget.fundId,
+                                name: name,
+                                status: 'ACTIVE',
+                                description: description,
+                              );
+                              setState(() {
+                                widget.name = name;
+                                widget.description = description;
+                              });
+                              ToastService.showSuccess(
+                                  'Quỹ đã được cập nhật thành công.');
+                            } catch (e) {
+                              ToastService.showError(
+                                  'Cập nhật quỹ thất bại: $e');
+                            }
+                          },
+                        ),
+                      );
+                    },
+                    backgroundColor: AppTheme.primary,
+                    child: const Icon(Icons.edit_rounded),
+                  ),
+                  const SizedBox(height: 12),
+                  FloatingActionButton(
+                    heroTag: 'delete',
+                    onPressed: () => _showDeleteConfirmDialog(context),
+                    backgroundColor: const Color(0xFFFF5247),
+                    child: const Icon(Icons.delete_outline_rounded),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildActions(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => EditFundDrawer(
-                  id: widget.fundId,
-                  name: widget.name,
-                  description: widget.description,
-                  onSave: (name, description) async {
-                    try {
-                      await ExpenditureService().updateFund(
-                        id: widget.fundId,
-                        name: name,
-                        status: 'ACTIVE',
-                        description: description,
-                      );
-                      setState(() {
-                        widget.name = name;
-                        widget.description = description;
-                      });
-                      ToastService.showSuccess(
-                          'Quỹ đã được cập nhật thành công.');
-                    } catch (e) {
-                      ToastService.showError('Cập nhật quỹ thất bại: $e');
-                    }
-                  },
-                ),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: widget.color,
-              side: BorderSide(color: widget.color),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Chỉnh sửa'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () async {
-              try {
-                await ExpenditureService().deleteFund(widget.fundId);
-                if (context.mounted) {
-                  await Provider.of<FundProvider>(context, listen: false)
-                      .refreshFunds();
-                  Navigator.pop(context, true);
-                  ToastService.showSuccess('Quỹ đã được xóa thành công.');
-                }
-              } catch (e) {
-                ToastService.showError('Xóa quỹ thất bại: $e');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Xóa'),
-          ),
-        ),
-      ],
     );
   }
 
@@ -861,19 +793,648 @@ class _FundDetailState extends State<FundDetail> {
       ),
     );
   }
+
+  void _showDeleteConfirmDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF5247).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Color(0xFFFF5247),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Xóa quỹ',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Bạn có chắc chắn muốn xóa quỹ này không?\nHành động này không thể hoàn tác.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Hủy',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await ExpenditureService().deleteFund(widget.fundId);
+                          if (context.mounted) {
+                            await Provider.of<FundProvider>(context,
+                                    listen: false)
+                                .refreshFunds();
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const HomePage(),
+                              ),
+                              (route) => false, // Xóa tất cả các route trước đó
+                            );
+                            ToastService.showSuccess(
+                                'Quỹ đã được xóa thành công.');
+                          }
+                        } catch (e) {
+                          ToastService.showError('Xóa quỹ thất bại: $e');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF5247),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Xóa',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoriesList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_categories.isEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.borderColor,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.category_outlined,
+                    size: 64,
+                    color: AppTheme.textSecondary.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Chưa có danh mục nào',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(color: AppTheme.borderColor, height: 1),
+            ListTile(
+              onTap: () => _showAddCategoryDialog(context),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: widget.color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: widget.color,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'Thêm danh mục',
+                style: TextStyle(
+                  color: widget.color,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.borderColor,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          ..._categories.map((category) => Column(
+                children: [
+                  _buildCategoryItem(category),
+                  if (_categories.indexOf(category) != _categories.length - 1)
+                    Divider(
+                      color: AppTheme.borderColor,
+                      height: 1,
+                    ),
+                ],
+              )),
+          Divider(color: AppTheme.borderColor, height: 1),
+          ListTile(
+            onTap: () => _showAddCategoryDialog(context),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: widget.color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.add,
+                color: widget.color,
+                size: 24,
+              ),
+            ),
+            title: Text(
+              'Thêm danh mục',
+              style: TextStyle(
+                color: widget.color,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryItem(Category category) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: _getRandomColor().withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          _getFirstEmoji(category.name) ?? '📁',
+          style: const TextStyle(fontSize: 24),
+        ),
+      ),
+      title: Text(
+        category.name,
+        style: TextStyle(
+          color: AppTheme.textPrimary,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        category.type == 'EXPENSE' ? 'Chi tiêu' : 'Thu nhập',
+        style: TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 13,
+        ),
+      ),
+      trailing: IconButton(
+        icon: Icon(
+          Icons.more_vert,
+          color: AppTheme.textSecondary,
+        ),
+        onPressed: () => _showCategoryOptions(context, category),
+      ),
+    );
+  }
+
+  String? _getFirstEmoji(String text) {
+    final RegExp emojiRegex = RegExp(
+      r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])',
+    );
+
+    final Match? match = emojiRegex.firstMatch(text);
+    return match?.group(0);
+  }
+
+  Color _getRandomColor() {
+    final List<Color> colors = [
+      const Color(0xFF4E73F8), // Blue
+      const Color(0xFF00C48C), // Green
+      const Color(0xFFFF5247), // Red
+      const Color(0xFFFFB74D), // Orange
+      const Color(0xFF7E57C2), // Purple
+      const Color(0xFF26C6DA), // Cyan
+      const Color(0xFFFF7043), // Deep Orange
+      const Color(0xFF66BB6A), // Light Green
+    ];
+
+    return colors[DateTime.now().microsecond % colors.length];
+  }
+
+  void _showAddCategoryDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddCategoryDrawer(
+        fundIdCustom: widget.fundId,
+        onSuccess: () {
+          _loadCategories(); // Reload categories after adding new one
+        },
+      ),
+    );
+  }
+
+  void _showDeleteCategoryConfirmDialog(BuildContext context, Category category) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppTheme.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF5247).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Color(0xFFFF5247),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Xóa danh mục',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Bạn có chắc chắn muốn xóa danh mục "${category.name}" không?\nHành động này không thể hoàn tác.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Hủy',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          Navigator.pop(context); // Đóng dialog xác nhận
+                          Navigator.pop(context); // Đóng bottom sheet options
+
+                          await Provider.of<CategoryProvider>(
+                            context,
+                            listen: false,
+                          ).deleteCategory(
+                            id: category.id,
+                            fundId: widget.fundId,
+                          );
+                          
+                          _loadCategories(); // Refresh danh sách
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Không thể xóa danh mục: ${e.toString()}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF5247),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Xóa',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCategoryOptions(BuildContext context, Category category) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _getRandomColor().withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getFirstEmoji(category.name) ?? '📁',
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.name,
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: (category.type == 'EXPENSE' 
+                                ? const Color(0xFFFF5247) 
+                                : const Color(0xFF4CAF50)).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            category.type == 'EXPENSE' ? 'Chi tiêu' : 'Thu nhập',
+                            style: TextStyle(
+                              color: category.type == 'EXPENSE'
+                                  ? const Color(0xFFFF5247)
+                                  : const Color(0xFF4CAF50),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // Actions
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildActionButton(
+                      icon: Icons.edit_outlined,
+                      label: 'Chỉnh sửa danh mục',
+                      sublabel: 'Cập nhật thông tin danh mục',
+                      color: AppTheme.primary,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showEditCategoryDialog(context, category);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildActionButton(
+                      icon: Icons.delete_outline,
+                      label: 'Xóa danh mục',
+                      sublabel: 'Xóa vĩnh viễn danh mục này',
+                      color: const Color(0xFFFF5247),
+                      onTap: () {
+                        _showDeleteCategoryConfirmDialog(context, category);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required String sublabel,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: color.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      sublabel,
+                      style: TextStyle(
+                        color: color.withOpacity(0.7),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: color.withOpacity(0.5),
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditCategoryDialog(BuildContext context, Category category) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditCategoryDrawer(
+        category: category,
+        fundId: widget.fundId,
+        onSuccess: () {
+          _loadCategories(); // Refresh categories list
+        },
+      ),
+    );
+  }
 }
 
 class Member {
   final String name;
   final String email;
-  final String avatar;
+  final String avatarId;
   final String status;
   final List<String> history;
 
   const Member({
     required this.name,
     required this.email,
-    required this.avatar,
+    required this.avatarId,
     required this.status,
     required this.history,
   });
@@ -900,8 +1461,6 @@ class _MemberItemState extends State<MemberItem> {
     return Column(
       children: [
         _buildMenuItem(
-          icon: Icons.person_outline_rounded,
-          iconColor: AppTheme.primary,
           title: widget.member.name,
           subtitle: widget.member.email,
           showArrow: true,
@@ -977,13 +1536,11 @@ class _MemberItemState extends State<MemberItem> {
   }
 
   Widget _buildMenuItem({
-    required IconData icon,
     required String title,
     String? subtitle,
     bool showArrow = true,
     Widget? trailing,
     required VoidCallback onTap,
-    Color? iconColor,
   }) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -1000,9 +1557,9 @@ class _MemberItemState extends State<MemberItem> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              CircleAvatar(
-                backgroundImage: NetworkImage(widget.member.avatar),
-                radius: 20,
+              Avatar(
+                avatarId: widget.member.avatarId,
+                size: 40,
               ),
               const SizedBox(width: 12),
               Expanded(

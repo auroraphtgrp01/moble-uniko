@@ -3,29 +3,32 @@ import '../config/theme.config.dart';
 import '../constants/emoji_categories.dart';
 import '../services/category_service.dart';
 import 'package:provider/provider.dart';
-import '../providers/fund_provider.dart';
 import '../providers/category_provider.dart';
+import '../models/category.dart';
 
-class AddCategoryDrawer extends StatefulWidget {
-  const AddCategoryDrawer({
+class EditCategoryDrawer extends StatefulWidget {
+  const EditCategoryDrawer({
     super.key,
-    this.fundIdCustom,
+    required this.category,
+    required this.fundId,
     this.onSuccess,
   });
-  final String? fundIdCustom;
+
+  final Category category;
+  final String fundId;
   final VoidCallback? onSuccess;
 
   @override
-  State<AddCategoryDrawer> createState() => _AddCategoryDrawerState();
+  State<EditCategoryDrawer> createState() => _EditCategoryDrawerState();
 }
 
-class _AddCategoryDrawerState extends State<AddCategoryDrawer>
+class _EditCategoryDrawerState extends State<EditCategoryDrawer>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  String _selectedType = 'Chi tiêu';
-  String _selectedEmoji = '🏷️';
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  late String _selectedType;
+  late String _selectedEmoji;
   late AnimationController _animationController;
   late Animation<double> _animation;
   final _categoryService = CategoryService();
@@ -34,6 +37,13 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
   @override
   void initState() {
     super.initState();
+    // Tách emoji và tên từ category.name
+    final nameComponents = _splitEmojiFromName(widget.category.name);
+    _selectedEmoji = nameComponents.emoji;
+    _nameController = TextEditingController(text: nameComponents.name);
+    _descriptionController = TextEditingController(text: widget.category.description);
+    _selectedType = widget.category.type == 'EXPENSE' ? 'Chi tiêu' : 'Thu nhập';
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -43,6 +53,20 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
       curve: Curves.easeOut,
     );
     _animationController.forward();
+  }
+
+  ({String emoji, String name}) _splitEmojiFromName(String fullName) {
+    final RegExp emojiRegex = RegExp(
+      r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])',
+    );
+    
+    final Match? emojiMatch = emojiRegex.firstMatch(fullName);
+    if (emojiMatch != null) {
+      final emoji = emojiMatch.group(0) ?? '🏷️';
+      final name = fullName.substring(emoji.length).trim();
+      return (emoji: emoji, name: name);
+    }
+    return (emoji: '🏷️', name: fullName.trim());
   }
 
   @override
@@ -117,7 +141,6 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
       ),
       child: Column(
         children: [
-          // Drawer Handle
           Container(
             width: 40,
             height: 4,
@@ -133,7 +156,7 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Thêm danh mục mới',
+                    'Chỉnh sửa danh mục',
                     style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 24,
@@ -142,7 +165,7 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Tạo danh mục để quản lý chi tiêu tốt hơn',
+                    'Cập nhật thông tin danh mục',
                     style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 14,
@@ -304,31 +327,6 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
     );
   }
 
-  Widget _buildEmojiSelector() {
-    return InkWell(
-      onTap: _showEmojiPicker,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppTheme.primary.withOpacity(0.2),
-            width: 2,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            _selectedEmoji,
-            style: const TextStyle(fontSize: 24),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildDescriptionSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,10 +442,10 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
                 ),
               )
             else
-              const Icon(Icons.add_circle_outline, size: 20),
+              const Icon(Icons.save_outlined, size: 20),
             const SizedBox(width: 8),
             Text(
-              _isLoading ? 'Đang tạo...' : 'Thêm danh mục',
+              _isLoading ? 'Đang lưu...' : 'Lưu thay đổi',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -463,37 +461,30 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        final fundProvider = Provider.of<FundProvider>(context, listen: false);
         final categoryProvider =
             Provider.of<CategoryProvider>(context, listen: false);
-        final fundId = widget.fundIdCustom ?? fundProvider.selectedFundId;
-
-        if (fundId == null) {
-          throw Exception('Không tìm thấy Fund ID');
-        }
 
         final categoryName = '${_selectedEmoji} ${_nameController.text}';
 
-        await _categoryService.createCategory(
+        await categoryProvider.updateCategory(
+          id: widget.category.id,
           name: categoryName,
-          type: _selectedType == 'Chi tiêu' ? 'EXPENSE' : 'INCOMING',
-          fundId: fundId,
           description: _descriptionController.text.isEmpty
               ? null
               : _descriptionController.text,
-          onSuccess: () async {
-            await categoryProvider.fetchCategories(fundId);
-            if (mounted) {
-              Navigator.pop(context, true);
-            }
-            widget.onSuccess?.call();
-          },
+          fundId: widget.fundId,
+          type: _selectedType == 'Chi tiêu' ? 'EXPENSE' : 'INCOMING',
         );
+
+        widget.onSuccess?.call();
+        if (mounted) {
+          Navigator.pop(context);
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Không thể tạo danh mục: ${e.toString()}'),
+              content: Text('Không thể cập nhật danh mục: ${e.toString()}'),
               backgroundColor: Colors.red,
             ),
           );
@@ -613,4 +604,4 @@ class _AddCategoryDrawerState extends State<AddCategoryDrawer>
       ),
     );
   }
-}
+} 

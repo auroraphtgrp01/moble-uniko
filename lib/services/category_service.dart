@@ -62,4 +62,67 @@ class CategoryService {
       throw Exception('Failed to create category: $e');
     }
   }
+
+  Future<void> updateCategory({
+    required String id,
+    required String name,
+    String? description,
+    String? type,
+    VoidCallback? onSuccess,
+  }) async {
+    try {
+      LoggerService.info(
+          'UPDATE_CATEGORY Request: id=$id, name=$name, description=$description');
+      
+      final response = await ApiService.call(
+        '/tracker-transaction-types/$id',
+        method: 'PATCH',
+        body: {
+          'name': name,
+          'description': description,
+          'type': type,
+        },
+      );
+
+      LoggerService.info('UPDATE_CATEGORY Response: ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update category: ${response.statusCode}');
+      }
+
+      ToastService.showSuccess('Cập nhật danh mục thành công!');
+      onSuccess?.call();
+    } catch (e) {
+      LoggerService.error('Error updating category: $e');
+      ToastService.showError('Lỗi khi cập nhật danh mục!');
+      throw Exception('Failed to update category: $e');
+    }
+  }
+
+  Future<void> deleteCategory({
+    required String id,
+    VoidCallback? onSuccess,
+  }) async {
+    try {
+      LoggerService.info('DELETE_CATEGORY Request: id=$id');
+      
+      final response = await ApiService.call(
+        '/tracker-transaction-types/$id',
+        method: 'DELETE',
+      );
+
+      LoggerService.info('DELETE_CATEGORY Response: ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete category: ${response.statusCode}');
+      }
+
+      ToastService.showSuccess('Xóa danh mục thành công!');
+      onSuccess?.call();
+    } catch (e) {
+      LoggerService.error('Error deleting category: $e');
+      ToastService.showError('Lỗi khi xóa danh mục!');
+      throw Exception('Failed to delete category: $e');
+    }
+  }
 }
