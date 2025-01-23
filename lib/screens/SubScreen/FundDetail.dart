@@ -289,7 +289,9 @@ class _FundDetailState extends State<FundDetail> {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       const SizedBox(height: 20),
-                      _isLoading ? _buildBalanceCardSkeleton() : _buildBalanceCard(),
+                      _isLoading
+                          ? _buildBalanceCardSkeleton()
+                          : _buildBalanceCard(),
                       const SizedBox(height: 24),
                       Text(
                         'Nguồn tiền',
@@ -300,7 +302,9 @@ class _FundDetailState extends State<FundDetail> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _isLoading ? _buildWalletsListSkeleton() : _buildWalletsList(),
+                      _isLoading
+                          ? _buildWalletsListSkeleton()
+                          : _buildWalletsList(),
                       const SizedBox(height: 24),
                       Text(
                         'Thành viên',
@@ -311,7 +315,9 @@ class _FundDetailState extends State<FundDetail> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _isLoading ? _buildMembersListSkeleton() : _buildMembersList(context, widget.members),
+                      _isLoading
+                          ? _buildMembersListSkeleton()
+                          : _buildMembersList(context, widget.members),
                       const SizedBox(height: 24),
                       Text(
                         'Danh mục',
@@ -322,7 +328,9 @@ class _FundDetailState extends State<FundDetail> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _isLoading ? _buildCategoriesListSkeleton() : _buildCategoriesList(),
+                      _isLoading
+                          ? _buildCategoriesListSkeleton()
+                          : _buildCategoriesList(),
                       const SizedBox(height: 120),
                       SizedBox(height: bottomHeight),
                     ]),
@@ -448,11 +456,56 @@ class _FundDetailState extends State<FundDetail> {
         ),
         const SizedBox(height: 12),
         FloatingActionButton(
+          onPressed: () => _showEditFundDrawer(context),
+          backgroundColor: widget.color,
+          child: const Icon(Icons.edit_outlined, color: Colors.white),
+        ),
+        const SizedBox(height: 12),
+        FloatingActionButton(
           onPressed: () => _showDeleteConfirmDialog(context),
           backgroundColor: Colors.red,
           child: const Icon(Icons.delete_outline, color: Colors.white),
         ),
       ],
+    );
+  }
+
+  void _showEditFundDrawer(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditFundDrawer(
+        id: widget.fundId,
+        name: widget.name,
+        description: widget.description,
+        onSave: (String newName, String newDescription) async {
+          try {
+            await ExpenditureService().updateFund(
+              id: widget.fundId,
+              name: newName,
+              description: newDescription,
+              status: 'ACTIVE',
+            );
+            
+            setState(() {
+              widget.name = newName;
+              widget.description = newDescription;
+            });
+
+            if (mounted) {
+              await Provider.of<FundProvider>(context, listen: false).refreshFunds();
+              _loadAccountSources();
+              _loadCategories();
+              Navigator.pop(context);
+            }
+
+          } catch (e) {
+            LoggerService.error('Error updating fund: $e');
+            ToastService.showError('Không thể cập nhật quỹ');
+          }
+        },
+      ),
     );
   }
 
@@ -549,8 +602,7 @@ class _FundDetailState extends State<FundDetail> {
           (index) => Column(
             children: [
               _buildWalletItemSkeleton(),
-              if (index < 2)
-                Divider(color: AppTheme.borderColor, height: 1),
+              if (index < 2) Divider(color: AppTheme.borderColor, height: 1),
             ],
           ),
         ),
@@ -617,8 +669,7 @@ class _FundDetailState extends State<FundDetail> {
           (index) => Column(
             children: [
               _buildMemberItemSkeleton(),
-              if (index < 2)
-                Divider(color: AppTheme.borderColor, height: 1),
+              if (index < 2) Divider(color: AppTheme.borderColor, height: 1),
             ],
           ),
         ),
@@ -685,8 +736,7 @@ class _FundDetailState extends State<FundDetail> {
           (index) => Column(
             children: [
               _buildCategoryItemSkeleton(),
-              if (index < 2)
-                Divider(color: AppTheme.borderColor, height: 1),
+              if (index < 2) Divider(color: AppTheme.borderColor, height: 1),
             ],
           ),
         ),
@@ -1156,14 +1206,15 @@ class _FundDetailState extends State<FundDetail> {
                             await Provider.of<FundProvider>(context,
                                     listen: false)
                                 .refreshFunds();
+                            _loadAccountSources();
+                            _loadCategories();
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                 builder: (context) => const HomePage(),
                               ),
-                              (route) => false, // Xóa tất cả các route trước đó
+                              (route) => false,
                             );
-                            ToastService.showSuccess(
-                                'Quỹ đã được xóa thành công.');
+                            ToastService.showSuccess('Quỹ đã được xóa thành công.');
                           }
                         } catch (e) {
                           ToastService.showError('Xóa quỹ thất bại: $e');
