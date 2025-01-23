@@ -880,6 +880,8 @@ class _FundDetailState extends State<FundDetail> {
                           await Provider.of<FundProvider>(context,
                                   listen: false)
                               .refreshFunds();
+                          Navigator.pop(context);
+                          Navigator.pop(context, true);
                           ToastService.showSuccess(
                               'Quỹ đã được xóa thành công.');
                         }
