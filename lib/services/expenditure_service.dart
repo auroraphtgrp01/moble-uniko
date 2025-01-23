@@ -1,3 +1,4 @@
+import 'package:uniko/main.dart';
 import 'package:uniko/services/core/logger_service.dart';
 import 'package:uniko/services/core/toast_service.dart';
 
@@ -13,14 +14,40 @@ class ExpenditureService {
   Future<ExpenditureFundResponse> getFunds() async {
     try {
       final response = await ApiService.call('/expenditure-funds');
-      LoggerService.debug('response: ${response.body}');
+      LoggerService.debug('response XXX: ${response.body}');
       if (response.statusCode == 200) {
-        return ExpenditureFundResponse.fromJson(jsonDecode(response.body));
+        final decodedResponse = jsonDecode(response.body);
+        LoggerService.debug('Decoded response: $decodedResponse');
+        
+        if (decodedResponse == null) {
+          throw Exception('Response body is null');
+        }
+        
+        if (decodedResponse['data'] == null) {
+          return ExpenditureFundResponse(data: [], pagination: decodedResponse['pagination'] ?? {});
+        }
+        
+        final List<dynamic> dataList = decodedResponse['data'] as List<dynamic>;
+        final funds = dataList.map((item) {
+          if (item == null) return null;
+          try {
+            return ExpenditureFund.fromJson(item as Map<String, dynamic>);
+          } catch (e) {
+            LoggerService.debug('Error parsing fund: $e');
+            return null;
+          }
+        }).whereType<ExpenditureFund>().toList();
+        
+        return ExpenditureFundResponse(
+          data: funds,
+          pagination: decodedResponse['pagination'] ?? {},
+        );
       } else {
         throw Exception('Failed to load funds: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Failed to load funds: $e');
+      LoggerService.debug('Error in getFunds: $e');
+      rethrow;
     }
   }
 
@@ -74,7 +101,8 @@ class ExpenditureService {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        LoggerService.debug('Fund updated successfully: ${responseData['data']}');
+        LoggerService.debug(
+            'Fund updated successfully: ${responseData['data']}');
         ToastService.showSuccess('Cập nhật quỹ thành công');
       } else {
         ToastService.showError('Cập nhật quỹ thất bại');
@@ -103,6 +131,68 @@ class ExpenditureService {
       }
     } catch (e) {
       throw Exception('Failed to delete fund: $e');
+    }
+  }
+
+  Future<void> inviteParticipant({
+    required String fundId,
+    required List<String> emails,
+  }) async {
+    try {
+      final response = await ApiService.call(
+        '/participants/invite-participant',
+        method: 'POST',
+        body: {
+          'fundId': fundId,
+          'userInfoValues': emails,
+        },
+      );
+
+      LoggerService.debug('response invite participant: ${response.body}');
+
+      if (response.statusCode == 201) {
+        LoggerService.debug('Invited participants successfully');
+        ToastService.showSuccess('Đã gửi lời mời thành công');
+      } else {
+        ToastService.showError('Gửi lời mời thất bại');
+        throw Exception(
+            'Failed to invite participants: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to invite participants: $e');
+    }
+  }
+}
+
+class ExpenditureFundResponse {
+  final List<ExpenditureFund> data;
+  final Map<String, dynamic> pagination;
+  
+  ExpenditureFundResponse({
+    required this.data,
+    required this.pagination,
+  });
+  
+  factory ExpenditureFundResponse.fromJson(Map<String, dynamic> json) {
+    try {
+      final List<dynamic> dataList = json['data'] as List<dynamic>;
+      final funds = dataList.map((item) {
+        if (item == null) return null;
+        try {
+          return ExpenditureFund.fromJson(item as Map<String, dynamic>);
+        } catch (e) {
+          LoggerService.debug('Error parsing fund in response: $e');
+          return null;
+        }
+      }).whereType<ExpenditureFund>().toList();
+
+      return ExpenditureFundResponse(
+        data: funds,
+        pagination: json['pagination'] as Map<String, dynamic>? ?? {},
+      );
+    } catch (e) {
+      LoggerService.debug('Error in ExpenditureFundResponse.fromJson: $e');
+      return ExpenditureFundResponse(data: [], pagination: {});
     }
   }
 }

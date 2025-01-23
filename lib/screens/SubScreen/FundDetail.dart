@@ -289,89 +289,40 @@ class _FundDetailState extends State<FundDetail> {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: widget.color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Số dư quỹ',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${widget.amount} đ',
-                              style: TextStyle(
-                                color: widget.color,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildStatItem(
-                                  'Thu',
-                                  '+2,500,000 đ',
-                                  Icons.arrow_upward,
-                                  Colors.green,
-                                ),
-                                Container(
-                                  width: 1,
-                                  height: 40,
-                                  color: AppTheme.borderColor,
-                                ),
-                                _buildStatItem(
-                                  'Chi',
-                                  '-1,800,000 đ',
-                                  Icons.arrow_downward,
-                                  Colors.red,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      _isLoading ? _buildBalanceCardSkeleton() : _buildBalanceCard(),
                       const SizedBox(height: 24),
                       Text(
                         'Nguồn tiền',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
-                          fontSize: 17,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildWalletsList(),
+                      _isLoading ? _buildWalletsListSkeleton() : _buildWalletsList(),
                       const SizedBox(height: 24),
                       Text(
                         'Thành viên',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
-                          fontSize: 17,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildMembersList(context, widget.members),
+                      _isLoading ? _buildMembersListSkeleton() : _buildMembersList(context, widget.members),
                       const SizedBox(height: 24),
                       Text(
-                        'Danh mục tuỳ chỉnh',
+                        'Danh mục',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
-                          fontSize: 17,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildCategoriesList(),
+                      _isLoading ? _buildCategoriesListSkeleton() : _buildCategoriesList(),
                       const SizedBox(height: 120),
                       SizedBox(height: bottomHeight),
                     ]),
@@ -382,54 +333,7 @@ class _FundDetailState extends State<FundDetail> {
             Positioned(
               right: 16,
               bottom: bottomPadding + 16,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FloatingActionButton(
-                    heroTag: 'edit',
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) => EditFundDrawer(
-                          id: widget.fundId,
-                          name: widget.name,
-                          description: widget.description,
-                          onSave: (name, description) async {
-                            try {
-                              await ExpenditureService().updateFund(
-                                id: widget.fundId,
-                                name: name,
-                                status: 'ACTIVE',
-                                description: description,
-                              );
-                              setState(() {
-                                widget.name = name;
-                                widget.description = description;
-                              });
-                              ToastService.showSuccess(
-                                  'Quỹ đã được cập nhật thành công.');
-                            } catch (e) {
-                              ToastService.showError(
-                                  'Cập nhật quỹ thất bại: $e');
-                            }
-                          },
-                        ),
-                      );
-                    },
-                    backgroundColor: AppTheme.primary,
-                    child: const Icon(Icons.edit_rounded),
-                  ),
-                  const SizedBox(height: 12),
-                  FloatingActionButton(
-                    heroTag: 'delete',
-                    onPressed: () => _showDeleteConfirmDialog(context),
-                    backgroundColor: const Color(0xFFFF5247),
-                    child: const Icon(Icons.delete_outline_rounded),
-                  ),
-                ],
-              ),
+              child: _buildFloatingButtons(),
             ),
           ],
         ),
@@ -437,8 +341,65 @@ class _FundDetailState extends State<FundDetail> {
     );
   }
 
-  Widget _buildStatItem(
-      String label, String value, IconData icon, Color color) {
+  Widget _buildBalanceCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: widget.color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Tổng số dư',
+            style: TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.amount,
+            style: TextStyle(
+              color: widget.color,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatItem(
+                icon: Icons.arrow_downward,
+                label: 'Thu nhập',
+                value: '5,000,000 đ',
+                color: Colors.green,
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: AppTheme.divider,
+              ),
+              _buildStatItem(
+                icon: Icons.arrow_upward,
+                label: 'Chi tiêu',
+                value: '3,000,000 đ',
+                color: Colors.red,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Column(
       children: [
         Container(
@@ -458,7 +419,7 @@ class _FundDetailState extends State<FundDetail> {
           label,
           style: TextStyle(
             color: AppTheme.textSecondary,
-            fontSize: 13,
+            fontSize: 12,
           ),
         ),
         const SizedBox(height: 4),
@@ -471,6 +432,308 @@ class _FundDetailState extends State<FundDetail> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFloatingButtons() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FloatingActionButton(
+          onPressed: () {
+            // Xử lý thêm giao dịch
+          },
+          backgroundColor: widget.color,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+        const SizedBox(height: 12),
+        FloatingActionButton(
+          onPressed: () => _showDeleteConfirmDialog(context),
+          backgroundColor: Colors.red,
+          child: const Icon(Icons.delete_outline, color: Colors.white),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBalanceCardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 16,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 150,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatItemSkeleton(),
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.grey.withOpacity(0.2),
+              ),
+              _buildStatItemSkeleton(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItemSkeleton() {
+    return Column(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.2),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: 60,
+          height: 12,
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(6),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: 80,
+          height: 16,
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWalletsListSkeleton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.borderColor,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Column(
+            children: [
+              _buildWalletItemSkeleton(),
+              if (index < 2)
+                Divider(color: AppTheme.borderColor, height: 1),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWalletItemSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 100,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 80,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMembersListSkeleton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.borderColor,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Column(
+            children: [
+              _buildMemberItemSkeleton(),
+              if (index < 2)
+                Divider(color: AppTheme.borderColor, height: 1),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMemberItemSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 120,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 160,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoriesListSkeleton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.borderColor,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Column(
+            children: [
+              _buildCategoryItemSkeleton(),
+              if (index < 2)
+                Divider(color: AppTheme.borderColor, height: 1),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryItemSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 100,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 60,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -526,6 +789,8 @@ class _FundDetailState extends State<FundDetail> {
   }
 
   void _showInviteDialog(BuildContext context) {
+    final TextEditingController emailController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -549,6 +814,7 @@ class _FundDetailState extends State<FundDetail> {
               ),
               const SizedBox(height: 20),
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   hintText: 'Nhập email',
                   hintStyle: TextStyle(
@@ -598,9 +864,28 @@ class _FundDetailState extends State<FundDetail> {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: () {
-                      // TODO: Handle invite
-                      Navigator.pop(context);
+                    onPressed: () async {
+                      try {
+                        final email = emailController.text.trim();
+                        if (email.isEmpty) {
+                          ToastService.showError('Vui lòng nhập email');
+                          return;
+                        }
+
+                        await ExpenditureService().inviteParticipant(
+                          fundId: widget.fundId,
+                          emails: [email],
+                        );
+                        if (context.mounted) {
+                          await Provider.of<FundProvider>(context,
+                                  listen: false)
+                              .refreshFunds();
+                          ToastService.showSuccess(
+                              'Quỹ đã được xóa thành công.');
+                        }
+                      } catch (e) {
+                        ToastService.showError('Gửi lời mời thất bại: $e');
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: widget.color,
@@ -1101,7 +1386,8 @@ class _FundDetailState extends State<FundDetail> {
     );
   }
 
-  void _showDeleteCategoryConfirmDialog(BuildContext context, Category category) {
+  void _showDeleteCategoryConfirmDialog(
+      BuildContext context, Category category) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1181,12 +1467,13 @@ class _FundDetailState extends State<FundDetail> {
                             id: category.id,
                             fundId: widget.fundId,
                           );
-                          
+
                           _loadCategories(); // Refresh danh sách
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Không thể xóa danh mục: ${e.toString()}'),
+                              content: Text(
+                                  'Không thể xóa danh mục: ${e.toString()}'),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -1276,13 +1563,16 @@ class _FundDetailState extends State<FundDetail> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: (category.type == 'EXPENSE' 
-                                ? const Color(0xFFFF5247) 
-                                : const Color(0xFF4CAF50)).withOpacity(0.1),
+                            color: (category.type == 'EXPENSE'
+                                    ? const Color(0xFFFF5247)
+                                    : const Color(0xFF4CAF50))
+                                .withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            category.type == 'EXPENSE' ? 'Chi tiêu' : 'Thu nhập',
+                            category.type == 'EXPENSE'
+                                ? 'Chi tiêu'
+                                : 'Thu nhập',
                             style: TextStyle(
                               color: category.type == 'EXPENSE'
                                   ? const Color(0xFFFF5247)

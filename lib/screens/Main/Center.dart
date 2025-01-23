@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uniko/screens/Analysis/ExpenseAnalysis.dart';
 import 'package:uniko/screens/ChatBot/Chatbot.dart';
 import 'package:uniko/screens/Main/Wallet.dart';
+import 'package:uniko/services/core/logger_service.dart';
 import '../../config/theme.config.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/CommonHeader.dart';
@@ -60,6 +61,7 @@ class _CenterPageState extends State<CenterPage>
   Future<void> _loadFunds() async {
     try {
       final response = await _expenditureService.getFunds();
+      LoggerService.debug('XXXXXXXXXXXXXX: $response');
       setState(() {
         _funds = response.data;
         _isLoading = false;
@@ -320,6 +322,7 @@ class _CenterPageState extends State<CenterPage>
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Header với badge button
         Padding(
@@ -356,10 +359,8 @@ class _CenterPageState extends State<CenterPage>
               GestureDetector(
                 onTap: () => _showAddFundDrawer(context),
                 child: Container(
-                  constraints:
-                      BoxConstraints(maxWidth: 120), // Add max width constraint
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 6), // Reduce horizontal padding
+                  constraints: BoxConstraints(maxWidth: 120),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   decoration: BoxDecoration(
                     color: Color(0xFF00C48C).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -370,23 +371,22 @@ class _CenterPageState extends State<CenterPage>
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment:
-                        MainAxisAlignment.center, // Center contents
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.add,
                         color: Color(0xFF00C48C),
-                        size: 14, // Slightly reduce icon size
+                        size: 14,
                       ),
-                      const SizedBox(width: 2), // Reduce spacing
+                      const SizedBox(width: 2),
                       Text(
                         'Thêm mới',
                         style: TextStyle(
                           color: Color(0xFF00C48C),
-                          fontSize: 12, // Slightly reduce font size
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
-                        overflow: TextOverflow.ellipsis, // Handle text overflow
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -396,27 +396,30 @@ class _CenterPageState extends State<CenterPage>
           ),
         ),
 
-        // Danh sách quỹ
-        if (_funds.isEmpty)
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 50),
-                Icon(
-                  Icons.account_balance_wallet_outlined,
-                  size: 64,
-                  color: AppTheme.textSecondary.withOpacity(0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Chưa có quỹ nào',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 16,
+        // Danh sách quỹ hoặc empty state
+        if (_funds.isEmpty && !_isLoading)
+          Container(
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 50),
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 64,
+                    color: AppTheme.textSecondary.withOpacity(0.5),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Text(
+                    'Chưa có quỹ nào',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           )
         else
@@ -429,35 +432,7 @@ class _CenterPageState extends State<CenterPage>
             itemBuilder: (context, index) {
               final fund = _funds[index];
               return GestureDetector(
-                onTap: () {
-                  // Cập nhật selected fund trong provider
-                  final fund = _funds[index];
-                  _navigateToScreen(
-                    FundDetail(
-                      fundId: fund.id,
-                      name: fund.name,
-                      amount: NumberFormat.currency(
-                        locale: 'vi_VN',
-                        symbol: fund.currency,
-                        decimalDigits: 0,
-                      ).format(fund.currentAmount),
-                      color: _getFundColor(index),
-                      description: fund.description ?? 'Không có mô tả',
-                      members: fund.participants
-                          .map((p) => Member(
-                                name: p.user.fullName,
-                                email: p.user.email,
-                                avatarId: p.user.avatarId != null
-                                    ? p.user.avatarId!
-                                    : 'https://i.pravatar.cc/150?img=1',
-                                status: p.status,
-                                history: ['Tham gia quỹ với vai trò ${p.role}'],
-                              ))
-                          .toList(),
-                      wallets: [], // Tạm thời để trống vì API chưa có data wallets
-                    ),
-                  );
-                },
+                onTap: () => _navigateToFundDetail(fund, index),
                 child: _buildFundItem(fund, index),
               );
             },
@@ -1178,6 +1153,34 @@ class _CenterPageState extends State<CenterPage>
       builder: (context) => AddFundDrawer(
         color: AppTheme.primary,
         onSuccess: () => _loadFunds(),
+      ),
+    );
+  }
+
+  void _navigateToFundDetail(ExpenditureFund fund, int index) {
+    _navigateToScreen(
+      FundDetail(
+        fundId: fund.id,
+        name: fund.name,
+        amount: NumberFormat.currency(
+          locale: 'vi_VN',
+          symbol: fund.currency,
+          decimalDigits: 0,
+        ).format(fund.currentAmount),
+        color: _getFundColor(index),
+        description: fund.description ?? 'Không có mô tả',
+        members: fund.participants
+            .map((p) => Member(
+                  name: p.user.fullName,
+                  email: p.user.email,
+                  avatarId: p.user.avatarId != null
+                      ? p.user.avatarId!
+                      : 'https://i.pravatar.cc/150?img=1',
+                  status: p.status,
+                  history: ['Tham gia quỹ với vai trò ${p.role}'],
+                ))
+            .toList(),
+        wallets: [],
       ),
     );
   }
