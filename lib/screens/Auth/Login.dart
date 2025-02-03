@@ -8,7 +8,7 @@ import '../../config/theme.config.dart';
 import '../Main/Home.dart';
 import 'ForgotPassword.dart';
 import '../../services/auth_service.dart';
-import 'register.dart';
+import 'Register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uniko/providers/category_provider.dart';
 import 'package:uniko/providers/account_source_provider.dart';
