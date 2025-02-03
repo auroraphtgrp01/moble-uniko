@@ -122,11 +122,17 @@ class ExpenditureFund {
       currency: json['currency'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       createdBy: json['createdBy'] as String?,
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : null,
       updatedBy: json['updatedBy'] as String?,
-      deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt'] as String) : null,
+      deletedAt: json['deletedAt'] != null
+          ? DateTime.parse(json['deletedAt'] as String)
+          : null,
       deletedBy: json['deletedBy'] as String?,
-      defaultForUser: json['defaultForUser'] != null ? User.fromJson(json['defaultForUser'] as Map<String, dynamic>) : null,
+      defaultForUser: json['defaultForUser'] != null
+          ? User.fromJson(json['defaultForUser'] as Map<String, dynamic>)
+          : null,
       owner: User.fromJson(json['owner'] as Map<String, dynamic>),
       participants: (json['participants'] as List<dynamic>)
           .map((e) => Participant.fromJson(e as Map<String, dynamic>))

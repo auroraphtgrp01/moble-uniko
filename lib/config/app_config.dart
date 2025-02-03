@@ -1,5 +1,5 @@
 class AppConfig {
-  static bool _isDevMode = true;
+  static bool _isDevMode = false;
   static bool get isDevMode => _isDevMode;
 
   static void toggleDevMode() {
@@ -38,6 +38,6 @@ class AppConfig {
       '$apiUrl/tracker-transaction-types/all/$fundId';
 
   // TRACKER TRANSACTIONS
-  static String getTransactionByIdEndpoint(String id) => 
+  static String getTransactionByIdEndpoint(String id) =>
       '$apiUrl/tracker-transactions/get-by-id/$id';
 }

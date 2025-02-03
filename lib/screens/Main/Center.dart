@@ -153,9 +153,10 @@ class _CenterPageState extends State<CenterPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.analytics_outlined, size: 18),
-                            SizedBox(width: 8),
-                            Text('Thống kê'),
+                            Icon(Icons.account_balance_wallet_outlined,
+                                size: 18),
+                            const SizedBox(width: 12),
+                            Text('Ví và Quỹ'),
                           ],
                         ),
                       ),
@@ -168,10 +169,9 @@ class _CenterPageState extends State<CenterPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.account_balance_wallet_outlined,
-                                size: 18),
-                            const SizedBox(width: 12),
-                            Text('Ví và Quỹ'),
+                            Icon(Icons.analytics_outlined, size: 18),
+                            SizedBox(width: 8),
+                            Text('Thống kê'),
                           ],
                         ),
                       ),
@@ -188,14 +188,14 @@ class _CenterPageState extends State<CenterPage>
                   children: [
                     SingleChildScrollView(
                       physics: NeverScrollableScrollPhysics(),
-                      child: _buildCategoryStats(),
+                      child: _buildWalletsAndFunds(),
                     ),
                     Column(
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
                             physics: NeverScrollableScrollPhysics(),
-                            child: _buildWalletsAndFunds(),
+                            child: _buildCategoryStats(),
                           ),
                         ),
                       ],
@@ -360,7 +360,8 @@ class _CenterPageState extends State<CenterPage>
                 onTap: () => _showAddFundDrawer(context),
                 child: Container(
                   constraints: BoxConstraints(maxWidth: 120),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   decoration: BoxDecoration(
                     color: Color(0xFF00C48C).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),

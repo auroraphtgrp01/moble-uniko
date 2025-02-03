@@ -100,7 +100,7 @@ class _OverviewPageState extends State<OverviewPage>
   void _initSocket() {
     // Thay URL cho đúng backend
     socket = IO.io(
-      'https://api-dev.uniko.id.vn/', // ví dụ
+      'https://api.uniko.id.vn/', // ví dụ
       IO.OptionBuilder()
           .setTransports(['websocket']) // dùng websocket
           .disableAutoConnect()

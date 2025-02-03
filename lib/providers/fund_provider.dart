@@ -30,7 +30,7 @@ class FundProvider with ChangeNotifier {
       _funds = response.data;
       if (_funds.isNotEmpty) {
         _selectedFund = _funds[0].name;
-
+        print(_funds);
         final context = navigatorKey.currentContext!;
         await Future.wait([
           Provider.of<AccountSourceProvider>(context, listen: false)
@@ -77,10 +77,12 @@ class FundProvider with ChangeNotifier {
       LoggerService.info('Refreshing funds');
       final response = await ExpenditureService().getFunds();
       _funds = response.data;
-      
-      if (_funds.isNotEmpty && (_selectedFund.isEmpty || !_funds.any((fund) => fund.name == _selectedFund))) {
+
+      if (_funds.isNotEmpty &&
+          (_selectedFund.isEmpty ||
+              !_funds.any((fund) => fund.name == _selectedFund))) {
         _selectedFund = _funds[0].name;
-        
+
         final context = navigatorKey.currentContext!;
         await Future.wait([
           Provider.of<AccountSourceProvider>(context, listen: false)
@@ -112,7 +114,7 @@ class FundProvider with ChangeNotifier {
           ]);
         }
       }
-      
+
       notifyListeners();
     } catch (e) {
       LoggerService.error('Failed to refresh funds: $e');
