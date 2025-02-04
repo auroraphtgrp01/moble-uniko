@@ -100,13 +100,13 @@ class _OverviewPageState extends State<OverviewPage>
   void _initSocket() {
     // Thay URL cho đúng backend
     socket = IO.io(
-      'https://api.uniko.id.vn/', // ví dụ
-      IO.OptionBuilder()
-          .setTransports(['websocket']) // dùng websocket
-          .disableAutoConnect()
-          .build(),
-    );
-
+  'https://api.uniko.id.vn',
+  IO.OptionBuilder()
+      .setTransports([ 'websocket']) // Bắt đầu với Polling, sau đó nâng cấp
+      .setExtraHeaders({'User-Agent': 'Mozilla/5.0'})
+      .disableAutoConnect()
+      .build(),
+);
     // Mở kết nối
     socket?.connect();
 
@@ -114,6 +114,9 @@ class _OverviewPageState extends State<OverviewPage>
     socket?.onConnect((_) {
       debugPrint('=== Socket connected ===');
     });
+    socket?.onConnectError((data) {
+  debugPrint("Connect error: $data");
+});
 
     // Đăng ký lắng nghe sự kiện REFETCH_COMPLETE
     socket?.on(EPaymentEvents.REFETCH_COMPLETE, _handleRefetchComplete);
