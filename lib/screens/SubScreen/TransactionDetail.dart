@@ -175,6 +175,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                 const SizedBox(height: 16),
                 _buildMonthlySpending(
                     _transactionDetail!.monthlySpendingByTrackerType),
+                const SizedBox(height: 32),
               ],
             ),
           ),
@@ -876,7 +877,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -932,7 +933,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 24, // Increased bottom padding
+              ),
               decoration: BoxDecoration(
                 color: AppTheme.cardBackground,
                 borderRadius: BorderRadius.circular(16),
