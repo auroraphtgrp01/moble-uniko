@@ -7,6 +7,7 @@ class TrackerTransactionDetail {
   final ParticipantDetail participant;
   final FundDetail fund;
   final DateTime time;
+  final MonthlySpendingByTrackerType? monthlySpendingByTrackerType;
 
   TrackerTransactionDetail({
     required this.id,
@@ -17,6 +18,7 @@ class TrackerTransactionDetail {
     required this.participant,
     required this.fund,
     required this.time,
+    this.monthlySpendingByTrackerType,
   });
 
   factory TrackerTransactionDetail.fromJson(Map<String, dynamic> json) {
@@ -28,7 +30,12 @@ class TrackerTransactionDetail {
       transaction: TransactionDetail.fromJson(json['Transaction'] ?? {}),
       participant: ParticipantDetail.fromJson(json['participant'] ?? {}),
       fund: FundDetail.fromJson(json['fund'] ?? {}),
-      time: json['time'] != null ? DateTime.parse(json['time']) : DateTime.now(),
+      time:
+          json['time'] != null ? DateTime.parse(json['time']) : DateTime.now(),
+      monthlySpendingByTrackerType: json['monthlySpendingByTrackerType'] != null
+          ? MonthlySpendingByTrackerType.fromJson(
+              json['monthlySpendingByTrackerType'])
+          : null,
     );
   }
 }
@@ -190,6 +197,52 @@ class FundDetail {
     return FundDetail(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
+    );
+  }
+}
+
+class RecentTransaction {
+  final String id;
+  final String reasonName;
+  final String? description;
+  final TransactionDetail transaction;
+
+  RecentTransaction({
+    required this.id,
+    required this.reasonName,
+    this.description,
+    required this.transaction,
+  });
+
+  factory RecentTransaction.fromJson(Map<String, dynamic> json) {
+    return RecentTransaction(
+      id: json['id'] ?? '',
+      reasonName: json['reasonName'] ?? '',
+      description: json['description'],
+      transaction: TransactionDetail.fromJson(json['Transaction'] ?? {}),
+    );
+  }
+}
+
+class MonthlySpendingByTrackerType {
+  final int sum;
+  final String rate;
+  final List<RecentTransaction> recentTransactions;
+
+  MonthlySpendingByTrackerType({
+    required this.sum,
+    required this.rate,
+    required this.recentTransactions,
+  });
+
+  factory MonthlySpendingByTrackerType.fromJson(Map<String, dynamic> json) {
+    return MonthlySpendingByTrackerType(
+      sum: json['sum'] ?? 0,
+      rate: json['rate'] ?? '0',
+      recentTransactions: (json['recentTransactions'] as List<dynamic>?)
+              ?.map((e) => RecentTransaction.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 }

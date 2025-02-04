@@ -172,9 +172,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             child: Column(
               children: [
                 _buildTimelineContent(_transactionDetail!),
-                const SizedBox(height: 24),
-                _buildStatsCard(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                _buildMonthlySpending(
+                    _transactionDetail!.monthlySpendingByTrackerType),
               ],
             ),
           ),
@@ -693,57 +693,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     );
   }
 
-  Widget _buildStatsCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF34C759).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.analytics_outlined,
-                  size: 20,
-                  color: Color(0xFF34C759),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Thống kê chi tiêu',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildStatItem('Tháng này', '2.500.000 đ', '+ 12%'),
-          const SizedBox(height: 12),
-          _buildStatItem('Trung bình/tháng', '2.100.000 đ'),
-        ],
-      ),
-    );
-  }
-
   void _showEditDrawer() {
     showModalBottomSheet(
       context: context,
@@ -807,6 +756,308 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     // Chuyển đổi UTC sang UTC+7
     final localTime = utcTime.add(const Duration(hours: 7));
     return DateFormat('HH:mm, dd/MM/yyyy').format(localTime);
+  }
+
+  Widget _buildMonthlySpending(MonthlySpendingByTrackerType? monthlySpending) {
+    if (monthlySpending == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBackground,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppTheme.isDarkMode
+              ? Colors.white.withOpacity(0.05)
+              : AppTheme.borderColor,
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header với icon và title
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5856D6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.analytics_outlined,
+                  color: Color(0xFF5856D6),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Thống kê chi tiêu',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Tổng chi tiêu card với gradient
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF5856D6).withOpacity(0.15),
+                  const Color(0xFF5856D6).withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF5856D6).withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Tổng chi tiêu tháng này',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF5856D6).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF5856D6).withOpacity(0.2),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.trending_up_rounded,
+                            color: const Color(0xFF5856D6),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '+12%',
+                            style: TextStyle(
+                              color: const Color(0xFF5856D6),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      NumberFormat.currency(locale: 'vi_VN', symbol: '₫')
+                          .format(monthlySpending.sum),
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Cập nhật ${DateFormat('HH:mm').format(_convertToVietnamTime(DateTime.now()))}',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Giao dịch gần đây
+          Text(
+            'Giao dịch gần đây',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Danh sách giao dịch gần đây
+          ...monthlySpending.recentTransactions.map((transaction) {
+            final isExpense = transaction.transaction.direction == 'EXPENSE';
+            final color = isExpense ? AppTheme.error : const Color(0xFF34C759);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: color.withOpacity(0.1),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Transaction Type Indicator
+                  Container(
+                    width: 4,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Transaction Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                transaction.reasonName,
+                                style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              NumberFormat.currency(
+                                locale: 'vi_VN',
+                                symbol: '₫',
+                                decimalDigits: 0,
+                              ).format(transaction.transaction.amount),
+                              style: TextStyle(
+                                color: color,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.schedule,
+                              size: 12,
+                              color: AppTheme.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              DateFormat('HH:mm, dd/MM/yyyy').format(
+                                _convertToVietnamTime(transaction
+                                    .transaction.transactionDateTime),
+                              ),
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              width: 3,
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: AppTheme.textSecondary.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: color.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                isExpense ? 'Chi tiêu' : 'Thu nhập',
+                                style: TextStyle(
+                                  color: color,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  DateTime _convertToVietnamTime(DateTime utcTime) {
+    // Chuyển đổi UTC sang UTC+7
+    return utcTime.add(const Duration(hours: 7));
   }
 }
 

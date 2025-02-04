@@ -569,30 +569,6 @@ class _CenterPageState extends State<CenterPage>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          'Tiết kiệm',
-                          '4,000,000₫',
-                          Icons.savings_outlined,
-                          const Color(0xFF4E73F8),
-                          '+32.1%',
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildStatCard(
-                          'Đầu tư',
-                          '2,500,000₫',
-                          Icons.trending_up_rounded,
-                          const Color(0xFFFFA26B),
-                          '+8.5%',
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
