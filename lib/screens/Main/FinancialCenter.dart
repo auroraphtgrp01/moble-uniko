@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/theme.config.dart';
+import 'package:intl/intl.dart';
 
 class FinancialCenterPage extends StatefulWidget {
   const FinancialCenterPage({super.key});
@@ -10,6 +11,7 @@ class FinancialCenterPage extends StatefulWidget {
 
 class _FinancialCenterPageState extends State<FinancialCenterPage> with TickerProviderStateMixin {
   late AnimationController _fadeController;
+  bool _isAmountVisible = false;
   
   @override
   void initState() {
@@ -18,6 +20,12 @@ class _FinancialCenterPageState extends State<FinancialCenterPage> with TickerPr
       duration: const Duration(milliseconds: 800),
       vsync: this,
     )..forward();
+  }
+
+  String _formatAmount(num amount) {
+    if (!_isAmountVisible) return '********';
+    final formatter = NumberFormat('#,###', 'vi_VN');
+    return '${formatter.format(amount)} đ';
   }
 
   @override
@@ -62,6 +70,14 @@ class _FinancialCenterPageState extends State<FinancialCenterPage> with TickerPr
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => setState(() => _isAmountVisible = !_isAmountVisible),
+        backgroundColor: AppTheme.primary,
+        child: Icon(
+          _isAmountVisible ? Icons.visibility_off : Icons.visibility,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 
@@ -86,6 +102,18 @@ class _FinancialCenterPageState extends State<FinancialCenterPage> with TickerPr
         titlePadding: EdgeInsets.only(left: 20, bottom: 16),
       ),
       actions: [
+        IconButton(
+          onPressed: () {
+            setState(() {
+              _isAmountVisible = !_isAmountVisible;
+            });
+          },
+          icon: Icon(
+            _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+            color: isDarkMode ? Colors.white70 : Colors.black87,
+            size: 20,
+          ),
+        ),
         Container(
           margin: EdgeInsets.only(right: 20),
           child: CircleAvatar(
@@ -150,13 +178,16 @@ class _FinancialCenterPageState extends State<FinancialCenterPage> with TickerPr
                         ),
                       ),
                       SizedBox(height: 8),
-                      Text(
-                        '2.350.000.000 ₫',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _isAmountVisible = !_isAmountVisible;
+                          });
+                        },
+                        icon: Icon(
+                          _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.white70,
+                          size: 20,
                         ),
                       ),
                     ],
@@ -220,21 +251,21 @@ class _FinancialCenterPageState extends State<FinancialCenterPage> with TickerPr
         children: [
           _buildGlassCard(
             'Tiền mặt',
-            '150.000.000 ₫',
+            _isAmountVisible ? '150.000.000 ₫' : '********',
             Icons.payments_outlined,
             Color(0xFF4ECDC4),
             isDarkMode,
           ),
           _buildGlassCard(
             'Ngân hàng',
-            '2.150.000.000 ₫',
+            _isAmountVisible ? '2.150.000.000 ₫' : '********',
             Icons.account_balance_outlined,
             Color(0xFF6C72CB),
             isDarkMode,
           ),
           _buildGlassCard(
             'Đầu tư',
-            '50.000.000 ₫',
+            _isAmountVisible ? '50.000.000 ₫' : '********',
             Icons.trending_up,
             Color(0xFFFF6B6B),
             isDarkMode,
@@ -295,13 +326,30 @@ class _FinancialCenterPageState extends State<FinancialCenterPage> with TickerPr
                 ),
               ),
               SizedBox(height: 4),
-              Text(
-                amount,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.white : Colors.black87,
-                ),
+              Row(
+                children: [
+                  Text(
+                    amount,
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isAmountVisible = !_isAmountVisible;
+                      });
+                    },
+                    child: Icon(
+                      _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                      color: AppTheme.textSecondary.withOpacity(0.5),
+                      size: 16,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

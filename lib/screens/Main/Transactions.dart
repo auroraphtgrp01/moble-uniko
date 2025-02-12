@@ -34,6 +34,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
   final ScrollController _scrollController = ScrollController();
   String? _previousFundId;
   List<CategoryItem> _categories = [];
+  bool _isAmountVisible = false;
 
   @override
   void initState() {
@@ -371,14 +372,42 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              Text(
-                                '${_formatAmount(balance)} đ',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _isAmountVisible 
+                                        ? '${_formatAmount(balance)} đ'
+                                        : '********',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _isAmountVisible = !_isAmountVisible;
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                                        color: Colors.white.withOpacity(0.8),
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 8),
                               Container(
@@ -611,7 +640,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          '$amount đ',
+          _isAmountVisible ? '$amount đ' : '********',
           style: TextStyle(
             color: AppTheme.textPrimary,
             fontSize: 16,

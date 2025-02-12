@@ -55,6 +55,7 @@ class _OverviewPageState extends State<OverviewPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _selectedIndex = 0;
+  bool _isAmountVisible = false;
 
   // Biến socket
   IO.Socket? socket;
@@ -271,6 +272,10 @@ class _OverviewPageState extends State<OverviewPage>
     return '${isExpense ? "-" : "+"}${formatter.format(amount)} đ';
   }
 
+  String _formatHiddenAmount() {
+    return '********';
+  }
+
   // Xây dựng danh sách giao dịch chưa phân loại
   Widget _buildRecentTransactions() {
     return Consumer<StatisticsProvider>(
@@ -430,7 +435,7 @@ class _OverviewPageState extends State<OverviewPage>
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      // Số tiền
+                      // Số tiền - bỏ điều kiện ẩn hiện
                       Text(
                         amount,
                         style: TextStyle(
@@ -712,53 +717,45 @@ class _OverviewPageState extends State<OverviewPage>
                             ),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                double.parse(balanceRate) >= 0
-                                    ? Icons.trending_up_rounded
-                                    : Icons.trending_down_rounded,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${balanceRate}%',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // Số tiền
-                    Text(
-                      '${NumberFormat('#,###', 'vi_VN').format(balance)} đ',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
+                    // Số tiền và nút ẩn/hiện
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          _isAmountVisible 
+                            ? '${NumberFormat('#,###', 'vi_VN').format(balance)} đ'
+                            : _formatHiddenAmount(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isAmountVisible = !_isAmountVisible;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                              color: Colors.white.withOpacity(0.8),
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     // Thời gian cập nhật
@@ -950,7 +947,7 @@ class _OverviewPageState extends State<OverviewPage>
         ),
         const SizedBox(height: 8),
         Text(
-          '$amount đ',
+          _isAmountVisible ? '$amount đ' : _formatHiddenAmount(),
           style: TextStyle(
             color: AppTheme.textPrimary,
             fontSize: 16,
